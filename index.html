@@ -1536,7 +1536,25 @@ function renderQR(){
   catch(e){box.innerHTML='<p style="font-size:13px;color:#999;text-align:center;padding:20px;">QR generates when hosted online</p>';}
 }
 function shareApp(){var url=S.appUrl||window.location.href;if(navigator.share)navigator.share({title:"El Toro",url:url});else copyLink();}
-function copyLink(){var url=S.appUrl||window.location.href;navigator.clipboard.writeText(url).then(function(){showToast("Link copied!");}).catch(function(){showToast("Copy: "+url);});}
+function copyLink(){
+  var url=S.appUrl||window.location.href;
+  var btn=document.getElementById("qr-copy-btn");
+  function onSuccess(){
+    if(btn)buttonFlash(btn,"✅ Copied!");
+    else showToast("Link copied!");
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(onSuccess).catch(function(){
+      fallbackCopy(url);onSuccess();
+    });
+  } else {
+    fallbackCopy(url);onSuccess();
+  }
+}
+function fallbackCopy(text){
+  var ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.left="-9999px";
+  document.body.appendChild(ta);ta.select();try{document.execCommand("copy");}catch(e){}document.body.removeChild(ta);
+}
 
 // ============================================================
 // ORDERS APP
