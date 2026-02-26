@@ -1,0 +1,2707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>El Toro</title>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<style>
+:root {
+  --primary:#26C6DA; --primary-dim:#0d3a40; --primary-glow:rgba(38,198,218,0.3); --primary-text:#26C6DA;
+  --accent:#FF9800; --accent-glow:rgba(255,152,0,0.3);
+  --gold:#FFD54F; --green:#4caf50; --red:#ef5350;
+  --dark-bg:#0a1214; --card-bg:#0d1a1e; --card-border:#1a2e34;
+  --surface:#111a1e; --gray:#1a2a2e; --mid:#2a3a3e; --text-gray:#7a9a9e;
+  --white:#fff; --black:#0a1214;
+  --nav-h:65px; --top-h:60px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;margin:0;padding:0;}
+#customer-app{height:100%;position:relative;}
+body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;height:100%;}
+
+/* TOPBAR */
+.topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);background:linear-gradient(180deg,#0d1a1e 0%,#0a1214 100%);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;border-bottom:2px solid var(--primary-dim);box-shadow:0 2px 20px rgba(0,0,0,0.5);}
+.logo-text{font-family:"Black Ops One",cursive;font-size:20px;color:#fff;}
+.logo-text em{color:var(--primary);font-style:normal;text-shadow:0 0 20px var(--primary-glow);}
+.emp-btn{background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;border:none;border-radius:22px;padding:9px 16px;font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 2px 12px var(--primary-glow);}
+
+/* BOTTOM NAV */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:linear-gradient(0deg,#0d1a1e 0%,#0a1214 100%);display:flex;z-index:1000;border-top:1px solid var(--card-border);box-shadow:0 -2px 20px rgba(0,0,0,0.5);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#4a6a6e;transition:color 0.2s;border:none;background:none;position:relative;}
+.nav-item.active{color:var(--primary);}
+.nav-icon{font-size:22px;}
+.nav-label{font-size:10px;font-weight:800;letter-spacing:0.5px;text-transform:uppercase;}
+.nav-badge{position:absolute;top:6px;right:calc(50% - 18px);background:var(--accent);color:#000;border-radius:99px;font-size:10px;font-weight:800;padding:1px 5px;min-width:16px;text-align:center;}
+
+/* CUSTOMER PAGES */
+.page{
+  display:none;
+  position:fixed;
+  top:var(--top-h);
+  bottom:var(--nav-h);
+  left:0;right:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:14px 0 20px;
+  box-sizing:border-box;
+}
+.page.active{display:block;}
+
+/* HERO */
+.hero{margin:8px 12px 12px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#0a1a20,#0d2a32,#0a2028);border:1px solid var(--card-border);padding:20px;display:flex;align-items:center;justify-content:space-between;position:relative;}
+.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(38,198,218,0.08) 0%,transparent 70%);border-radius:50%;}
+.hero-text h1{font-family:"Black Ops One",cursive;color:var(--primary);font-size:28px;line-height:1;text-shadow:0 0 30px var(--primary-glow);}
+.hero-text p{color:#8ab8be;font-size:13px;margin-top:6px;font-weight:600;line-height:1.4;}
+.hero-bull{font-size:64px;filter:drop-shadow(0 0 16px var(--primary-glow));}
+
+/* DATES */
+.dates-card{margin:0 12px 12px;background:var(--card-bg);border-radius:14px;padding:14px 16px;border-left:4px solid var(--primary);}
+.dates-title{font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+.dates-row{display:flex;gap:24px;}
+.date-item-label{font-size:10px;color:var(--text-gray);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.date-item-val{font-size:16px;font-weight:800;color:#fff;margin-top:2px;}
+
+/* CAT TABS */
+.cat-scroll{display:flex;gap:8px;padding:0 12px 12px;overflow-x:auto;scrollbar-width:none;}
+.cat-scroll::-webkit-scrollbar{display:none;}
+.cat-tab{flex-shrink:0;padding:8px 16px;border-radius:20px;border:1.5px solid var(--card-border);background:var(--card-bg);color:var(--text-gray);font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;cursor:pointer;white-space:nowrap;transition:all 0.2s;}
+.cat-tab.active{background:var(--primary);border-color:var(--primary);color:#000;box-shadow:0 2px 12px var(--primary-glow);}
+
+/* PRODUCT GRID */
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px;}
+.product-card{background:var(--card-bg);border-radius:14px;overflow:hidden;border:1px solid var(--card-border);transition:transform 0.15s,box-shadow 0.15s;}
+.product-card:active{transform:scale(0.97);}
+.product-photo{width:100%;height:160px;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:52px;}
+.product-photo img{width:100%;height:100%;object-fit:contain;background:var(--surface);padding:4px;}
+.product-info{padding:10px 12px 12px;}
+.product-name{font-size:14px;font-weight:800;}
+.product-price{font-size:17px;font-weight:800;color:var(--primary);margin-top:2px;text-shadow:0 0 12px var(--primary-glow);}
+.product-unit{font-size:11px;color:var(--text-gray);font-weight:600;}
+.qty-row{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--mid);background:transparent;color:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:800;}
+.qty-num{font-size:15px;font-weight:800;min-width:20px;text-align:center;}
+.add-btn{width:100%;margin-top:8px;background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;border:none;border-radius:8px;padding:9px;font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 2px 12px var(--primary-glow);}
+.sold-out-badge{width:100%;margin-top:8px;background:var(--gray);color:var(--text-gray);border:none;border-radius:8px;padding:9px;font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;text-align:center;}
+
+/* CART FLOAT */
+.cart-float{position:fixed;bottom:calc(var(--nav-h)+8px);left:12px;right:12px;background:linear-gradient(135deg,var(--primary),#1aa8b8);border-radius:14px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;z-index:900;box-shadow:0 4px 24px var(--primary-glow);transition:background 0.3s;color:#000;}
+.cart-float.ready{background:linear-gradient(135deg,#43a047,#2e7d32);}
+.cart-float.hidden{display:none;}
+.cf-bar-wrap{flex:1;margin:0 12px;background:rgba(0,0,0,0.2);border-radius:99px;height:6px;}
+.cf-bar-fill{height:100%;background:#fff;border-radius:99px;transition:width 0.3s;}
+
+/* CART */
+.cart-inner{padding:0 12px;}
+.page-title{font-family:"Black Ops One",cursive;font-size:22px;padding:0 12px 12px;}
+.deadline-notice{background:var(--primary-dim);border:1px solid var(--primary);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:700;color:var(--primary);}
+.cart-item{background:var(--card-bg);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--card-border);}
+.ci-emoji{font-size:30px;margin-right:12px;flex-shrink:0;}
+.ci-photo{width:50px;height:50px;border-radius:8px;object-fit:cover;margin-right:12px;flex-shrink:0;}
+.ci-name{font-size:14px;font-weight:800;}
+.ci-price{font-size:13px;color:var(--primary);font-weight:700;margin-top:2px;}
+.ci-controls{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ci-qty-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--mid);background:transparent;color:#fff;font-size:16px;cursor:pointer;}
+.ci-qty{font-size:15px;font-weight:800;min-width:20px;text-align:center;}
+.cart-empty{text-align:center;padding:60px 20px;}
+.min-warning{background:#1a1a00;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin:12px 0;font-size:13px;font-weight:700;color:var(--gold);}
+.order-total-card{background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--card-border);}
+.ot-row{display:flex;justify-content:space-between;margin-bottom:8px;}
+.ot-row:last-child{margin:0;border-top:1px solid var(--card-border);padding-top:8px;}
+.ot-label{font-size:14px;color:var(--text-gray);font-weight:700;}
+.ot-val{font-size:14px;font-weight:800;}
+.ot-total{font-size:20px;font-weight:800;color:var(--primary);text-shadow:0 0 12px var(--primary-glow);}
+.customer-form{background:var(--card-bg);border-radius:12px;padding:16px;margin-bottom:12px;border:1px solid var(--card-border);}
+.customer-form h3{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-gray);margin-bottom:12px;}
+.form-input{width:100%;padding:12px 14px;border:1.5px solid var(--mid);border-radius:10px;background:var(--surface);color:#fff;font-family:"Nunito",sans-serif;font-size:15px;font-weight:700;margin-bottom:10px;outline:none;}
+.form-input:focus{border-color:var(--primary);}
+.submit-btn{width:100%;padding:16px;border:none;border-radius:12px;font-family:"Nunito",sans-serif;font-size:16px;font-weight:800;cursor:pointer;}
+.submit-btn.locked{background:var(--gray);color:var(--text-gray);}
+.submit-btn.ready{background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;box-shadow:0 4px 20px var(--primary-glow);}
+
+/* BOARD */
+.arrival-banner{background:linear-gradient(135deg,#0d1a1e,#0a2028);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin:0 12px 12px;text-align:center;position:relative;overflow:hidden;}
+.arrival-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(38,198,218,0.06) 0%,transparent 70%);}
+.ab-label{font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:1px;position:relative;}
+.ab-text{font-family:"Black Ops One",cursive;font-size:18px;color:#fff;margin-top:4px;line-height:1.3;position:relative;}
+.progress-card{background:var(--card-bg);border-radius:14px;padding:18px;margin:0 12px 12px;border:1px solid var(--card-border);}
+.pc-count{font-family:"Black Ops One",cursive;font-size:40px;color:var(--primary);line-height:1;text-shadow:0 0 20px var(--primary-glow);}
+.pc-bar-wrap{background:var(--gray);border-radius:99px;height:10px;margin:10px 0;overflow:hidden;}
+.pc-bar-fill{height:100%;background:linear-gradient(90deg,var(--primary),#1aa8b8);border-radius:99px;transition:width 0.5s;box-shadow:0 0 10px var(--primary-glow);}
+.pc-status{font-size:14px;font-weight:700;color:var(--text-gray);}
+.pc-status.ready{color:var(--gold);}
+.slot-item{background:var(--card-bg);border-radius:10px;padding:12px 16px;margin:0 12px 8px;display:flex;align-items:center;gap:12px;border:1px solid var(--card-border);}
+.slot-num{font-family:"Black Ops One",cursive;font-size:18px;color:var(--primary);min-width:36px;}
+
+/* QR */
+.qr-inner{display:flex;flex-direction:column;align-items:center;padding:30px 20px;}
+.qr-inner h2{font-family:"Black Ops One",cursive;font-size:26px;margin-bottom:6px;}
+#qr-box{background:#fff;padding:20px;border-radius:16px;}
+.qr-link{margin-top:16px;font-size:13px;font-weight:700;color:var(--primary);word-break:break-all;text-align:center;max-width:300px;}
+.qr-action-btn{margin-top:10px;padding:12px 28px;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-weight:800;font-size:14px;cursor:pointer;}
+
+/* LOGIN */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:2000;align-items:center;justify-content:center;padding:20px;}
+.overlay.active{display:flex;}
+.login-card{background:var(--card-bg);border-radius:20px;padding:28px 24px;width:100%;max-width:340px;border:1px solid var(--card-border);position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.6);}
+.login-card h2{font-family:"Black Ops One",cursive;font-size:22px;margin-bottom:4px;}
+.login-card p{color:var(--text-gray);font-size:13px;font-weight:600;margin-bottom:16px;}
+.close-btn{position:absolute;top:14px;right:14px;background:var(--gray);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:14px;cursor:pointer;}
+.gate-input{width:100%;padding:14px;border:1.5px solid var(--mid);border-radius:10px;background:var(--surface);color:#fff;font-family:"Nunito",sans-serif;font-size:16px;font-weight:700;margin-bottom:10px;outline:none;text-align:center;letter-spacing:4px;}
+.gate-input:focus{border-color:var(--primary);}
+.gate-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 2px 12px var(--primary-glow);}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.role-btn{padding:16px 8px;border:1.5px solid var(--mid);border-radius:12px;background:transparent;color:var(--text-gray);font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;cursor:pointer;text-align:center;transition:all 0.2s;line-height:1.4;}
+.role-btn.selected{border-color:var(--primary);background:var(--primary-dim);color:#fff;}
+.login-pw-input{width:100%;padding:12px 14px;border:1.5px solid var(--mid);border-radius:10px;background:var(--surface);color:#fff;font-family:"Nunito",sans-serif;font-size:15px;font-weight:700;margin-bottom:10px;outline:none;}
+.login-pw-input:focus{border-color:var(--primary);}
+.login-go-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 2px 12px var(--primary-glow);}
+.login-err{color:#ff6666;font-size:13px;font-weight:700;margin-top:8px;display:none;}
+.worker-name-input{width:100%;padding:12px 14px;border:1.5px solid var(--primary);border-radius:10px;background:var(--surface);color:#fff;font-family:"Nunito",sans-serif;font-size:15px;font-weight:700;margin-bottom:10px;outline:none;}
+
+/* DASH SHARED */
+.dash-app{display:none;position:fixed;inset:0;background:var(--dark-bg);z-index:500;}
+.dash-app.active{display:block;}
+.dash-topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
+.orders-topbar{background:linear-gradient(180deg,#0d1a2a,#0a1220);border-bottom:2px solid #1565C0;}
+.admin-topbar{background:linear-gradient(180deg,#1a1014,#140a0e);border-bottom:2px solid #ef5350;}
+.inv-topbar{background:linear-gradient(180deg,#0a1a0e,#081408);border-bottom:2px solid #4caf50;}
+.ops-topbar{background:linear-gradient(180deg,#1a1400,#140e00);border-bottom:2px solid var(--gold);}
+.dash-brand{display:flex;align-items:center;gap:8px;}
+.dash-role{font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;}
+.orders-topbar .dash-role{background:#1565C0;color:#fff;}
+.admin-topbar .dash-role{background:#ef5350;color:#fff;}
+.inv-topbar .dash-role{background:#4caf50;color:#fff;}
+.ops-topbar .dash-role{background:var(--gold);color:#000;}
+.worker-name-badge{font-size:11px;font-weight:800;color:var(--primary);background:rgba(38,198,218,0.1);padding:3px 8px;border-radius:8px;border:1px solid rgba(38,198,218,0.2);}
+.logout-btn{background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:14px;padding:6px 14px;font-family:"Nunito",sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
+.dash-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);display:flex;z-index:1000;box-shadow:0 -2px 20px rgba(0,0,0,0.4);}
+.orders-nav{background:#0a1220;border-top:1px solid #1a2a3a;}
+.admin-nav{background:#140a0e;border-top:1px solid #2a1a1e;}
+.inv-nav{background:#081408;border-top:1px solid #1a2a1a;}
+.ops-nav{background:#140e00;border-top:1px solid #2a2200;}
+.d-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#4a5a5e;transition:color 0.2s;border:none;background:none;position:relative;}
+.orders-nav .d-nav-item.active{color:#4fc3f7;}
+.admin-nav .d-nav-item.active{color:#ef5350;}
+.inv-nav .d-nav-item.active{color:#66bb6a;}
+.ops-nav .d-nav-item.active{color:var(--gold);}
+.d-page{
+  display:none;
+  position:fixed;
+  top:var(--top-h);
+  bottom:var(--nav-h);
+  left:0;right:0;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  padding:14px 0 30px;
+  box-sizing:border-box;
+}
+.d-page.active{display:block;}
+
+/* CARDS */
+.card{background:var(--card-bg);border-radius:14px;padding:16px;margin:0 12px 12px;border:1px solid var(--card-border);}
+.card h3{font-size:13px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--text-gray);margin-bottom:12px;}
+.a-input{width:100%;padding:11px 14px;border:1.5px solid var(--mid);border-radius:10px;background:var(--surface);color:#fff;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;margin-bottom:10px;outline:none;}
+.a-input:focus{border-color:var(--primary);}
+.a-btn{padding:10px 18px;background:var(--primary);color:#000;border:none;border-radius:8px;font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;cursor:pointer;margin-right:6px;margin-bottom:6px;}
+.a-btn.green{background:#4caf50;}
+.a-btn.blue{background:#1565C0;color:#fff;}
+.a-btn.gold{background:var(--gold);color:#000;}
+.a-btn.gray{background:var(--mid);}
+
+/* STATS */
+.stats-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:0 12px 12px;}
+.stat-card{background:var(--card-bg);border-radius:12px;padding:14px 10px;text-align:center;border:1px solid var(--card-border);}
+.stat-val{font-family:"Black Ops One",cursive;font-size:22px;color:var(--primary);}
+.stat-label{font-size:10px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
+
+/* ORDER CARDS */
+.order-card{background:var(--card-bg);border-radius:14px;padding:16px;margin:0 12px 12px;border:1px solid var(--card-border);transition:border 0.3s;}
+.oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.oc-num{font-family:"Black Ops One",cursive;font-size:22px;color:var(--primary);}
+.oc-name{font-size:16px;font-weight:800;}
+.oc-phone{font-size:13px;color:var(--text-gray);font-weight:600;}
+.oc-time{font-size:11px;color:var(--text-gray);font-weight:600;margin-top:2px;}
+.oc-worker{font-size:11px;color:var(--gold);font-weight:800;margin-top:2px;}
+.status-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;text-transform:uppercase;}
+.badge-new{background:#1a2a00;color:var(--gold);}
+.badge-confirmed{background:#0d1a2a;color:#4fc3f7;}
+.badge-packing{background:#0d1a2a;color:#64b5f6;}
+.badge-done{background:#0a1a0a;color:#66bb6a;}
+.badge-delivered{background:#0a2a0a;color:#81c784;}
+.oc-items{margin-bottom:12px;}
+.oc-item-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--gray);}
+.oc-item-row:last-child{border-bottom:none;}
+.oci-check{width:20px;height:20px;border-radius:4px;border:2px solid var(--mid);cursor:pointer;accent-color:#4caf50;flex-shrink:0;}
+.oci-name{font-size:14px;font-weight:700;flex:1;}
+.oci-qty{font-size:12px;color:var(--text-gray);font-weight:600;}
+.oc-total{font-size:15px;font-weight:800;color:var(--primary);margin-bottom:10px;}
+.take-btn{width:100%;padding:12px;background:#1565C0;color:#fff;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-weight:800;font-size:14px;cursor:pointer;}
+.pack-btn{width:100%;padding:12px;background:#4caf50;color:#fff;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-weight:800;font-size:14px;cursor:pointer;}
+
+/* PRODUCT ROW */
+.prod-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray);}
+.prod-row:last-child{border-bottom:none;}
+.prod-row-photo{width:50px;height:50px;border-radius:8px;background:var(--gray);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden;}
+.prod-row-photo img{width:100%;height:100%;object-fit:cover;}
+.prod-row-info{flex:1;}
+.prod-row-name{font-size:14px;font-weight:800;}
+.prod-row-sub{font-size:12px;color:var(--text-gray);font-weight:600;margin-top:2px;}
+.pr-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.pr-btn{padding:5px 10px;border:none;border-radius:6px;font-family:"Nunito",sans-serif;font-weight:800;font-size:11px;cursor:pointer;}
+.pr-edit{background:#0d1a2a;color:#4fc3f7;}
+.pr-del{background:#2a0a0a;color:#ff6666;}
+.pr-hide{background:#2a2a00;color:var(--gold);}
+.pr-sold{background:#0a1a0a;color:#66bb6a;}
+
+/* STOCK */
+.stock-item{background:var(--card-bg);border-radius:12px;padding:14px 16px;margin:0 12px 8px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--card-border);}
+.stock-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;margin-right:10px;}
+.stock-green{background:#4caf50;}
+.stock-yellow{background:var(--gold);}
+.stock-red{background:#ef5350;}
+.restock-btn{padding:6px 12px;background:#0a1a0a;color:#66bb6a;border:none;border-radius:8px;font-family:"Nunito",sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
+
+/* PHOTO UPLOAD */
+.photo-options{display:flex;gap:8px;margin-bottom:10px;}
+.photo-opt-btn{flex:1;padding:9px;border:1.5px solid var(--mid);border-radius:8px;background:transparent;color:var(--text-gray);font-family:"Nunito",sans-serif;font-weight:800;font-size:12px;cursor:pointer;text-align:center;}
+.photo-opt-btn.active-opt{border-color:var(--primary);color:#fff;background:var(--primary-dim);}
+.photo-upload-area{width:100%;height:280px;border:2px dashed var(--mid);border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;margin-bottom:10px;background:var(--surface);position:relative;overflow:hidden;}
+.photo-upload-area img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;border-radius:10px;background:var(--surface);}
+.photo-upload-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.photo-upload-label{font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-top:6px;}
+
+/* TRIP */
+.trip-card{background:var(--card-bg);border-radius:14px;padding:16px;margin:0 12px 12px;border:1px solid var(--card-border);}
+.trip-profit{font-family:"Black Ops One",cursive;font-size:26px;}
+.profit-pos{color:#4caf50;}
+.profit-neg{color:#ef5350;}
+
+/* WORKER ROW */
+.worker-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--gray);}
+.worker-row:last-child{border-bottom:none;}
+.worker-info .worker-name-label{font-size:15px;font-weight:800;}
+.worker-info .worker-role-label{font-size:12px;color:var(--text-gray);font-weight:600;margin-top:2px;}
+.worker-info .worker-pay-label{font-size:12px;color:var(--gold);font-weight:700;margin-top:1px;}
+
+/* EXPENSE/INCOME ROWS */
+.ledger-item{background:var(--card-bg);border-radius:12px;padding:14px 16px;margin:0 12px 8px;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--card-border);}
+.ledger-label{font-size:14px;font-weight:800;}
+.ledger-sub{font-size:12px;color:var(--text-gray);font-weight:600;margin-top:2px;}
+.ledger-amount{font-size:18px;font-weight:800;}
+.ledger-in{color:#4caf50;}
+.ledger-out{color:#ef5350;}
+
+/* SEARCH */
+.search-wrap{padding:0 12px;margin-bottom:12px;}
+.search-input{width:100%;padding:11px 14px;border:1.5px solid var(--card-border);border-radius:10px;background:var(--card-bg);color:#fff;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;outline:none;}
+.search-input:focus{border-color:var(--primary);}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:50px 20px;}
+.empty-state .ei{font-size:52px;}
+.empty-state p{font-size:15px;font-weight:700;color:var(--text-gray);margin-top:12px;}
+.sec-title{font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1.5px;padding:0 16px;margin-bottom:10px;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2500;align-items:flex-end;justify-content:center;}
+.modal-overlay.active{display:flex;}
+.modal-card{background:var(--card-bg);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:500px;border:1px solid var(--card-border);border-bottom:none;max-height:90vh;overflow-y:auto;}
+.modal-card h3{font-family:"Black Ops One",cursive;font-size:20px;margin-bottom:16px;}
+.modal-close{float:right;background:var(--gray);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:14px;cursor:pointer;}
+
+
+.delivery-topbar{background:linear-gradient(180deg,#1a1400,#140e00);border-bottom:2px solid #FF9800;}
+.delivery-nav{background:#140e00;border-top:1px solid #2a2200;}
+.delivery-nav .d-nav-item.active{color:#FF9800;}
+.pickup-card{background:var(--card-bg);border-radius:14px;padding:16px;margin:0 12px 10px;border:1px solid var(--card-border);transition:all 0.3s;}
+.pickup-card.picked-up{border-color:#4caf50;background:#0a1a0a;opacity:0.7;}
+.pickup-card.no-show{border-color:#ff4444;background:#1a0000;opacity:0.7;}
+
+/* TOAST */
+.toast{position:fixed;bottom:calc(var(--nav-h)+16px);left:50%;transform:translateX(-50%) scale(0.9);background:#0a2a1a;color:#4caf50;padding:14px 24px;border-radius:14px;font-size:15px;font-weight:800;z-index:5000;opacity:0;transition:all 0.3s;pointer-events:none;white-space:nowrap;border:2px solid #4caf50;box-shadow:0 4px 24px rgba(76,175,80,0.4);}
+.toast.show{opacity:1;transform:translateX(-50%) scale(1);}
+input[type="checkbox"]:checked+span{background:#4caf50!important;}
+input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
+
+/* SUMMARY DASHBOARD */
+.summary-big{background:var(--card-bg);border-radius:14px;padding:20px;margin:0 12px 12px;border:1px solid var(--card-border);text-align:center;}
+.summary-profit{font-family:"Black Ops One",cursive;font-size:48px;line-height:1;}
+.summary-label{font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-top:6px;}
+.summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 12px 12px;}
+.summary-tile{background:var(--card-bg);border-radius:12px;padding:16px;border:1px solid var(--card-border);text-align:center;}
+.summary-tile-val{font-family:"Black Ops One",cursive;font-size:24px;}
+.summary-tile-label{font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:0.5px;margin-top:4px;}
+</style>
+</head>
+<body>
+
+<!-- CUSTOMER APP -->
+<div id="customer-app">
+  <div class="topbar">
+    <div class="logo-text">EL <em>TORO</em> 🐂</div>
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div style="display:flex;gap:4px;background:#1a1a1a;border-radius:20px;padding:4px;">
+        <button id="lang-en" onclick="setLang('en')" style="background:none;border:2px solid var(--red);border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;padding:0;">🇺🇸</button>
+        <button id="lang-es" onclick="setLang('es')" style="background:none;border:2px solid transparent;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;padding:0;opacity:0.5;">🇲🇽</button>
+      </div>
+      <button class="emp-btn" onclick="openLogin()">👤 <span id="emp-btn-label">Employees</span></button>
+    </div>
+  </div>
+  <div class="page active" id="page-shop">
+    <div class="hero">
+      <div class="hero-text"><h1 id="hero-title">SHOP NOW!</h1><p id="hero-sub">Order before the deadline and we'll deliver to you!</p></div>
+      <div class="hero-bull">🐂</div>
+    </div>
+    <div class="dates-card">
+      <div class="dates-title">📅 Important Dates</div>
+      <div class="dates-row">
+        <div><div class="date-item-label" id="shop-deadline-label">Order Deadline</div><div class="date-item-val" id="deadline-val">Not set</div></div>
+        <div><div class="date-item-label" id="shop-delivery-label">Delivery Date</div><div class="date-item-val" id="delivery-val">Not set</div></div>
+      </div>
+    </div>
+    <div class="cat-scroll" id="cat-tabs"></div>
+    <div class="sec-title" id="available-items-label">Available Items</div>
+    <div class="product-grid" id="product-grid"></div>
+    <div style="height:80px;"></div>
+  </div>
+  <div class="page" id="page-cart">
+    <div class="cart-inner">
+      <div class="page-title">🛒 Your Cart</div>
+      <div class="deadline-notice" id="cart-deadline-notice" style="display:none;"></div>
+      <div id="cart-body"></div>
+    </div>
+  </div>
+  <div class="page" id="page-board">
+    <div id="order-confirm-msg" style="display:none;"></div>
+    <div class="page-title" id="board-title">📋 Order Board</div>
+    <div class="arrival-banner"><div class="ab-label">🐂 El Toro Delivery</div><div class="ab-text" id="arrival-text">Date & location coming soon!</div></div>
+    <div class="progress-card">
+      <div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;" id="orders-month-label">Orders This Month</div>
+      <div class="pc-count"><span id="order-count">0</span><span style="font-size:20px;color:var(--text-gray);"> / <span id="min-count">50</span></span></div>
+      <div class="pc-bar-wrap"><div class="pc-bar-fill" id="pc-fill" style="width:0%"></div></div>
+      <div class="pc-status" id="pc-status">Need 50 orders to make the trip!</div>
+    </div>
+    <div class="sec-title" id="customer-slots-label">Customer Slots</div>
+    <div id="board-slots"></div>
+  </div>
+  <div class="page" id="page-qr">
+    <div class="qr-inner">
+      <h2>Share El Toro! 🐂</h2>
+      <p style="color:var(--text-gray);font-size:14px;font-weight:600;margin-bottom:24px;text-align:center;">Scan or share this QR code so friends can order too!</p>
+      <div id="qr-box"></div>
+      <div class="qr-link" id="qr-url"></div>
+      <button class="qr-action-btn" style="background:var(--primary);color:#000;margin-top:16px;" onclick="shareApp()">📤 Share Link</button>
+      <button class="qr-action-btn" style="background:var(--card-bg);color:#fff;border:1px solid #444;margin-top:10px;" onclick="copyLink()">📋 Copy Link</button>
+    </div>
+  </div>
+  <div class="cart-float hidden" id="cart-float">
+    <div><div style="font-size:14px;font-weight:800;color:#fff;" id="cf-count">0 items</div><div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;margin-top:1px;" id="cf-min">Need 8 minimum</div></div>
+    <div class="cf-bar-wrap"><div class="cf-bar-fill" id="cf-bar" style="width:0%"></div></div>
+    <div style="font-size:18px;">🛒</div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-item active" onclick="showPage('shop',this)"><span class="nav-icon">🛍️</span><span class="nav-label" id="nav-shop">Shop</span></button>
+    <button class="nav-item" onclick="showPage('cart',this)"><span class="nav-icon">🛒</span><span class="nav-label" id="nav-cart">Cart</span><span class="nav-badge" id="cart-badge" style="display:none">0</span></button>
+    <button class="nav-item" onclick="showPage('board',this)"><span class="nav-icon">📋</span><span class="nav-label" id="nav-board">Track</span></button>
+    <button class="nav-item" onclick="showPage('qr',this)"><span class="nav-icon">📱</span><span class="nav-label" id="nav-qr">QR</span></button>
+  </div>
+</div>
+
+<!-- LOGIN OVERLAY -->
+<div class="overlay" id="login-overlay">
+  <div class="login-card">
+    <button class="close-btn" onclick="closeLogin()">✕</button>
+    <div id="login-gate-view">
+      <h2>Employee Access</h2>
+      <p>Enter master code to continue</p>
+      <input class="gate-input" id="gate-pw" type="password" placeholder="••••" maxlength="10"/>
+      <button class="gate-btn" onclick="checkGate()">Continue →</button>
+      <div class="login-err" id="gate-err">Wrong code. Try again.</div>
+    </div>
+    <div id="login-role-view" style="display:none;">
+      <h2>Choose Role</h2>
+      <p>Select your role then enter your password</p>
+      <div class="role-grid">
+        <button class="role-btn" id="role-orders" onclick="selectRole('orders')">📦<br>Orders</button>
+        <button class="role-btn" id="role-admin" onclick="selectRole('admin')">👑<br>Admin</button>
+        <button class="role-btn" id="role-inventory" onclick="selectRole('inventory')">🗄️<br>Inventory</button>
+        <button class="role-btn" id="role-operations" onclick="selectRole('operations')">⚙️<br>Operations</button>
+        <button class="role-btn" id="role-delivery" onclick="selectRole('delivery')" style="grid-column:span 2;">🚚<br>Delivery</button>
+      </div>
+      <div id="worker-name-wrap" style="display:none;">
+        <input class="worker-name-input" id="login-worker-name" type="text" placeholder="Your name (e.g. Maria)"/>
+      </div>
+      <input class="login-pw-input" id="login-pw" type="password" placeholder="Enter your password"/>
+      <button class="login-go-btn" onclick="doLogin()">Login →</button>
+      <div class="login-err" id="login-err">Wrong password. Try again.</div>
+      <div class="login-err" id="login-auth-err">⛔ Not authorized. Ask Admin to add you.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ORDERS APP -->
+<div class="dash-app" id="orders-app">
+  <div class="dash-topbar orders-topbar">
+    <div class="dash-brand">
+      <span class="logo-text">EL <em style="color:#4fc3f7;">TORO</em></span>
+      <span class="dash-role">Orders</span>
+      <span class="worker-name-badge" id="orders-worker-name"></span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+  <div class="d-page active" id="o-page-orders">
+    <div class="page-title">All Orders</div>
+    <div class="stats-bar" id="o-stats"></div>
+    <div class="search-wrap"><input class="search-input" id="o-search" placeholder="🔍 Search by name..." oninput="renderOrdersTab()"/></div>
+    <div id="o-orders-list"></div>
+  </div>
+  <div class="d-page" id="o-page-done">
+    <div class="page-title">Completed Orders</div>
+    <div class="stats-bar" id="o-done-stats"></div>
+    <div id="o-done-list"></div>
+  </div>
+
+  <div class="dash-nav orders-nav">
+    <button class="d-nav-item active" onclick="showDPage('o','orders',this)"><span class="nav-icon">📦</span><span class="nav-label">Orders</span><span class="nav-badge" id="o-badge" style="display:none">0</span></button>
+    <button class="d-nav-item" onclick="showDPage('o','done',this)"><span class="nav-icon">✅</span><span class="nav-label">Done</span></button>
+
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div class="dash-app" id="admin-app">
+  <div class="dash-topbar admin-topbar">
+    <div class="dash-brand"><span class="logo-text">EL <em>TORO</em></span><span class="dash-role">Admin</span></div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+  <div class="d-page active" id="a-page-delivery">
+    <div class="page-title">Delivery</div>
+    <div class="card">
+      <h3>📅 Set Dates</h3>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Order Deadline</label>
+      <input class="a-input" id="set-deadline" type="datetime-local" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Delivery Date & Time</label>
+      <input class="a-input" id="set-delivery-dt" type="datetime-local" style="margin-top:4px;"/>
+      <input class="a-input" id="set-address" type="text" placeholder="Delivery address"/>
+      <input class="a-input" id="set-notes" type="text" placeholder="Notes (optional)"/>
+      <button class="a-btn" onclick="saveDelivery(this)">Save Delivery Info</button>
+    </div>
+    <div class="card">
+      <h3>📋 Hero Banner</h3>
+      <input class="a-input" id="set-hero-title" type="text" placeholder="Hero title"/>
+      <input class="a-input" id="set-hero-sub" type="text" placeholder="Hero subtitle"/>
+      <button class="a-btn" onclick="saveHero(this)">Save Banner</button>
+    </div>
+    <div class="card">
+      <h3>⚙️ Trip Settings</h3>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Min Orders for Trip</label>
+      <input class="a-input" id="set-min-orders" type="number" placeholder="50" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Min Items Per Order</label>
+      <input class="a-input" id="set-min-items" type="number" placeholder="8" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Cycle Mode</label>
+      <select class="a-input" id="set-cycle-mode" style="margin-top:4px;"><option value="weekly">Weekly</option><option value="monthly">Monthly</option></select>
+      <button class="a-btn" onclick="saveTripSettings(this)">Save Settings</button>
+    </div>
+
+    <div class="card">
+      <h3>💰 Deposit Requirement</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <span style="font-size:14px;font-weight:800;">Require deposit before order confirms</span>
+        <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
+          <input type="checkbox" id="deposit-toggle" onchange="toggleDeposit()" style="opacity:0;width:0;height:0;"/>
+          <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;"></span>
+          <span class="deposit-knob" style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;"></span>
+        </label>
+      </div>
+      <div id="deposit-fields" style="display:none;">
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Deposit Amount ($)</label>
+        <input class="a-input" id="set-deposit-amount" type="number" step="0.01" placeholder="50" style="margin-top:4px;"/>
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Zelle Account Name</label>
+        <input class="a-input" id="set-deposit-name" type="text" placeholder="Full name" style="margin-top:4px;"/>
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Zelle Phone or Email</label>
+        <input class="a-input" id="set-deposit-zelle" type="text" placeholder="Phone number or email" style="margin-top:4px;"/>
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Zelle QR Code</label>
+        <p style="font-size:12px;color:var(--text-gray);font-weight:600;margin:4px 0 8px;">Screenshot your Zelle QR code from your bank app and upload it here.</p>
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <button class="a-btn gray" style="flex:1;font-size:12px;" onclick="document.getElementById('zelle-qr-camera').click()">📸 Camera</button>
+          <button class="a-btn gray" style="flex:1;font-size:12px;" onclick="document.getElementById('zelle-qr-gallery').click()">🖼️ Gallery</button>
+        </div>
+        <input type="file" id="zelle-qr-camera" accept="image/*" capture="environment" style="display:none;" onchange="uploadZelleQR(this)"/>
+        <input type="file" id="zelle-qr-gallery" accept="image/*" style="display:none;" onchange="uploadZelleQR(this)"/>
+        <div id="zelle-qr-preview" style="display:none;width:100%;max-width:200px;margin:0 auto 10px;border-radius:12px;overflow:hidden;border:2px solid #333;">
+          <img id="zelle-qr-img" src="" style="width:100%;display:block;"/>
+        </div>
+        <button class="a-btn gray" id="zelle-qr-remove" style="display:none;font-size:12px;margin-bottom:10px;" onclick="removeZelleQR()">Remove QR Code</button>
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Instructions (optional)</label>
+        <input class="a-input" id="set-deposit-note" type="text" placeholder="e.g. Put your name in the Zelle memo" style="margin-top:4px;"/>
+        <button class="a-btn" onclick="saveDeposit(this)">Save Deposit Settings</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>📊 Google Sheets Sync</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Orders auto-save when placed. Use this to manually sync all current orders.</p>
+      <button class="a-btn blue" onclick="syncAllOrdersToSheets()">📊 Sync All Orders to Sheets</button>
+    </div>
+    <div class="card">
+      <h3>🔄 Reset Month</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Saves this cycle then clears all orders.</p>
+      <button class="a-btn gray" onclick="resetMonth()">Reset Cycle</button>
+    </div>
+  </div>
+  <div class="d-page" id="a-page-workers">
+    <div class="page-title">Workers</div>
+    <div class="card">
+      <h3>➕ Add Worker</h3>
+      <input class="a-input" id="new-worker-name" type="text" placeholder="Worker name"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Assign Roles</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;">
+        <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-orders" value="Orders"/> 📦 Orders</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-inventory" value="Inventory"/> 🗄️ Inventory</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-operations" value="Operations"/> 💰 Operations</label>
+        <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-delivery" value="Delivery"/> 🚚 Delivery</label>
+      </div>
+      <input class="a-input" id="new-worker-pay" type="number" step="0.01" placeholder="Pay per trip ($)"/>
+      <button class="a-btn" onclick="addWorker(this)">Add Worker</button>
+    </div>
+    <div class="card"><h3>👷 Worker List</h3><div id="worker-list"></div></div>
+    <div class="card">
+      <h3>🔑 Change Passwords</h3>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Master Gate</label>
+      <input class="a-input" id="new-gate-pass" type="text" placeholder="New master password" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Orders Password</label>
+      <input class="a-input" id="new-o-pass" type="text" placeholder="New orders password" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Admin Password</label>
+      <input class="a-input" id="new-a-pass" type="text" placeholder="New admin password" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Inventory Password</label>
+      <input class="a-input" id="new-i-pass" type="text" placeholder="New inventory password" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Operations Password</label>
+      <input class="a-input" id="new-ops-pass" type="text" placeholder="New operations password" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Delivery Password</label>
+      <input class="a-input" id="new-del-pass" type="text" placeholder="New delivery password" style="margin-top:4px;"/>
+      <button class="a-btn" onclick="savePasswords(this)">Save Passwords</button>
+    </div>
+  </div>
+  <div class="d-page" id="a-page-settings">
+    <div class="page-title">Settings</div>
+
+    <div class="card">
+      <h3>🖼️ SHOP NOW BANNER EMOJI</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">The big emoji shown on the right side of the Shop Now banner. Leave empty to remove it.</p>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input class="a-input" id="set-banner-emoji" type="text" placeholder="Emoji" maxlength="4" style="margin-bottom:0;flex:1;"/>
+        <button class="a-btn gray" onclick="document.getElementById('set-banner-emoji').value='';showToast('Cleared!');" style="margin:0;">Clear</button>
+      </div>
+      <button class="a-btn" onclick="saveBannerEmoji(this)">Save Banner Emoji</button>
+    </div>
+
+    <div class="card">
+      <h3>📛 BUSINESS NAME</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Name shown on the top left. Add an emoji next to it or leave emoji blank to remove it.</p>
+      <input class="a-input" id="set-biz-name" type="text" placeholder="EL TORO"/>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input class="a-input" id="set-biz-emoji" type="text" placeholder="Emoji" maxlength="4" style="margin-bottom:0;flex:1;"/>
+        <button class="a-btn gray" onclick="document.getElementById('set-biz-emoji').value='';showToast('Cleared!');" style="margin:0;">Clear</button>
+      </div>
+      <button class="a-btn" onclick="saveBizName(this)">Save Business Name</button>
+    </div>
+
+    <div class="card">
+      <h3>🎨 PRIMARY COLOR</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Changes buttons, text accents and highlights.</p>
+      <input class="a-input" id="set-primary-color" type="color" value="#D32F2F" style="height:44px;padding:4px;"/>
+      <button class="a-btn" onclick="savePrimaryColor(this)">Apply Color</button>
+    </div>
+
+    <div class="card">
+      <h3>🎨 BACKDROP COLOR</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Changes the background color of the entire app.</p>
+      <input class="a-input" id="set-backdrop-color" type="color" value="#1a1a1a" style="height:44px;padding:4px;"/>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#1a1a1a'" style="font-size:11px;">Dark (Default)</button>
+        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0a0a0a'" style="font-size:11px;">Pitch Black</button>
+        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#1a0000'" style="font-size:11px;">Dark Red</button>
+        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0a0a1a'" style="font-size:11px;">Dark Blue</button>
+        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#1a1a0a'" style="font-size:11px;">Dark Gold</button>
+        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0a1a0a'" style="font-size:11px;">Dark Green</button>
+      </div>
+      <button class="a-btn" onclick="saveBackdrop(this)">Apply Backdrop</button>
+    </div>
+
+    <div class="card">
+      <h3>🔗 App URL for QR</h3>
+      <input class="a-input" id="set-app-url" type="text" placeholder="https://yourapp.netlify.app"/>
+      <button class="a-btn" onclick="saveAppUrl(this)">Save URL</button>
+    </div>
+    <div class="card">
+      <h3>📤 Export Data</h3>
+      <button class="a-btn blue" onclick="exportData()">Export All Data (JSON)</button>
+      <button class="a-btn blue" onclick="exportCSV()">Export Orders (CSV)</button>
+    </div>
+  </div>
+  <div class="d-page" id="a-page-cats">
+    <div class="page-title">📂 Categories</div>
+    <div class="card">
+      <h3>➕ Add Category</h3>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+        <input class="a-input" id="new-cat-emoji" type="text" placeholder="Emoji" maxlength="4" style="margin-bottom:0;width:70px;flex-shrink:0;"/>
+        <input class="a-input" id="new-cat-name" type="text" placeholder="Category name" style="margin-bottom:0;flex:1;"/>
+      </div>
+      <button class="a-btn" onclick="addCategory(this)">Add Category</button>
+    </div>
+    <div class="card"><h3>📂 All Categories</h3><div id="cat-list"></div></div>
+  </div>
+  <div class="dash-nav admin-nav">
+    <button class="d-nav-item active" onclick="showDPage('a','delivery',this)"><span class="nav-icon">🚚</span><span class="nav-label">Delivery</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','cats',this)"><span class="nav-icon">📂</span><span class="nav-label">Categories</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','workers',this)"><span class="nav-icon">👷</span><span class="nav-label">Workers</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+  </div>
+</div>
+
+<!-- INVENTORY APP -->
+<div class="dash-app" id="inv-app">
+  <div class="dash-topbar inv-topbar">
+    <div class="dash-brand">
+      <span class="logo-text">EL <em style="color:#66bb6a;">TORO</em></span>
+      <span class="dash-role">Inventory</span>
+      <span class="worker-name-badge" id="inv-worker-name"></span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+  <div class="d-page active" id="i-page-products">
+    <div class="page-title">Products</div>
+    <div class="card">
+      <h3>➕ Add Product</h3>
+      <div class="photo-options">
+        <button class="photo-opt-btn active-opt" id="photo-opt-camera" onclick="setPhotoOpt('camera')">📷 Camera</button>
+        <button class="photo-opt-btn" id="photo-opt-gallery" onclick="setPhotoOpt('gallery')">🖼 Gallery</button>
+        <button class="photo-opt-btn" id="photo-opt-url" onclick="setPhotoOpt('url')">🔗 URL</button>
+      </div>
+      <div class="photo-upload-area" id="photo-upload-area" onclick="triggerPhotoInput()">
+        <div class="photo-upload-overlay" id="photo-overlay"><div style="font-size:32px;">📷</div><div class="photo-upload-label">Tap to add photo</div></div>
+      </div>
+      <input type="file" id="photo-file-input" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)"/>
+      <div id="photo-url-wrap" style="display:none;">
+        <input class="a-input" id="np-photo-url" type="url" placeholder="Paste image URL"/>
+        <button class="a-btn" onclick="previewUrlPhoto()">Preview</button>
+      </div>
+      <input class="a-input" id="np-emoji" type="text" placeholder="Emoji fallback (e.g. 🥛)" maxlength="4"/>
+      <input class="a-input" id="np-name" type="text" placeholder="Product name"/>
+      <input class="a-input" id="np-price" type="number" step="0.01" placeholder="Sell price (e.g. 4.99)"/>
+      <input class="a-input" id="np-cost" type="number" step="0.01" placeholder="Your cost (what you pay)"/>
+      <input class="a-input" id="np-unit" type="text" placeholder="Unit (e.g. 1 gallon)"/>
+      <select class="a-input" id="np-cat"></select>
+      <input class="a-input" id="np-stock" type="number" placeholder="Starting quantity"/>
+      <input class="a-input" id="np-low" type="number" placeholder="Low stock alert at (e.g. 5)"/>
+      <button class="a-btn" onclick="addProduct(this)">Add Product</button>
+    </div>
+    <div class="card"><h3>📦 All Products</h3><div id="inv-products-list"></div></div>
+  </div>
+  <div class="d-page" id="i-page-stock">
+    <div class="page-title">Stock</div>
+    <div id="stock-list"></div>
+  </div>
+  <div class="d-page" id="i-page-suppliers">
+    <div class="page-title">Suppliers</div>
+    <div class="card">
+      <h3>➕ Add Supplier</h3>
+      <input class="a-input" id="sup-name" type="text" placeholder="Supplier name (e.g. Costco)"/>
+      <input class="a-input" id="sup-contact" type="text" placeholder="Contact / phone"/>
+      <input class="a-input" id="sup-notes" type="text" placeholder="Notes (e.g. best for meat)"/>
+      <button class="a-btn" onclick="addSupplier(this)">Add Supplier</button>
+    </div>
+    <div class="card"><h3>🏪 Suppliers</h3><div id="supplier-list"></div></div>
+  </div>
+  <div class="d-page" id="i-page-purchases">
+    <div class="page-title">Purchase Log</div>
+    <div class="card">
+      <h3>➕ Log Purchase</h3>
+      <input class="a-input" id="pur-item" type="text" placeholder="What you bought"/>
+      <input class="a-input" id="pur-qty" type="number" placeholder="Quantity"/>
+      <input class="a-input" id="pur-cost" type="number" step="0.01" placeholder="Total cost ($)"/>
+      <input class="a-input" id="pur-supplier" type="text" placeholder="Supplier / store"/>
+      <button class="a-btn" onclick="logPurchase(this)">Log Purchase</button>
+    </div>
+    <div class="card"><h3>📋 Purchase History</h3><div id="purchase-list"></div></div>
+  </div>
+  <div class="dash-nav inv-nav">
+    <button class="d-nav-item active" onclick="showDPage('i','products',this)"><span class="nav-icon">🛒</span><span class="nav-label">Products</span></button>
+    <button class="d-nav-item" onclick="showDPage('i','stock',this)"><span class="nav-icon">📦</span><span class="nav-label">Stock</span></button>
+    <button class="d-nav-item" onclick="showDPage('i','suppliers',this)"><span class="nav-icon">🏪</span><span class="nav-label">Suppliers</span></button>
+    <button class="d-nav-item" onclick="showDPage('i','purchases',this)"><span class="nav-icon">🧾</span><span class="nav-label">Purchases</span></button>
+  </div>
+</div>
+
+<!-- OPERATIONS APP -->
+<div class="dash-app" id="ops-app">
+  <div class="dash-topbar ops-topbar">
+    <div class="dash-brand"><span class="logo-text">EL <em style="color:var(--gold);">TORO</em></span><span class="dash-role">Operations</span></div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+  <div class="d-page active" id="ops-page-summary">
+    <div class="page-title">Summary</div>
+    <div style="padding:0 12px 8px;"><button class="a-btn blue" style="width:100%;" onclick="syncSummaryToSheets();showToast('Summary synced to Sheets! 📊')">📊 Sync Summary to Sheets</button></div>
+    <div class="summary-big" id="ops-net-profit">
+      <div class="summary-profit profit-pos" id="ops-profit-val">$0</div>
+      <div class="summary-label">Net Profit</div>
+    </div>
+    <div class="summary-grid" id="ops-summary-grid"></div>
+    <div class="card"><h3>📅 Month History</h3><div id="ops-month-history"></div></div>
+  </div>
+  <div class="d-page" id="ops-page-income">
+    <div class="page-title">Income</div>
+    <div class="stats-bar" id="ops-income-stats"></div>
+    <div class="card"><h3>📈 This Cycle</h3><div id="ops-income-details"></div></div>
+    <div class="card"><h3>🏆 Best Sellers</h3><div id="ops-bestsellers"></div></div>
+  </div>
+  <div class="d-page" id="ops-page-expenses">
+    <div class="page-title">Expenses</div>
+    <div class="stats-bar" id="ops-exp-stats"></div>
+    <div class="card">
+      <h3>➕ Log Expense</h3>
+      <input class="a-input" id="exp-desc" type="text" placeholder="Description (e.g. bags, supplies)"/>
+      <input class="a-input" id="exp-amount" type="number" step="0.01" placeholder="Amount ($)"/>
+      <select class="a-input" id="exp-cat">
+        <option value="Supplies">Supplies</option><option value="Transport">Transport</option>
+        <option value="Marketing">Marketing</option><option value="Equipment">Equipment</option>
+        <option value="Other">Other</option>
+      </select>
+      <button class="a-btn" onclick="logExpense(this)">Log Expense</button>
+    </div>
+    <div id="exp-list"></div>
+  </div>
+  <div class="d-page" id="ops-page-trips">
+    <div class="page-title">📊 Monthly Miles</div>
+    <div class="stats-bar" id="ops-miles-stats"></div>
+    <div class="card"><h3>📅 Monthly Breakdown</h3><div id="ops-monthly-miles-list"></div></div>
+    <div class="card"><h3>🏆 All-Time Totals</h3><div id="ops-miles-alltime"></div></div>
+  </div>
+  <div class="d-page" id="ops-page-payroll">
+    <div class="page-title">Payroll</div>
+    <div class="stats-bar" id="ops-payroll-stats"></div>
+    <div class="card">
+      <h3>➕ Log Payment</h3>
+      <select class="a-input" id="pay-worker-select"><option value="">Select worker...</option></select>
+      <input class="a-input" id="pay-amount" type="number" step="0.01" placeholder="Amount paid ($)"/>
+      <input class="a-input" id="pay-note" type="text" placeholder="Note (e.g. Feb trip)"/>
+      <button class="a-btn gold" onclick="logPayment(this)">Log Payment</button>
+    </div>
+    <div class="card"><h3>👷 Worker Pay Summary</h3><div id="payroll-summary"></div></div>
+    <div class="card"><h3>📋 Payment History</h3><div id="payroll-history"></div></div>
+  </div>
+  <div class="dash-nav ops-nav">
+    <button class="d-nav-item active" onclick="showDPage('ops','summary',this)"><span class="nav-icon">📊</span><span class="nav-label">Summary</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','income',this)"><span class="nav-icon">💰</span><span class="nav-label">Income</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','expenses',this)"><span class="nav-icon">💸</span><span class="nav-label">Expenses</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','trips',this);renderOpsMonthlyMiles();"><span class="nav-icon">📊</span><span class="nav-label">Miles</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','payroll',this)"><span class="nav-icon">👷</span><span class="nav-label">Payroll</span></button>
+  </div>
+</div>
+
+
+<!-- DELIVERY APP -->
+<div class="dash-app" id="delivery-app">
+  <div class="dash-topbar delivery-topbar">
+    <div class="dash-brand">
+      <span class="logo-text">EL <em style="color:#FF9800;">TORO</em></span>
+      <span class="dash-role" style="background:#FF9800;color:#000;">🚚 Delivery</span>
+      <span class="worker-name-badge" id="delivery-worker-name"></span>
+    </div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </div>
+
+  <!-- DROP OFF LIST -->
+  <div class="d-page active" id="del-page-pickup">
+    <div class="page-title">📋 Drop Off List</div>
+    <div id="del-countdown-wrap" style="text-align:center;padding:10px 12px 0;">
+      <div id="del-countdown" style="font-family:'Black Ops One',cursive;font-size:64px;color:#FF9800;line-height:1;">0</div>
+      <div style="font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Left to Drop Off</div>
+      <div id="del-progress-wrap" style="background:#333;border-radius:99px;height:10px;margin:10px 24px;">
+        <div id="del-progress-bar" style="height:100%;background:#FF9800;border-radius:99px;transition:width 0.4s;width:0%;"></div>
+      </div>
+      <div id="del-progress-label" style="font-size:12px;font-weight:800;color:var(--text-gray);margin-bottom:10px;"></div>
+    </div>
+    <div id="del-pickup-list"></div>
+  </div>
+
+  <!-- LOCATION -->
+  <div class="d-page" id="del-page-location">
+    <div class="page-title">📍 Location</div>
+    <div class="card">
+      <h3>📍 Delivery Address</h3>
+      <p style="font-size:16px;font-weight:800;" id="del-address">Not set yet</p>
+    </div>
+    <div class="card">
+      <h3>📅 Date & Time</h3>
+      <p style="font-size:16px;font-weight:800;" id="del-datetime">Not set yet</p>
+    </div>
+    <div class="card">
+      <h3>🚗 Delivery Status</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="a-btn" style="background:#1565C0;" onclick="setDeliveryStatus('on_the_way')">🚗 On The Way</button>
+        <button class="a-btn" style="background:#e65100;" onclick="setDeliveryStatus('arrived')">📍 Arrived</button>
+        <button class="a-btn green" onclick="setDeliveryStatus('done')">✅ All Done</button>
+      </div>
+      <div id="del-status-display" style="font-size:15px;font-weight:800;margin-top:10px;"></div>
+    </div>
+    <div class="card">
+      <h3>📝 Route Notes</h3>
+      <textarea class="a-input" id="del-notes" rows="3" placeholder="Special instructions, parking notes, etc..."></textarea>
+      <button class="a-btn" onclick="saveDeliveryNotes(this)">Save Notes</button>
+    </div>
+  </div>
+
+  <!-- TRIPS -->
+  <div class="d-page" id="del-page-trips">
+    <div class="page-title">🚗 Trips</div>
+    <div class="card">
+      <h3>➕ Log Trip</h3>
+      <input class="a-input" id="del-t-dest" type="text" placeholder="Destination"/>
+      <input class="a-input" id="del-t-miles" type="number" placeholder="Round trip miles"/>
+      <input class="a-input" id="del-t-gas" type="number" step="0.01" placeholder="Gas price per gallon ($)"/>
+      <input class="a-input" id="del-t-mpg" type="number" placeholder="Your MPG (e.g. 20)"/>
+      <input class="a-input" id="del-t-extra" type="number" step="0.01" placeholder="Extra costs ($)"/>
+      <input class="a-input" id="del-t-orders-count" type="number" placeholder="Orders delivered"/>
+      <input class="a-input" id="del-t-revenue" type="number" step="0.01" placeholder="Trip revenue ($)"/>
+      <button class="a-btn" onclick="logDeliveryTrip(this)">Calculate & Save</button>
+      <div id="del-trip-preview"></div>
+    </div>
+    <div class="card"><h3>📊 All-Time Totals</h3><div id="del-trip-totals"></div></div>
+    <div id="del-trip-history"></div>
+  </div>
+
+  <div class="dash-nav delivery-nav">
+    <button class="d-nav-item active" onclick="showDPage('del','pickup',this)"><span class="nav-icon">📋</span><span class="nav-label">Drop Off</span><span class="nav-badge" id="del-badge" style="display:none">0</span></button>
+    <button class="d-nav-item" onclick="showDPage('del','location',this)"><span class="nav-icon">📍</span><span class="nav-label">Location</span></button>
+    <button class="d-nav-item" onclick="showDPage('del','trips',this)"><span class="nav-icon">🚗</span><span class="nav-label">Trips</span></button>
+  </div>
+</div>
+
+<!-- EDIT CATEGORY MODAL -->
+<div class="modal-overlay" id="edit-cat-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeEditCatModal()">✕</button>
+    <h3>Edit Category</h3>
+    <input type="hidden" id="edit-cat-idx"/>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+      <input class="a-input" id="edit-cat-emoji" type="text" placeholder="Emoji" maxlength="4" style="margin-bottom:0;width:70px;flex-shrink:0;"/>
+      <input class="a-input" id="edit-cat-name" type="text" placeholder="Category name" style="margin-bottom:0;flex:1;"/>
+    </div>
+    <button class="a-btn" onclick="saveEditCategory(this)">Save Changes</button>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-card" style="text-align:center;padding:30px 24px;">
+    <div style="font-size:48px;margin-bottom:12px;">⚠️</div>
+    <h3 style="margin-bottom:8px;" id="confirm-title">Are you sure?</h3>
+    <p style="color:var(--text-gray);font-size:14px;font-weight:600;margin-bottom:20px;" id="confirm-msg">This action cannot be undone.</p>
+    <div style="display:flex;gap:10px;">
+      <button class="a-btn gray" style="flex:1;padding:14px;" onclick="closeConfirm()">No, Cancel</button>
+      <button class="a-btn" style="flex:1;padding:14px;background:#D32F2F;" id="confirm-yes-btn" onclick="">Yes, Delete</button>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeEditModal()">✕</button>
+    <h3>Edit Product</h3>
+    <input type="hidden" id="edit-prod-id"/>
+    <div class="photo-upload-area" id="edit-photo-area" onclick="triggerEditPhoto()">
+      <div class="photo-upload-overlay" id="edit-photo-overlay"><div style="font-size:32px;">📷</div><div class="photo-upload-label">Tap to change photo</div></div>
+    </div>
+    <input type="file" id="edit-photo-input" accept="image/*" style="display:none;" onchange="handleEditPhoto(event)"/>
+    <input class="a-input" id="edit-emoji" type="text" placeholder="Emoji" maxlength="4"/>
+    <input class="a-input" id="edit-name" type="text" placeholder="Product name"/>
+    <input class="a-input" id="edit-price" type="number" step="0.01" placeholder="Sell price"/>
+    <input class="a-input" id="edit-cost" type="number" step="0.01" placeholder="Your cost"/>
+    <input class="a-input" id="edit-unit" type="text" placeholder="Unit"/>
+    <select class="a-input" id="edit-cat"></select>
+    <input class="a-input" id="edit-url" type="url" placeholder="Or paste image URL"/>
+    <button class="a-btn" onclick="saveEditProduct()">Save Changes</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// D
+
+// ============================================================
+// LANGUAGE SYSTEM
+// ============================================================
+var LANGS = {
+  en: {
+    all:"All", dairy:"Dairy", meat:"Meat", breadgrains:"Bread & Grains",
+    eggs:"Eggs", essentials:"Essentials", produce:"Produce",
+    snacks:"Snacks", beverages:"Beverages", frozen:"Frozen",
+    household:"Household", other:"Other",
+    availableItems:"Available Items",
+    addToCart:"+ Add to Cart", soldOut:"Sold Out", closed:"🔒 Closed",
+    yourCartTitle:t("yourCartTitle"), items:"Items", total:"Total",
+    yourInfo:"YOUR INFO", namePlaceholder:"Your full name",
+    phonePlaceholder:"Your phone number",
+    heroSub:"Order before the deadline and we'll deliver to you!",
+    screenshotReminder:"Screenshot before submitting to save your order!",
+    placeOrder:"Place My Order",
+    addMore:"⚠️ Need {n} more items (minimum {min})",
+    orderConfirmed:"✅ Order #{n} Confirmed!",
+    orderBoardTitle:"📋 Order Board", ordersThisMonth:t("ordersThisMonth"),
+    customerSlots:t("customerSlots"),
+    noOrdersBoard:t("noOrdersBoard"),
+    weAreGoing:"We are going! {n} orders!",
+    needMoreTrip:"Need {n} more order to make the trip!",
+    needMoreTripPlural:"Need {n} more orders to make the trip!",
+    waitingDelivery:"Waiting for delivery",
+    orderDeadline:"Order Deadline", deliveryDate:"Delivery Date",
+    navShop:"SHOP", navCart:"CART", navBoard:"TRACK", navQr:"QR",
+    comingSoon:"Date & location coming soon!", ordersThisMonth2:"ORDERS THIS MONTH", customerSlots2:"CUSTOMER SLOTS",
+    orderDeadline:"ORDER DEADLINE", deliveryDate:"DELIVERY DATE",
+    notSet:"Not set", deadlineNotice:"⏰ Deadline: {dt}",
+    ordersThisMonthLabel:"ORDERS THIS MONTH", customerSlotsLabel:"CUSTOMER SLOTS"
+  },
+  es: {
+    all:"Todo", dairy:"Lácteos", meat:"Carne", breadgrains:"Pan y Granos",
+    eggs:"Huevos", essentials:"Esenciales", produce:"Frutas y Verduras",
+    snacks:"Botanas", beverages:"Bebidas", frozen:"Congelados",
+    household:"Hogar", other:"Otro",
+    availableItems:"Artículos Disponibles",
+    addToCart:"+ Agregar al Carrito", soldOut:"Agotado", closed:"🔒 Cerrado",
+    yourCartTitle:"🛒 Tu Carrito", items:"Artículos", total:"Total",
+    yourInfo:"TU INFORMACIÓN", namePlaceholder:"Tu nombre completo",
+    phonePlaceholder:"Tu número de teléfono",
+    heroSub:"¡Ordena antes de la fecha límite y te lo entregamos!",
+    screenshotReminder:"¡Toma captura antes de enviar para guardar tu pedido!",
+    placeOrder:"Hacer Mi Pedido",
+    addMore:"⚠️ Necesitas {n} artículos más (mínimo {min})",
+    orderConfirmed:"✅ ¡Pedido #{n} Confirmado!",
+    orderBoardTitle:"📋 Tablero de Pedidos", ordersThisMonth:"PEDIDOS ESTE MES",
+    customerSlots:"LUGARES DE CLIENTES",
+    noOrdersBoard:"¡Sé el primero en ordenar!",
+    weAreGoing:"¡Vamos! {n} pedidos!",
+    needMoreTrip:"¡Necesitas {n} pedido más para el viaje!",
+    needMoreTripPlural:"¡Necesitas {n} pedidos más para el viaje!",
+    waitingDelivery:"Esperando entrega",
+    orderDeadline:"Fecha Límite", deliveryDate:"Fecha de Entrega",
+    navShop:"TIENDA", navCart:"CARRITO", navBoard:"RASTREAR", navQr:"QR",
+    comingSoon:"¡Fecha y lugar próximamente!", ordersThisMonth2:"PEDIDOS ESTE MES", customerSlots2:"LUGARES DE CLIENTES",
+    orderDeadline:"FECHA LÍMITE", deliveryDate:"FECHA DE ENTREGA",
+    notSet:"No establecido", deadlineNotice:"⏰ Fecha límite: {dt}",
+    ordersThisMonthLabel:"PEDIDOS ESTE MES", customerSlotsLabel:"LUGARES DE CLIENTES"
+  }
+}
+var currentLang = "en";
+
+function t(key, vars) {
+  if(!key) return "";
+  var lang = (LANGS && LANGS[currentLang]) ? LANGS[currentLang] : (LANGS ? LANGS.en : {});
+  var str = (lang && lang[key]) ? lang[key] : (LANGS && LANGS.en && LANGS.en[key] ? LANGS.en[key] : key);
+  if(vars && str) {
+    Object.keys(vars).forEach(function(k){
+      str = str.replace("{"+k+"}", vars[k]);
+    });
+  }
+  return str || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem("eltoroLang", lang);
+  // Update flag buttons
+  ["en","es"].forEach(function(l){
+    var btn = document.getElementById("lang-"+l);
+    if(!btn) return;
+    btn.style.opacity = l === lang ? "1" : "0.4";
+    btn.style.border = l === lang ? "2px solid var(--red)" : "2px solid transparent";
+  });
+  // ONLY re-render customer shopping pages
+  renderShop();
+  renderCart();
+  renderBoard();
+  // Update bottom nav labels
+  var navIds = {navShop:"nav-shop", navCart:"nav-cart", navBoard:"nav-board", navQr:"nav-qr"};
+  Object.keys(navIds).forEach(function(key){
+    var el = document.getElementById(navIds[key]);
+    if(el) el.textContent = t(key);
+  });
+  // Update board title if visible
+  var boardTitle = document.getElementById("board-title");
+  if(boardTitle) boardTitle.textContent = t("orderBoardTitle");
+  var nm={navShop:"nav-shop",navCart:"nav-cart",navBoard:"nav-board",navQr:"nav-qr"};Object.keys(nm).forEach(function(k){var el=document.getElementById(nm[k]);if(el)el.textContent=t(k);});var bt=document.getElementById("board-title");if(bt)bt.textContent=t("orderBoardTitle");var ail=document.getElementById("available-items-label");if(ail)ail.textContent=t("availableItems");var sdl=document.getElementById("shop-deadline-label");if(sdl)sdl.textContent=t("orderDeadline");var svl=document.getElementById("shop-delivery-label");if(svl)svl.textContent=t("deliveryDate");var oml=document.getElementById("orders-month-label");if(oml)oml.textContent=t("ordersThisMonthLabel");var csl=document.getElementById("customer-slots-label");if(csl)csl.textContent=t("customerSlotsLabel");var dl=document.getElementById("deadline-label");if(dl)dl.textContent=t("orderDeadline");var dvl=document.getElementById("delivery-label");if(dvl)dvl.textContent=t("deliveryDate");var hs=document.getElementById("hero-sub");if(hs)hs.textContent=currentLang==="es"?t("heroSub"):(S.heroSub||t("heroSub"));
+}
+
+
+// DATA
+// ============================================================
+var DEFAULTS = [
+  {id:1,emoji:"🥛",name:"Whole Milk",price:4.99,cost:3.50,unit:"1 gallon",cat:"Dairy",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:2,emoji:"🧀",name:"Cheddar Cheese",price:5.49,cost:4.00,unit:"8 oz",cat:"Dairy",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:3,emoji:"🧈",name:"Butter",price:4.49,cost:3.20,unit:"1 lb",cat:"Dairy",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:4,emoji:"🥄",name:"Sour Cream",price:2.99,cost:2.00,unit:"16 oz",cat:"Dairy",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:5,emoji:"🍗",name:"Chicken Breast",price:8.99,cost:6.50,unit:"2 lbs",cat:"Meat",visible:true,soldOut:false,photo:"",stock:0,lowAt:3},
+  {id:6,emoji:"🥩",name:"Ground Beef",price:7.99,cost:5.80,unit:"1 lb",cat:"Meat",visible:true,soldOut:false,photo:"",stock:0,lowAt:3},
+  {id:7,emoji:"🥓",name:"Pork Chops",price:6.99,cost:5.00,unit:"2 lbs",cat:"Meat",visible:true,soldOut:false,photo:"",stock:0,lowAt:3},
+  {id:8,emoji:"🍞",name:"White Bread",price:2.49,cost:1.80,unit:"1 loaf",cat:"Bread & Grains",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:9,emoji:"🍚",name:"White Rice",price:3.49,cost:2.50,unit:"5 lbs",cat:"Bread & Grains",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:10,emoji:"🫓",name:"Flour Tortillas",price:3.29,cost:2.30,unit:"20 ct",cat:"Bread & Grains",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:11,emoji:"🥣",name:"Oatmeal",price:3.99,cost:2.80,unit:"42 oz",cat:"Bread & Grains",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:12,emoji:"🥚",name:"Large Eggs",price:3.99,cost:2.80,unit:"Dozen",cat:"Eggs",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:13,emoji:"🥚",name:"Jumbo Eggs",price:4.99,cost:3.50,unit:"Dozen",cat:"Eggs",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:14,emoji:"🫙",name:"Vegetable Oil",price:4.99,cost:3.50,unit:"48 oz",cat:"Essentials",visible:true,soldOut:false,photo:"",stock:0,lowAt:3},
+  {id:15,emoji:"🧂",name:"Salt",price:1.49,cost:0.90,unit:"26 oz",cat:"Essentials",visible:true,soldOut:false,photo:"",stock:0,lowAt:3},
+  {id:16,emoji:"🍬",name:"Sugar",price:3.99,cost:2.80,unit:"4 lbs",cat:"Essentials",visible:true,soldOut:false,photo:"",stock:0,lowAt:3},
+  {id:17,emoji:"🫙",name:"Black Pepper",price:2.99,cost:2.00,unit:"3 oz",cat:"Essentials",visible:true,soldOut:false,photo:"",stock:0,lowAt:3},
+  {id:18,emoji:"🍌",name:"Bananas",price:1.29,cost:0.80,unit:"Bunch",cat:"Produce",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:19,emoji:"🥔",name:"Russet Potatoes",price:3.99,cost:2.80,unit:"5 lbs",cat:"Produce",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:20,emoji:"🧅",name:"Yellow Onions",price:2.99,cost:2.00,unit:"3 lbs",cat:"Produce",visible:true,soldOut:false,photo:"",stock:0,lowAt:5},
+  {id:21,emoji:"🍅",name:"Roma Tomatoes",price:2.49,cost:1.70,unit:"1 lb",cat:"Produce",visible:true,soldOut:false,photo:"",stock:0,lowAt:5}
+];
+
+var S = {
+  products: JSON.parse(JSON.stringify(DEFAULTS)),
+  orders: [], cart: [], trips: [], expenses: [], payments: [],
+  suppliers: [], purchases: [], workers: [], monthHistory: [],
+  deadline: null, deliveryDt: null, deliveryAddress: null, deliveryNotes: null,
+  minOrders: 50, minItems: 8, cycleMode: "monthly",
+  gatePass: "1991", ordersPass: "1994", adminPass: "1990",
+  invPass: "1993", opsPass: "1992", deliveryPass: "1995",
+  heroTitle: "SHOP NOW!", heroSub: "Order before the deadline and we'll deliver to you!",
+  arrivalText: "Date & location coming soon!",
+  appUrl: window.location.href, nextOrderId: 1, primaryColor: "#D32F2F",
+  bannerEmoji: "🐂", bizName: "EL TORO", bizEmoji: "🐂", backdropColor: "#1a1a1a",
+  categories: [
+    {name:"Dairy",emoji:"🥛"},{name:"Meat",emoji:"🍖"},{name:"Bread & Grains",emoji:"🍞"},
+    {name:"Eggs",emoji:"🥚"},{name:"Essentials",emoji:"🧴"},{name:"Produce",emoji:"🥦"},
+    {name:"Snacks",emoji:"🍪"},{name:"Beverages",emoji:"🥤"},{name:"Frozen",emoji:"🧊"},
+    {name:"Cleaning",emoji:"🧹"},{name:"Personal Care",emoji:"🧴"},{name:"Baby",emoji:"🍼"},
+    {name:"Household",emoji:"🏠"},{name:"Pet",emoji:"🐾"}
+  ],
+  depositRequired: false, depositAmount: 50, depositZelle: "", depositNote: "", depositName: "", depositQR: "",
+  lastResetDate: null
+};
+
+function save() { try { localStorage.setItem("eltoro_v6", JSON.stringify(S)); } catch(e) {} }
+function load() { try { var d = localStorage.getItem("eltoro_v6"); if(d) { var p = JSON.parse(d); S = Object.assign({}, S, p); } } catch(e) {} S.cart = []; save(); }
+load();
+
+var currentWorkerName = "";
+
+// ============================================================
+// AUTO RESET
+// ============================================================
+function checkAutoReset() {
+  if(!S.deliveryDt) return;
+  var deliveryDate = new Date(S.deliveryDt);
+  var now = new Date();
+  if(now > deliveryDate) {
+    var lastReset = S.lastResetDate ? new Date(S.lastResetDate) : null;
+    if(!lastReset || lastReset < deliveryDate) {
+      if(S.orders.length > 0) {
+        S.monthHistory.push({
+          month: deliveryDate.toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"}),
+          orders: S.orders.length,
+          revenue: S.orders.reduce(function(s,o){return s+o.total;},0).toFixed(2),
+          cycle: S.cycleMode
+        });
+      }
+      S.orders = []; S.nextOrderId = 1; S.deadline = null;
+      S.deliveryDt = null; S.deliveryAddress = null;
+      S.arrivalText = "Date & location coming soon!";
+      S.lastResetDate = now.toISOString();
+      save(); showToast("New cycle started! Board is fresh 🐂");
+    }
+  }
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function showPage(name, btn) {
+  document.querySelectorAll("#customer-app .page").forEach(function(p){p.classList.remove("active");});
+  document.querySelectorAll("#customer-app .nav-item").forEach(function(n){n.classList.remove("active");});
+  document.getElementById("page-"+name).classList.add("active");
+  if(btn) btn.classList.add("active");
+  if(name==="shop") renderShop();
+  if(name==="cart") renderCart();
+  if(name==="board") renderBoard();
+  if(name==="qr") renderQR();
+}
+
+function showDPage(app, name, btn) {
+  var appIds = {o:"orders-app", a:"admin-app", i:"inv-app", ops:"ops-app", del:"delivery-app"};
+  var appEl = document.getElementById(appIds[app]);
+  appEl.querySelectorAll(".d-page").forEach(function(p){p.classList.remove("active");});
+  appEl.querySelectorAll(".d-nav-item").forEach(function(n){n.classList.remove("active");});
+  document.getElementById(app+"-page-"+name).classList.add("active");
+  if(btn) btn.classList.add("active");
+  if(app==="o" && name==="orders") renderOrdersTab();
+  if(app==="o" && name==="done") renderOrdersDone();
+  if(app==="o" && name==="location") renderOrdersLocation();
+  if(app==="a" && name==="delivery") { loadDeliveryInputs(); loadDepositInputs(); }
+  if(app==="a" && name==="cats") renderCatList();
+  if(app==="a" && name==="workers") renderWorkerList();
+  if(app==="a" && name==="settings") loadSettingsInputs();
+  if(app==="i" && name==="products") renderInvProducts();
+  if(app==="i" && name==="stock") renderStock();
+  if(app==="i" && name==="suppliers") renderSuppliers();
+  if(app==="i" && name==="purchases") renderPurchases();
+  if(app==="ops" && name==="summary") renderOpsSummary();
+  if(app==="ops" && name==="income") renderOpsIncome();
+  if(app==="ops" && name==="expenses") renderExpenses();
+  if(app==="ops" && name==="trips") renderTrips();
+  if(app==="ops" && name==="payroll") renderPayroll();
+  if(app==="del" && name==="pickup") renderPickupList();
+  if(app==="del" && name==="location") renderDeliveryLocation();
+  if(app==="del" && name==="trips") renderDeliveryTrips();
+}
+
+// ============================================================
+// LOGIN - TWO STEP
+// ============================================================
+var selRole = null;
+function openLogin() {
+  selRole = null; currentWorkerName = "";
+  document.getElementById("gate-pw").value = "";
+  document.getElementById("gate-err").style.display = "none";
+  document.getElementById("login-gate-view").style.display = "block";
+  document.getElementById("login-role-view").style.display = "none";
+  document.getElementById("login-overlay").classList.add("active");
+}
+function closeLogin() { document.getElementById("login-overlay").classList.remove("active"); }
+function checkGate() {
+  var pw = document.getElementById("gate-pw").value;
+  if(pw === S.gatePass) {
+    document.getElementById("login-gate-view").style.display = "none";
+    document.getElementById("login-role-view").style.display = "block";
+    document.getElementById("login-pw").value = "";
+    document.getElementById("login-err").style.display = "none";
+    document.getElementById("login-auth-err").style.display = "none";
+    document.getElementById("login-worker-name").value = "";
+    document.querySelectorAll(".role-btn").forEach(function(b){b.classList.remove("selected");});
+  } else {
+    document.getElementById("gate-err").style.display = "block";
+  }
+}
+document.getElementById("gate-pw").addEventListener("keydown", function(e){if(e.key==="Enter")checkGate();});
+
+function selectRole(r) {
+  selRole = r;
+  document.querySelectorAll(".role-btn").forEach(function(b){b.classList.remove("selected");});
+  document.getElementById("role-"+r).classList.add("selected");
+  var showName = (r !== "admin");
+  document.getElementById("worker-name-wrap").style.display = showName ? "block" : "none";
+}
+
+function doLogin() {
+  if(!selRole) { showToast("Choose a role!"); return; }
+  document.getElementById("login-err").style.display="none";
+  document.getElementById("login-auth-err").style.display="none";
+  var pw = document.getElementById("login-pw").value;
+  var wname = document.getElementById("login-worker-name").value.trim();
+  
+  // Admin doesn't need worker check
+  if(selRole==="admin") {
+    if(pw===S.adminPass) { currentWorkerName="Admin"; closeLogin(); launchApp("admin"); }
+    else { document.getElementById("login-err").style.display = "block"; }
+    return;
+  }
+  
+  // All other roles need a name
+  if(!wname) { showToast("Enter your name!"); return; }
+  
+  // Map role names to worker role values
+  var roleMap = {"orders":"Orders","inventory":"Inventory","operations":"Operations","delivery":"Delivery"};
+  var roleName = roleMap[selRole]||selRole;
+  
+  // Check if worker exists with matching role
+  if(!S.workers) S.workers=[];
+  var worker = S.workers.find(function(w){
+    if(w.name.toLowerCase()!==wname.toLowerCase()) return false;
+    // Support both old single role and new roles array
+    if(w.roles && Array.isArray(w.roles)){
+      return w.roles.indexOf(roleName)!==-1;
+    }
+    return w.role===roleName || w.role==="both";
+  });
+  
+  if(!worker) {
+    var authErr=document.getElementById("login-auth-err");
+    if(authErr){authErr.style.display="block";}
+    return;
+  }
+  
+  currentWorkerName = worker.name;
+  if(selRole==="orders" && pw===S.ordersPass) { closeLogin(); launchApp("orders"); }
+  else if(selRole==="inventory" && pw===S.invPass) { closeLogin(); launchApp("inv"); }
+  else if(selRole==="operations" && pw===S.opsPass) { closeLogin(); launchApp("ops"); }
+  else if(selRole==="delivery" && pw===S.deliveryPass) { closeLogin(); launchApp("delivery"); }
+  else { document.getElementById("login-err").style.display = "block"; }
+}
+document.getElementById("login-pw").addEventListener("keydown", function(e){if(e.key==="Enter")doLogin();});
+
+function launchApp(which) {
+  document.getElementById("customer-app").style.display = "none";
+  if(which==="orders") {
+    document.getElementById("orders-app").classList.add("active");
+    document.getElementById("orders-worker-name").textContent = currentWorkerName;
+    renderOrdersTab();
+  }
+  if(which==="admin") { document.getElementById("admin-app").classList.add("active"); loadDeliveryInputs(); loadDepositInputs(); renderWorkerList(); }
+  if(which==="inv") {
+    document.getElementById("inv-app").classList.add("active");
+    document.getElementById("inv-worker-name").textContent = currentWorkerName;
+    renderInvProducts();
+  }
+  if(which==="ops") { document.getElementById("ops-app").classList.add("active"); renderOpsSummary(); }
+  if(which==="delivery") {
+    document.getElementById("delivery-app").classList.add("active");
+    document.getElementById("delivery-worker-name").textContent = currentWorkerName;
+    renderPickupList();
+  }
+}
+
+function logout() {
+  document.getElementById("customer-app").style.display = "block";
+  document.querySelectorAll(".dash-app").forEach(function(a){a.classList.remove("active");});
+  currentWorkerName = "";
+}
+
+// ============================================================
+// PHOTO
+// ============================================================
+var currentPhotoOpt = "camera";
+var newProductPhoto = "";
+var editProductPhoto = "";
+
+function setPhotoOpt(opt) {
+  currentPhotoOpt = opt;
+  document.querySelectorAll(".photo-opt-btn").forEach(function(b){b.classList.remove("active-opt");});
+  document.getElementById("photo-opt-"+opt).classList.add("active-opt");
+  document.getElementById("photo-url-wrap").style.display = opt==="url" ? "block" : "none";
+}
+function triggerPhotoInput() {
+  var input = document.getElementById("photo-file-input");
+  if(currentPhotoOpt==="camera") input.setAttribute("capture","environment");
+  else input.removeAttribute("capture");
+  if(currentPhotoOpt!=="url") input.click();
+}
+function handlePhotoUpload(event) {
+  var file = event.target.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) { newProductPhoto = e.target.result; showPhotoPreview("photo-upload-area","photo-overlay",newProductPhoto); };
+  reader.readAsDataURL(file);
+}
+function showPhotoPreview(areaId, overlayId, src) {
+  var area = document.getElementById(areaId);
+  var img = area.querySelector("img");
+  if(!img){img=document.createElement("img");area.insertBefore(img,area.firstChild);}
+  img.src=src; img.style.cssText="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:10px;";
+  var ov=document.getElementById(overlayId); if(ov) ov.style.display="none";
+}
+function previewUrlPhoto() {
+  var url=document.getElementById("np-photo-url").value.trim();
+  if(!url) return;
+  newProductPhoto=url; showPhotoPreview("photo-upload-area","photo-overlay",url);
+}
+function triggerEditPhoto(){document.getElementById("edit-photo-input").click();}
+function handleEditPhoto(event) {
+  var file=event.target.files[0]; if(!file) return;
+  var reader=new FileReader();
+  reader.onload=function(e){editProductPhoto=e.target.result;showPhotoPreview("edit-photo-area","edit-photo-overlay",editProductPhoto);};
+  reader.readAsDataURL(file);
+}
+
+// ============================================================
+// SHOP
+// ============================================================
+var activeCat = "All";
+
+function getCats(){
+  var cats=["All"];
+  (S.categories||[]).forEach(function(c){cats.push(c.name);});
+  return cats;
+}
+function getCatEmoji(name){
+  if(name==="All") return "🛒";
+  var cat=(S.categories||[]).find(function(c){return c.name===name;});
+  return cat?cat.emoji:"📦";
+}
+function buildCatOptions(){
+  return (S.categories||[]).map(function(c){
+    return '<option value="'+c.name+'">'+c.emoji+' '+c.name+'</option>';
+  }).join("");
+}
+
+function renderShop() {
+  document.getElementById("hero-title").textContent = S.heroTitle||"SHOP NOW!";
+  document.getElementById("hero-sub").textContent = currentLang==="es" ? t("heroSub") : (S.heroSub||t("heroSub"));
+  // Dynamic banner emoji
+  var bullEl=document.querySelector(".hero-bull");
+  if(bullEl) bullEl.textContent=S.bannerEmoji||"";
+  if(bullEl) bullEl.style.display=(S.bannerEmoji)?"block":"none";
+  document.getElementById("deadline-val").textContent = S.deadline ? fmtDT(S.deadline) : t("notSet");
+  document.getElementById("delivery-val").textContent = S.deliveryDt ? fmtDT(S.deliveryDt) : t("notSet");
+  var catTabs = document.getElementById("cat-tabs");
+  var CATS=getCats();
+  catTabs.innerHTML = CATS.map(function(c){
+    var cls = "cat-tab" + (activeCat===c ? " active" : "");
+    var emoji = getCatEmoji(c);
+    return '<button class="'+cls+'" onclick="setCat(\''+c.replace(/'/g,"\\'")+'\')">' + emoji + " " + c + "</button>";
+  }).join("");
+  var locked = isLocked();
+  var filtered = S.products.filter(function(p){return p.visible&&(activeCat==="All"||p.cat===activeCat);});
+  var grid = document.getElementById("product-grid");
+  if(!filtered.length){grid.innerHTML='<div style="grid-column:span 2;text-align:center;padding:30px;color:var(--text-gray);font-weight:700;">No items here</div>';return;}
+  grid.innerHTML = filtered.map(function(p){
+    var photoHtml = p.photo
+      ? '<div class="product-photo"><img src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>'
+      : '<div class="product-photo">'+p.emoji+'</div>';
+    var cartQty = getCartQty(p.id);
+    var actionHtml = (p.soldOut||locked)
+      ? '<div class="sold-out-badge">'+(locked?t("closed"):t("soldOut"))+'</div>'
+      : '<div class="qty-row"><button class="qty-btn" onclick="changeProductQty('+p.id+',-1)">−</button><span class="qty-num">'+cartQty+'</span><button class="qty-btn" onclick="changeProductQty('+p.id+',1)">+</button></div><button class="add-btn" onclick="addToCart('+p.id+')">'+ t("addToCart") +'</button>';
+    return '<div class="product-card">'+photoHtml+'<div class="product-info"><div class="product-name">'+p.name+'</div><div class="product-price">$'+parseFloat(p.price).toFixed(2)+'</div><div class="product-unit">'+p.unit+'</div>'+actionHtml+'</div></div>';
+  }).join("");
+  var ail=document.getElementById("available-items-label");if(ail)ail.textContent=t("availableItems");
+  updateCartFloat();
+}
+
+function setCat(cat){activeCat=cat;renderShop();}
+function isLocked(){return S.deadline&&new Date()>new Date(S.deadline);}
+function getCartQty(id){var i=S.cart.find(function(c){return c.id===id;});return i?i.qty:0;}
+
+function changeProductQty(id,delta){
+  var p=S.products.find(function(x){return x.id===id;});if(!p)return;
+  var ex=S.cart.find(function(c){return c.id===id;});
+  if(ex){ex.qty=Math.max(0,ex.qty+delta);if(ex.qty===0)S.cart=S.cart.filter(function(c){return c.id!==id;});}
+  else if(delta>0) S.cart.push({id:p.id,name:p.name,emoji:p.emoji,photo:p.photo,price:p.price,cost:p.cost||0,unit:p.unit,qty:1});
+  save();renderShop();
+}
+function addToCart(id){
+  var p=S.products.find(function(x){return x.id===id;});if(!p)return;
+  var ex=S.cart.find(function(c){return c.id===id;});
+  if(ex) ex.qty++;
+  else S.cart.push({id:p.id,name:p.name,emoji:p.emoji,photo:p.photo,price:p.price,cost:p.cost||0,unit:p.unit,qty:1});
+  save();renderShop();showToast(p.emoji+" Added!");
+}
+function updateCartFloat(){
+  var total=S.cart.reduce(function(s,i){return s+i.qty;},0);
+  var min=S.minItems; var ready=total>=min;
+  var cf=document.getElementById("cart-float");
+  if(!total){cf.classList.add("hidden");document.getElementById("cart-badge").style.display="none";return;}
+  cf.classList.remove("hidden");
+  cf.className="cart-float"+(ready?" ready":"");
+  document.getElementById("cf-count").textContent=total+" item"+(total!==1?"s":"");
+  document.getElementById("cf-min").textContent=ready?"Ready to order!":"Need "+(min-total)+" more";
+  document.getElementById("cf-bar").style.width=Math.min((total/min)*100,100)+"%";
+  var badge=document.getElementById("cart-badge");badge.textContent=total;badge.style.display="block";
+}
+
+// ============================================================
+// CART
+// ============================================================
+function renderCart(){
+  var notice=document.getElementById("cart-deadline-notice");
+  if(S.deadline){notice.textContent="⏰ Deadline: "+fmtDT(S.deadline);notice.style.display="block";}else{notice.style.display="none";}
+  var body=document.getElementById("cart-body");
+  if(!S.cart.length){body.innerHTML='<div class="cart-empty"><div style="font-size:64px;">🛒</div><p style="font-size:16px;font-weight:700;color:var(--text-gray);margin-top:12px;">Your cart is empty!<br>Go add some items.</p></div>';return;}
+  var totalQty=S.cart.reduce(function(s,i){return s+i.qty;},0);
+  var totalPrice=S.cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+  var meetsMin=totalQty>=S.minItems;
+  var itemsHtml=S.cart.map(function(item){
+    var imgHtml = item.photo ? '<img class="ci-photo" src="'+item.photo+'" onerror="this.style.display=\'none\'" />' : '<span class="ci-emoji">'+item.emoji+'</span>';
+    return '<div class="cart-item">'+imgHtml+'<div style="flex:1;"><div class="ci-name">'+item.name+'</div><div class="ci-price">$'+(item.price*item.qty).toFixed(2)+'</div></div><div class="ci-controls"><button class="ci-qty-btn" onclick="cartQty('+item.id+',-1)">−</button><span class="ci-qty">'+item.qty+'</span><button class="ci-qty-btn" onclick="cartQty('+item.id+',1)">+</button></div></div>';
+  }).join("");
+  var minWarn=!meetsMin?'<div class="min-warning">'+t("addMore",{n:S.minItems-totalQty,min:S.minItems})+'</div>':'';
+  body.innerHTML=itemsHtml+minWarn+
+    '<div class="order-total-card"><div class="ot-row"><span class="ot-label">Items</span><span class="ot-val">'+totalQty+'</span></div><div class="ot-row"><span class="ot-label">Total</span><span class="ot-total">$'+totalPrice.toFixed(2)+'</span></div></div>'+
+    '<div class="customer-form"><h3>'+t("yourInfo")+'</h3><input class="form-input" id="c-name" type="text" placeholder="'+t("namePlaceholder")+'"/><input class="form-input" id="c-phone" type="tel" placeholder="'+t("phonePlaceholder")+'"/></div>'+
+    '<div style="background:#1a1a00;border:2px solid var(--gold);border-radius:8px;padding:10px 14px;margin:8px 0;display:flex;align-items:center;gap:8px;">'+
+    '<span style="font-size:16px;">📸</span>'+
+    '<span style="font-size:13px;font-weight:800;color:var(--gold);">'+ t("screenshotReminder") +'</span>'+
+    '</div>'+
+    '<button class="submit-btn '+(meetsMin?"ready":"locked")+'" '+(meetsMin?"":"disabled")+' id="place-order-btn" onclick="submitOrder()">'+(meetsMin?t("placeOrder"):t("addMore",{n:S.minItems-totalQty,min:S.minItems}))+'</button><div style="height:20px;"></div>';
+}
+function cartQty(id,delta){
+  var item=S.cart.find(function(i){return i.id===id;});if(!item)return;
+  item.qty+=delta;if(item.qty<=0)S.cart=S.cart.filter(function(i){return i.id!==id;});
+  save();renderCart();updateCartFloat();
+}
+function submitOrder(){
+  var nameEl=document.getElementById("c-name");var phoneEl=document.getElementById("c-phone");
+  if(!nameEl||!phoneEl)return;
+  var name=nameEl.value.trim();var phone=phoneEl.value.trim();
+  if(!name||!phone){showToast("Enter your name and phone!");return;}
+  var totalQty=S.cart.reduce(function(s,i){return s+i.qty;},0);
+  if(totalQty<S.minItems){showToast(t("addMore",{n:S.minItems-totalQty,min:S.minItems}));return;}
+  var total=S.cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+  var order={id:S.nextOrderId++,slot:S.orders.length+1,name:name,phone:phone,
+    items:S.cart.map(function(i){return Object.assign({},i);}),total:total,status:"new",timestamp:new Date().toISOString(),
+    depositRequired:!!S.depositRequired,depositAmount:S.depositAmount||0,depositSent:false};
+  S.orders.push(order);
+  order.items.forEach(function(oi){var p=S.products.find(function(x){return x.id===oi.id;});if(p)p.stock=Math.max(0,(p.stock||0)-oi.qty);});
+  S.cart=[];save();
+  saveOrderToSheets(order);
+  
+  var confirmEl = document.getElementById("order-confirm-msg");
+  if(confirmEl){
+    confirmEl.style.display="block";
+    if(S.depositRequired){
+      var depAmt=(S.depositAmount||50).toFixed(2);
+      var zelleInfo=S.depositZelle||"";
+      var zelleName=S.depositName||"";
+      var depNote=S.depositNote||"";
+      var qrHtml=S.depositQR?'<div style="background:#fff;border-radius:12px;padding:10px;margin:10px auto;max-width:180px;"><img src="'+S.depositQR+'" style="width:100%;display:block;border-radius:8px;"/></div>':'';
+      confirmEl.innerHTML =
+        '<div style="background:#1a1a0a;border:2px solid #FFC107;border-radius:14px;padding:20px;margin:12px;text-align:center;">'+
+        '<div style="font-size:36px;">💰</div>'+
+        '<div style="font-size:20px;font-weight:900;color:#FFC107;margin:8px 0;">Order #'+order.slot+' Received!</div>'+
+        '<div style="font-size:14px;font-weight:700;color:#fff;margin:10px 0;">Send <span style="color:#4caf50;font-size:20px;font-weight:900;">$'+depAmt+'</span> deposit via Zelle</div>'+
+        qrHtml+
+        '<div style="background:#222;border-radius:10px;padding:12px;margin:8px 0;">'+
+        (zelleName?'<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px;">'+zelleName+'</div>':'')+
+        '<div style="font-size:18px;font-weight:900;color:#4caf50;">'+zelleInfo+'</div>'+
+        '</div>'+
+        '<div style="font-size:12px;font-weight:700;color:#FFD54F;margin:6px 0;">📝 Use your name as the payment reference</div>'+
+        (depNote?'<div style="font-size:12px;font-weight:700;color:#FFD54F;margin:4px 0;">'+depNote+'</div>':'')+
+        '<div style="font-size:12px;font-weight:800;color:#ff6666;margin:10px 0;">⚠️ Orders without deposit will not be processed</div>'+
+        '<label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0;cursor:pointer;">'+
+        '<input type="checkbox" id="deposit-sent-check" onchange="toggleDepositSent('+order.id+')" style="width:24px;height:24px;accent-color:#4caf50;"/>'+
+        '<span style="font-size:14px;font-weight:800;color:#fff;">I\'ve sent the deposit</span>'+
+        '</label>'+
+        '<button class="submit-btn locked" disabled id="deposit-done-btn" onclick="confirmDepositSent('+order.id+')" style="margin-top:6px;">Confirm Payment Sent</button>'+
+        '<div style="background:#111;border-radius:8px;padding:10px;margin-top:12px;">'+
+        '<div style="font-size:11px;font-weight:700;color:#888;">📱 If you\'re paying with this phone, use a different phone to place your order, then scan the QR code with the phone you\'re paying with.</div>'+
+        '</div>'+
+        '</div>';
+    } else {
+      confirmEl.innerHTML =
+        '<div style="background:#1a2a1a;border:2px solid #4caf50;border-radius:14px;padding:16px;margin:12px;text-align:center;">'+
+        '<div style="font-size:36px;">✅</div>'+
+        '<div style="font-size:18px;font-weight:800;color:#4caf50;margin:6px 0;">Order #'+order.slot+' Confirmed!</div>'+
+        '<div style="font-size:13px;font-weight:700;color:#ccc;">'+order.name+' · $'+order.total.toFixed(2)+'</div>'+
+        '</div>';
+    }
+  }
+  showToast("Order placed! You are #"+order.slot);
+  activeCat="All";renderShop();updateCartFloat();
+  showPage("board",document.querySelectorAll(".nav-item")[2]);renderBoard();
+}
+
+// ============================================================
+// BOARD
+// ============================================================
+function renderBoard(){
+  var total=S.orders.length;var min=S.minOrders;var pct=Math.min((total/min)*100,100);
+  document.getElementById("order-count").textContent=total;
+  document.getElementById("min-count").textContent=min;
+  document.getElementById("pc-fill").style.width=pct+"%";
+  var status=document.getElementById("pc-status");
+  if(total>=min){status.textContent=t("weAreGoing",{n:total});status.className="pc-status ready";}
+  else{status.textContent=t((min-total)===1?"needMoreTrip":"needMoreTripPlural",{n:min-total});status.className="pc-status";}
+  document.getElementById("arrival-text").textContent=S.arrivalText||t("comingSoon");
+  var oml=document.getElementById("orders-month-label");if(oml)oml.textContent=t("ordersThisMonthLabel");var csl=document.getElementById("customer-slots-label");if(csl)csl.textContent=t("customerSlotsLabel");
+  var slots=document.getElementById("board-slots");
+  if(!S.orders.length){slots.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>'+t('noOrdersBoard')+'</p></div>';return;}
+  slots.innerHTML=S.orders.map(function(o){return '<div class="slot-item"><div class="slot-num">#'+o.slot+'</div><div style="font-size:15px;font-weight:800;">'+o.name+'</div></div>';}).join("");
+}
+
+// ============================================================
+// QR
+// ============================================================
+function renderQR(){
+  var box=document.getElementById("qr-box");box.innerHTML="";
+  var url=S.appUrl||window.location.href;
+  document.getElementById("qr-url").textContent=url;
+  try{new QRCode(box,{text:url,width:200,height:200,colorDark:"#111",colorLight:"#fff"});}
+  catch(e){box.innerHTML='<p style="font-size:13px;color:#999;text-align:center;padding:20px;">QR generates when hosted online</p>';}
+}
+function shareApp(){var url=S.appUrl||window.location.href;if(navigator.share)navigator.share({title:"El Toro",url:url});else copyLink();}
+function copyLink(){var url=S.appUrl||window.location.href;navigator.clipboard.writeText(url).then(function(){showToast("Link copied!");}).catch(function(){showToast("Copy: "+url);});}
+
+// ============================================================
+// ORDERS APP
+// ============================================================
+function renderOrdersTab(){
+  var list=document.getElementById("o-orders-list");
+  var q=document.getElementById("o-search");
+  var search=q?q.value.toLowerCase():"";
+  var filtered=S.orders.filter(function(o){return o.status!=="done"&&o.status!=="delivered"&&o.name.toLowerCase().includes(search);});
+  var pending=S.orders.filter(function(o){return o.status==="new"||o.status==="pending_deposit";}).length;
+  var badge=document.getElementById("o-badge");
+  badge.textContent=pending;badge.style.display=pending>0?"block":"none";
+  document.getElementById("o-stats").innerHTML="";
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="ei">📦</div><p>No orders yet!</p></div>';return;}
+  var now=Date.now();
+  list.innerHTML=filtered.map(function(o){
+    var waitMins=Math.floor((now-new Date(o.timestamp).getTime())/60000);
+    var tColor=waitMins>=30?"#ff4444":waitMins>=15?"#FFC107":"#66bb6a";
+    var tText="⏱️ Waiting "+waitMins+" min"+(waitMins!==1?"s":"")+(waitMins>=30?" ⚠️ URGENT":waitMins>=15?" — getting long":"");
+    var isPacking=o.status==="packing";
+    var isPendingDeposit=o.status==="pending_deposit";
+    var borderStyle=isPendingDeposit?"border:2px solid #FFC107;background:#1a1a0a;":isPacking?"border:2px solid #FFC107;":"border:1px solid #333;";
+    var statusLabel=isPendingDeposit?"💰 PENDING DEPOSIT":isPacking?"🟡 PACKING":"🆕 NEW";
+    var statusClass=isPendingDeposit?"badge-packing":isPacking?"badge-packing":"badge-new";
+    var depositBadge="";
+    if(S.depositRequired){
+      if(o.depositSent){
+        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#1a3a1a;border:1px solid #4caf50;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">✅</span><span style="font-size:11px;font-weight:800;color:#4caf50;">Deposit Sent</span></div>';
+      } else {
+        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #555;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">⬜</span><span style="font-size:11px;font-weight:800;color:#888;">No Deposit</span></div>';
+      }
+    }
+    var workerHtml=o.claimedBy?'<div class="oc-worker">👤 Being packed by: '+o.claimedBy+'</div>':"";
+    var itemsHtml=o.items.map(function(item,idx){
+      var done=o.checked&&o.checked[idx];
+      var strike=done?"text-decoration:line-through;color:#555;":"";
+      var chk=done?"checked":"";
+      return '<div class="oc-item-row">'+
+        '<input type="checkbox" class="oci-check" '+chk+' onchange="toggleCheck('+o.id+','+idx+',this)">'+ 
+        '<span class="oci-name" style="'+strike+'">'+item.emoji+" "+item.name+'</span>'+
+        '<span class="oci-qty">x'+item.qty+' · $'+(item.price*item.qty).toFixed(2)+'</span>'+
+      '</div>';
+    }).join("");
+    var btn;
+    if(isPacking){
+      btn='<button class="pack-btn" onclick="completeOrder('+o.id+')">✅ Done — Move to Completed</button>';
+    } else {
+      btn='<button class="take-btn" onclick="takeOrder('+o.id+')">📦 Claim This Order</button>';
+    }
+    return '<div class="order-card" style="'+borderStyle+'">'+
+      '<div class="oc-header">'+
+        '<div>'+
+          '<div class="oc-num">#'+o.slot+'</div>'+
+          '<div class="oc-name">'+o.name+'</div>'+
+          '<div class="oc-phone">📞 '+o.phone+'</div>'+
+          '<div class="oc-time">📅 '+fmtTime(o.timestamp)+'</div>'+
+          '<div style="font-size:12px;font-weight:800;color:'+tColor+';margin-top:2px;">'+tText+'</div>'+
+          workerHtml+
+        '</div>'+
+        '<div style="text-align:right;">'+
+          '<span class="status-badge '+statusClass+'">'+statusLabel+'</span>'+
+          depositBadge+
+          '<br><button class="pr-btn pr-del" style="margin-top:6px;" onclick="deleteOrder('+o.id+')">Delete</button>'+
+        '</div>'+
+      '</div>'+
+      '<div class="oc-items">'+itemsHtml+'</div>'+
+      '<div class="oc-total">Total: $'+o.total.toFixed(2)+'</div>'+
+      btn+
+    '</div>';
+  }).join("");
+}
+
+function toggleCheck(orderId,itemIdx,el){
+  var o=S.orders.find(function(x){return x.id===orderId;});
+  if(!o)return;
+  if(!o.checked)o.checked={};
+  o.checked[itemIdx]=el.checked;
+  var span=el.parentElement.querySelector(".oci-name");
+  if(span)span.style.cssText=el.checked?"text-decoration:line-through;color:#555;":"";
+  save();
+}
+
+function toggleCheck(orderId, itemIdx, el) {
+  var o=S.orders.find(function(x){return x.id===orderId;});
+  if(!o) return;
+  if(!o.checked) o.checked={};
+  o.checked[itemIdx]=el.checked;
+  save();
+  // Update just that item text decoration without full re-render
+  var nameEl=el.parentElement.querySelector(".oci-name");
+  if(nameEl) nameEl.style.cssText=el.checked?"text-decoration:line-through;color:#555;":"";
+}
+
+function takeOrder(id){
+  var o=S.orders.find(function(x){return x.id===id;});
+  if(o){o.status="packing";o.claimedBy=currentWorkerName;o.claimedAt=new Date().toISOString();save();renderOrdersTab();showToast("Order #"+o.slot+" claimed by "+currentWorkerName+"!");}
+}
+function completeOrder(id){
+  var o=S.orders.find(function(x){return x.id===id;});
+  if(o){
+    o.status="done";o.completedBy=currentWorkerName;o.completedAt=new Date().toISOString();
+    save();renderOrdersTab();
+    saveOrderToSheets(o);
+    showToast("Order #"+o.slot+" done & synced!");
+  }
+}
+function showConfirm(title,msg,onYes){
+  document.getElementById("confirm-title").textContent=title||"Are you sure?";
+  document.getElementById("confirm-msg").textContent=msg||"This action cannot be undone.";
+  var yesBtn=document.getElementById("confirm-yes-btn");
+  yesBtn.onclick=function(){closeConfirm();onYes();};
+  document.getElementById("confirm-modal").classList.add("active");
+}
+function closeConfirm(){document.getElementById("confirm-modal").classList.remove("active");}
+
+function deleteOrder(id){
+  var o=S.orders.find(function(x){return x.id===id;});
+  var name=o?o.name:"this order";
+  showConfirm("Delete Order?","Are you sure you want to delete "+name+"'s order? This cannot be undone.",function(){
+    S.orders=S.orders.filter(function(o){return o.id!==id;});save();renderOrdersTab();showToast("Order deleted!");
+  });
+}
+
+function renderOrdersDone(){
+  var list=document.getElementById("o-done-list");
+  var done=S.orders.filter(function(o){return o.status==="done"||o.status==="delivered";});
+  var rev=S.orders.reduce(function(s,o){return s+o.total;},0);
+  var avg=S.orders.length?rev/S.orders.length:0;
+  document.getElementById("o-done-stats").innerHTML=
+    '<div class="stat-card"><div class="stat-val">'+S.orders.length+'</div><div class="stat-label">Orders</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+rev.toFixed(0)+'</div><div class="stat-label">Revenue</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+avg.toFixed(0)+'</div><div class="stat-label">Avg</div></div>';
+  if(!done.length){list.innerHTML='<div class="empty-state"><div class="ei">✅</div><p>No completed orders yet</p></div>';return;}
+  list.innerHTML=done.map(function(o){
+    var itemsHtml=o.items.map(function(i){return '<div class="oc-item-row"><span class="oci-name">'+i.emoji+" "+i.name+'</span><span class="oci-qty">x'+i.qty+' · $'+(i.price*i.qty).toFixed(2)+'</span></div>';}).join("");
+    var stamps=(o.claimedBy?'<div class="oc-worker">📦 Claimed by: '+o.claimedBy+'</div>':'')+(o.completedBy?'<div class="oc-worker">✅ Completed by: '+o.completedBy+'</div>':"");
+    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div><div class="oc-time">'+fmtTime(o.timestamp)+'</div>'+stamps+'</div><div><span class="status-badge badge-done">DONE ✅</span><br><button class="pr-btn pr-del" style="margin-top:4px;" onclick="deleteDoneOrder('+o.id+')">Delete</button></div></div><div class="oc-items">'+itemsHtml+'</div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div></div>';
+  }).join("");
+}
+function deleteDoneOrder(id){
+  showConfirm("Delete Order?","Are you sure you want to delete this completed order?",function(){
+    S.orders=S.orders.filter(function(o){return o.id!==id;});save();renderOrdersDone();showToast("Order deleted!");
+  });
+}
+function renderOrdersLocation(){
+  document.getElementById("o-address").textContent=S.deliveryAddress||"Not set yet";
+  document.getElementById("o-datetime").textContent=S.deliveryDt?fmtDT(S.deliveryDt):"Not set yet";
+}
+function sendBlast(){
+  var count=S.orders.length;if(!count){showToast("No orders to text!");return;}
+  var confirm=document.getElementById("blast-confirm");confirm.style.display="block";
+  confirm.textContent="Text blast sent to "+count+" customers! (Connect Twilio for real texts)";
+  showToast("Blast sent to "+count+" customers!");
+}
+
+// ============================================================
+// ADMIN
+// ============================================================
+function loadDeliveryInputs(){
+  if(S.deadline)document.getElementById("set-deadline").value=S.deadline;
+  if(S.deliveryDt)document.getElementById("set-delivery-dt").value=S.deliveryDt;
+  if(S.deliveryAddress)document.getElementById("set-address").value=S.deliveryAddress;
+  if(S.deliveryNotes)document.getElementById("set-notes").value=S.deliveryNotes;
+  document.getElementById("set-min-orders").value=S.minOrders;
+  document.getElementById("set-min-items").value=S.minItems;
+  document.getElementById("set-cycle-mode").value=S.cycleMode||"monthly";
+  if(S.heroTitle)document.getElementById("set-hero-title").value=S.heroTitle;
+  if(S.heroSub)document.getElementById("set-hero-sub").value=S.heroSub;
+}
+function saveDelivery(btn){
+  S.deadline=document.getElementById("set-deadline").value||null;
+  S.deliveryDt=document.getElementById("set-delivery-dt").value||null;
+  S.deliveryAddress=document.getElementById("set-address").value.trim()||null;
+  S.deliveryNotes=document.getElementById("set-notes").value.trim()||null;
+  if(S.deliveryDt&&S.deliveryAddress)S.arrivalText="Arriving "+fmtDT(S.deliveryDt)+" at "+S.deliveryAddress;
+  save();renderShop();if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function saveHero(btn){
+  S.heroTitle=document.getElementById("set-hero-title").value.trim()||"SHOP NOW!";
+  S.heroSub=document.getElementById("set-hero-sub").value.trim();
+  save();renderShop();if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function saveTripSettings(btn){
+  S.minOrders=parseInt(document.getElementById("set-min-orders").value)||50;
+  S.minItems=parseInt(document.getElementById("set-min-items").value)||8;
+  S.cycleMode=document.getElementById("set-cycle-mode").value||"monthly";
+  save();renderShop();if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function savePasswords(btn){
+  var g=document.getElementById("new-gate-pass").value.trim();
+  var o=document.getElementById("new-o-pass").value.trim();
+  var a=document.getElementById("new-a-pass").value.trim();
+  var i=document.getElementById("new-i-pass").value.trim();
+  var ops=document.getElementById("new-ops-pass").value.trim();
+  var del=document.getElementById("new-del-pass").value.trim();
+  if(g)S.gatePass=g;if(o)S.ordersPass=o;if(a)S.adminPass=a;if(i)S.invPass=i;if(ops)S.opsPass=ops;if(del)S.deliveryPass=del;
+  ["new-gate-pass","new-o-pass","new-a-pass","new-i-pass","new-ops-pass"].forEach(function(id){document.getElementById(id).value="";});
+  save();if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function saveBannerEmoji(btn){
+  S.bannerEmoji=document.getElementById("set-banner-emoji").value.trim();
+  save();renderShop();buttonFlash(btn,"✅ Saved!");
+}
+function saveBizName(btn){
+  var name=document.getElementById("set-biz-name").value.trim();
+  var emoji=document.getElementById("set-biz-emoji").value.trim();
+  if(name)S.bizName=name;
+  S.bizEmoji=emoji;
+  save();applyBizName();buttonFlash(btn,"✅ Saved!");
+}
+function applyBizName(){
+  var logoEls=document.querySelectorAll(".logo-text");
+  logoEls.forEach(function(el){
+    if(el.closest("#customer-app")){
+      var parts=S.bizName.split(" ");
+      if(parts.length>=2){
+        el.innerHTML=parts[0]+' <em>'+parts.slice(1).join(" ")+'</em> '+(S.bizEmoji||"");
+      } else {
+        el.innerHTML='<em>'+S.bizName+'</em> '+(S.bizEmoji||"");
+      }
+    }
+  });
+}
+function savePrimaryColor(btn){
+  var color=document.getElementById("set-primary-color").value;
+  document.documentElement.style.setProperty("--red",color);S.primaryColor=color;save();buttonFlash(btn,"✅ Saved!");
+}
+function saveBackdrop(btn){
+  var color=document.getElementById("set-backdrop-color").value;
+  S.backdropColor=color;
+  document.documentElement.style.setProperty("--dark-bg",color);
+  save();buttonFlash(btn,"✅ Saved!");
+}
+function loadSettingsInputs(){
+  document.getElementById("set-banner-emoji").value=S.bannerEmoji||"";
+  document.getElementById("set-biz-name").value=S.bizName||"EL TORO";
+  document.getElementById("set-biz-emoji").value=S.bizEmoji||"";
+  document.getElementById("set-primary-color").value=S.primaryColor||"#D32F2F";
+  document.getElementById("set-backdrop-color").value=S.backdropColor||"#1a1a1a";
+}
+function saveAppUrl(btn){S.appUrl=document.getElementById("set-app-url").value.trim();save();if(btn)buttonFlash(btn,"✅ Saved!");}
+
+function toggleDeposit(){
+  var on=document.getElementById("deposit-toggle").checked;
+  document.getElementById("deposit-fields").style.display=on?"block":"none";
+  S.depositRequired=on;save();
+}
+function toggleDepositCheck(){
+  // legacy - no longer used on cart page
+}
+function toggleDepositSent(orderId){
+  var chk=document.getElementById("deposit-sent-check");
+  var btn=document.getElementById("deposit-done-btn");
+  if(!chk||!btn)return;
+  if(chk.checked){
+    btn.classList.remove("locked");btn.classList.add("ready");btn.disabled=false;
+  } else {
+    btn.classList.remove("ready");btn.classList.add("locked");btn.disabled=true;
+  }
+}
+function confirmDepositSent(id){
+  var o=S.orders.find(function(x){return x.id===id;});
+  if(o){o.depositSent=true;o.depositSentAt=new Date().toISOString();save();}
+  var confirmEl=document.getElementById("order-confirm-msg");
+  if(confirmEl){
+    confirmEl.innerHTML=
+      '<div style="background:#1a2a1a;border:2px solid #4caf50;border-radius:14px;padding:20px;margin:12px;text-align:center;">'+
+      '<div style="font-size:48px;">✅</div>'+
+      '<div style="font-size:20px;font-weight:900;color:#4caf50;margin:8px 0;">Deposit Sent!</div>'+
+      '<div style="font-size:14px;font-weight:700;color:#ccc;">Order #'+o.slot+' · '+o.name+'</div>'+
+      '<div style="font-size:13px;font-weight:600;color:#999;margin-top:8px;">We\'ll verify your payment and start processing your order. Thank you!</div>'+
+      '</div>';
+    setTimeout(function(){
+      var el=document.getElementById("order-confirm-msg");
+      if(el){el.style.transition="opacity 0.5s";el.style.opacity="0";
+        setTimeout(function(){el.style.display="none";el.style.opacity="1";el.innerHTML="";},600);
+      }
+    },5000);
+  }
+}
+function saveDeposit(btn){
+  S.depositAmount=parseFloat(document.getElementById("set-deposit-amount").value)||50;
+  S.depositName=document.getElementById("set-deposit-name").value.trim();
+  S.depositZelle=document.getElementById("set-deposit-zelle").value.trim();
+  S.depositNote=document.getElementById("set-deposit-note").value.trim();
+  save();if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function uploadZelleQR(input){
+  if(!input.files||!input.files[0])return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    S.depositQR=e.target.result;
+    document.getElementById("zelle-qr-img").src=S.depositQR;
+    document.getElementById("zelle-qr-preview").style.display="block";
+    document.getElementById("zelle-qr-remove").style.display="block";
+    save();showToast("QR code uploaded!");
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function removeZelleQR(){
+  S.depositQR="";
+  document.getElementById("zelle-qr-preview").style.display="none";
+  document.getElementById("zelle-qr-remove").style.display="none";
+  save();showToast("QR code removed!");
+}
+function loadDepositInputs(){
+  var tog=document.getElementById("deposit-toggle");
+  if(tog){tog.checked=!!S.depositRequired;}
+  document.getElementById("deposit-fields").style.display=S.depositRequired?"block":"none";
+  var amt=document.getElementById("set-deposit-amount");if(amt)amt.value=S.depositAmount||50;
+  var name=document.getElementById("set-deposit-name");if(name)name.value=S.depositName||"";
+  var zelle=document.getElementById("set-deposit-zelle");if(zelle)zelle.value=S.depositZelle||"";
+  var note=document.getElementById("set-deposit-note");if(note)note.value=S.depositNote||"";
+  if(S.depositQR){
+    document.getElementById("zelle-qr-img").src=S.depositQR;
+    document.getElementById("zelle-qr-preview").style.display="block";
+    document.getElementById("zelle-qr-remove").style.display="block";
+  }
+}
+function confirmDeposit(id){
+  var o=S.orders.find(function(x){return x.id===id;});
+  if(o){o.status="new";o.depositConfirmed=true;o.depositConfirmedAt=new Date().toISOString();save();renderOrdersTab();showToast("✅ Deposit confirmed for "+o.name+"!");}
+}
+function sendAdminBlast(){var count=S.orders.length;if(!count){showToast("No orders!");return;}showToast("Blast sent to "+count+" customers!");}
+function resetMonth(){
+  showConfirm("Reset Cycle?","Save this cycle and clear all orders for the next one?",function(){
+    S.monthHistory.push({month:new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"}),orders:S.orders.length,revenue:S.orders.reduce(function(s,o){return s+o.total;},0).toFixed(2)});
+  S.orders=[];S.nextOrderId=1;S.deadline=null;S.deliveryDt=null;S.deliveryAddress=null;S.arrivalText="Date & location coming soon!";
+  save();loadDeliveryInputs();renderShop();showToast("Cycle reset! Fresh start 🐂");
+  });
+}
+function exportData(){var blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="eltoro-backup.json";a.click();}
+function exportCSV(){
+  var rows=[["Slot","Name","Phone","Items","Total","Status","Date","ClaimedBy","CompletedBy"]];
+  S.orders.forEach(function(o){rows.push([o.slot,o.name,o.phone,o.items.map(function(i){return i.name+"x"+i.qty;}).join(";"),o.total.toFixed(2),o.status,fmtTime(o.timestamp),o.claimedBy||"",o.completedBy||""]);});
+  var csv=rows.map(function(r){return r.join(",");}).join("\n");
+
+  var blob=new Blob([csv],{type:"text/csv"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="eltoro-orders.csv";a.click();
+}
+
+// Workers
+function addWorker(btn){
+  var name=document.getElementById("new-worker-name").value.trim();
+  var roles=[];
+  if(document.getElementById("wr-orders").checked) roles.push("Orders");
+  if(document.getElementById("wr-inventory").checked) roles.push("Inventory");
+  if(document.getElementById("wr-operations").checked) roles.push("Operations");
+  if(document.getElementById("wr-delivery").checked) roles.push("Delivery");
+  var pay=parseFloat(document.getElementById("new-worker-pay").value)||0;
+  if(!name){showToast("Enter worker name!");return;}
+  if(!roles.length){showToast("Pick at least one role!");return;}
+  if(!S.workers)S.workers=[];
+  S.workers.push({id:Date.now(),name:name,role:roles.join(", "),roles:roles,payPerTrip:pay,active:true});
+  document.getElementById("new-worker-name").value="";
+  document.getElementById("new-worker-pay").value="";
+  ["wr-orders","wr-inventory","wr-operations","wr-delivery"].forEach(function(id){document.getElementById(id).checked=false;});
+  save();renderWorkerList();renderPayroll();if(btn)buttonFlash(btn,"✅ Added!");
+}
+function renderWorkerList(){
+  if(!S.workers)S.workers=[];
+  var list=document.getElementById("worker-list");
+  if(!S.workers.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No workers yet.</p>';return;}
+  list.innerHTML=S.workers.map(function(w){
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+'</div><div class="worker-role-label">'+w.role+'</div><div class="worker-pay-label">$'+w.payPerTrip.toFixed(2)+' per trip</div></div><div style="display:flex;gap:6px;"><button class="pr-btn pr-edit" onclick="editWorkerPay('+w.id+')">Edit Pay</button><button class="pr-btn pr-del" onclick="deleteWorker('+w.id+')">Del</button></div></div>';
+  }).join("");
+}
+function editWorkerPay(id){
+  var w=S.workers.find(function(x){return x.id===id;});if(!w)return;
+  var amt=parseFloat(prompt("New pay per trip for "+w.name+"?",w.payPerTrip));
+  if(!isNaN(amt)&&amt>=0){w.payPerTrip=amt;save();renderWorkerList();showToast("Pay updated!");}
+}
+function deleteWorker(id){
+  var w=S.workers.find(function(x){return x.id===id;});
+  var name=w?w.name:"this worker";
+  showConfirm("Delete Worker?","Are you sure you want to delete "+name+"?",function(){
+    S.workers=S.workers.filter(function(w){return w.id!==id;});save();renderWorkerList();showToast("Worker deleted!");
+  });
+}
+
+// ============================================================
+// INVENTORY
+// ============================================================
+function renderInvProducts(){
+  // Populate category dropdowns
+  var catOpts=buildCatOptions();
+  var npCat=document.getElementById("np-cat");if(npCat)npCat.innerHTML=catOpts;
+  var editCat=document.getElementById("edit-cat");if(editCat)editCat.innerHTML=catOpts;
+  var list=document.getElementById("inv-products-list");
+  if(!S.products.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No products yet.</p>';return;}
+  list.innerHTML=S.products.map(function(p){
+    var photoHtml=p.photo?'<div class="prod-row-photo"><img src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>':'<div class="prod-row-photo">'+p.emoji+'</div>';
+    var margin=p.cost?((p.price-p.cost)/p.price*100).toFixed(0)+"% margin":"";
+    return '<div class="prod-row">'+photoHtml+'<div class="prod-row-info"><div class="prod-row-name">'+p.name+(p.soldOut?" 🔴":"")+(!p.visible?" 👁️":"")+'</div><div class="prod-row-sub">Sell $'+parseFloat(p.price).toFixed(2)+' · Cost $'+parseFloat(p.cost||0).toFixed(2)+(margin?" · "+margin:"")+'</div></div><div class="pr-actions"><button class="pr-btn pr-edit" onclick="openEditModal('+p.id+')">Edit</button><button class="pr-btn pr-hide" onclick="toggleVisible('+p.id+')">'+(p.visible?"Hide":"Show")+'</button><button class="pr-btn pr-sold" onclick="toggleSoldOut('+p.id+')">'+(p.soldOut?"Restock":"SoldOut")+'</button><button class="pr-btn pr-del" onclick="deleteProduct('+p.id+')">Del</button></div></div>';
+  }).join("");
+}
+function addProduct(btn){
+  var name=document.getElementById("np-name").value.trim();
+  var price=parseFloat(document.getElementById("np-price").value);
+  if(!name||isNaN(price)){showToast("Enter name and price!");return;}
+  var emoji=document.getElementById("np-emoji").value.trim()||"📦";
+  var cost=parseFloat(document.getElementById("np-cost").value)||0;
+  var unit=document.getElementById("np-unit").value.trim();
+  var cat=document.getElementById("np-cat").value;
+  var stock=parseInt(document.getElementById("np-stock").value)||0;
+  var lowAt=parseInt(document.getElementById("np-low").value)||5;
+  var urlInput=document.getElementById("np-photo-url");
+  var photo=newProductPhoto||(urlInput?urlInput.value.trim():"");
+  var id=S.products.length?Math.max.apply(null,S.products.map(function(p){return p.id;}))+1:1;
+  S.products.push({id:id,emoji:emoji,name:name,price:price,cost:cost,unit:unit,cat:cat,visible:true,soldOut:false,photo:photo,stock:stock,lowAt:lowAt,addedBy:currentWorkerName,addedAt:new Date().toISOString()});
+  ["np-emoji","np-name","np-price","np-cost","np-unit","np-stock","np-low"].forEach(function(id){document.getElementById(id).value="";});
+  if(urlInput)urlInput.value="";newProductPhoto="";
+  var area=document.getElementById("photo-upload-area");var img=area.querySelector("img");if(img)img.remove();
+  document.getElementById("photo-overlay").style.display="flex";
+  var newProd = S.products[S.products.length-1];
+  save();renderInvProducts();renderShop();
+  syncProductToSheets(newProd);
+  if(btn)buttonFlash(btn,"✅ Added!");
+}
+function deleteProduct(id){
+  var p=S.products.find(function(x){return x.id===id;});
+  var name=p?p.name:"this product";
+  showConfirm("Delete Product?","Are you sure you want to delete "+name+"?",function(){
+    S.products=S.products.filter(function(p){return p.id!==id;});save();renderInvProducts();renderShop();showToast("Product deleted!");
+  });
+}
+function toggleVisible(id){var p=S.products.find(function(x){return x.id===id;});if(p){p.visible=!p.visible;save();renderInvProducts();renderShop();}}
+function toggleSoldOut(id){var p=S.products.find(function(x){return x.id===id;});if(p){p.soldOut=!p.soldOut;save();renderInvProducts();renderShop();}}
+
+function openEditModal(id){
+  var p=S.products.find(function(x){return x.id===id;});if(!p)return;
+  document.getElementById("edit-prod-id").value=id;
+  document.getElementById("edit-emoji").value=p.emoji||"";
+  document.getElementById("edit-name").value=p.name;
+  document.getElementById("edit-price").value=p.price;
+  document.getElementById("edit-cost").value=p.cost||0;
+  document.getElementById("edit-unit").value=p.unit;
+  document.getElementById("edit-cat").value=p.cat;
+  document.getElementById("edit-url").value="";
+  editProductPhoto=p.photo||"";
+  var area=document.getElementById("edit-photo-area");var img=area.querySelector("img");if(img)img.remove();
+  document.getElementById("edit-photo-overlay").style.display="flex";
+  if(p.photo)showPhotoPreview("edit-photo-area","edit-photo-overlay",p.photo);
+  document.getElementById("edit-modal").classList.add("active");
+}
+function closeEditModal(){document.getElementById("edit-modal").classList.remove("active");editProductPhoto="";}
+function saveEditProduct(){
+  var id=parseInt(document.getElementById("edit-prod-id").value);
+  var p=S.products.find(function(x){return x.id===id;});if(!p)return;
+  p.emoji=document.getElementById("edit-emoji").value.trim()||p.emoji;
+  p.name=document.getElementById("edit-name").value.trim()||p.name;
+  p.price=parseFloat(document.getElementById("edit-price").value)||p.price;
+  p.cost=parseFloat(document.getElementById("edit-cost").value)||p.cost;
+  p.unit=document.getElementById("edit-unit").value.trim()||p.unit;
+  p.cat=document.getElementById("edit-cat").value;
+  var urlVal=document.getElementById("edit-url").value.trim();
+  if(editProductPhoto)p.photo=editProductPhoto;else if(urlVal)p.photo=urlVal;
+  p.editedBy=currentWorkerName;p.editedAt=new Date().toISOString();
+  closeEditModal();save();renderInvProducts();renderShop();showToast("Product updated!");
+}
+
+function renderStock(){
+  // Category Management Functions handled separately
+  renderStockReal();
+}
+function addCategory(btn){
+  var emoji=document.getElementById("new-cat-emoji").value.trim()||"📦";
+  var name=document.getElementById("new-cat-name").value.trim();
+  if(!name){showToast("Enter a category name!");return;}
+  if(!S.categories)S.categories=[];
+  var exists=S.categories.find(function(c){return c.name.toLowerCase()===name.toLowerCase();});
+  if(exists){showToast("Category already exists!");return;}
+  S.categories.push({name:name,emoji:emoji});
+  document.getElementById("new-cat-emoji").value="";
+  document.getElementById("new-cat-name").value="";
+  save();renderCatList();renderInvProducts();renderShop();
+  buttonFlash(btn,"✅ Added!");
+}
+function renderCatList(){
+  if(!S.categories)S.categories=[];
+  var list=document.getElementById("cat-list");
+  if(!S.categories.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No categories yet.</p>';return;}
+  list.innerHTML=S.categories.map(function(c,i){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #2a2a2a;">'+
+      '<div style="display:flex;align-items:center;gap:10px;">'+
+        '<span style="font-size:24px;">'+c.emoji+'</span>'+
+        '<span style="font-size:15px;font-weight:800;">'+c.name+'</span>'+
+      '</div>'+
+      '<div style="display:flex;gap:6px;">'+
+        '<button class="pr-btn pr-edit" onclick="editCategory('+i+')">Edit</button>'+
+        '<button class="pr-btn pr-del" onclick="deleteCategory('+i+')">Del</button>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+}
+function editCategory(idx){
+  var c=S.categories[idx];if(!c)return;
+  document.getElementById("edit-cat-idx").value=idx;
+  document.getElementById("edit-cat-emoji").value=c.emoji||"";
+  document.getElementById("edit-cat-name").value=c.name||"";
+  document.getElementById("edit-cat-modal").classList.add("active");
+}
+function closeEditCatModal(){document.getElementById("edit-cat-modal").classList.remove("active");}
+function saveEditCategory(btn){
+  var idx=parseInt(document.getElementById("edit-cat-idx").value);
+  var c=S.categories[idx];if(!c)return;
+  var newName=document.getElementById("edit-cat-name").value.trim();
+  var newEmoji=document.getElementById("edit-cat-emoji").value.trim();
+  if(!newName){showToast("Enter a category name!");return;}
+  var oldName=c.name;
+  S.products.forEach(function(p){if(p.cat===oldName)p.cat=newName;});
+  c.name=newName;
+  c.emoji=newEmoji||c.emoji;
+  closeEditCatModal();save();renderCatList();renderInvProducts();renderShop();
+  buttonFlash(btn,"✅ Saved!");
+}
+function deleteCategory(idx){
+  var c=S.categories[idx];if(!c)return;
+  var prodCount=S.products.filter(function(p){return p.cat===c.name;}).length;
+  var msg="Are you sure you want to delete "+c.emoji+" "+c.name+"?";
+  if(prodCount>0) msg+=" "+prodCount+" product(s) use this category.";
+  showConfirm("Delete Category?",msg,function(){
+    S.categories.splice(idx,1);
+    save();renderCatList();renderInvProducts();renderShop();showToast("Category deleted!");
+  });
+}
+
+function renderStockReal(){
+  var list=document.getElementById("stock-list");
+  if(!S.products.length){list.innerHTML='<div class="empty-state"><div class="ei">📦</div><p>Add products first</p></div>';return;}
+  list.innerHTML=S.products.map(function(p){
+    var qty=p.stock||0;var low=p.lowAt||5;
+    var dotClass=qty<=0?"stock-red":qty<=low?"stock-yellow":"stock-green";
+    var statusText=qty<=0?"Out of stock!":qty<=low?"Running low":"In stock";
+    return '<div class="stock-item"><div class="stock-dot '+dotClass+'"></div><div style="flex:1;"><div style="font-size:14px;font-weight:800;">'+p.emoji+" "+p.name+'</div><div style="font-size:13px;color:var(--text-gray);font-weight:600;">'+qty+' on hand · '+statusText+'</div></div><button class="restock-btn" onclick="restockItem('+p.id+')">+ Restock</button></div>';
+  }).join("");
+}
+function restockItem(id){
+  var amt=parseInt(prompt("How many units to add?"));if(isNaN(amt)||amt<=0)return;
+  var p=S.products.find(function(x){return x.id===id;});
+  if(p){p.stock=(p.stock||0)+amt;p.lastRestockedBy=currentWorkerName;p.lastRestockedAt=new Date().toISOString();save();renderStock();
+    syncStockToSheets(p, amt, currentWorkerName);
+    showToast("Restocked +"+amt+" by "+currentWorkerName+" ✓ Sheets synced");}
+}
+
+function addSupplier(btn){
+  var name=document.getElementById("sup-name").value.trim();
+  if(!name){showToast("Enter supplier name!");return;}
+  if(!S.suppliers)S.suppliers=[];
+  S.suppliers.push({id:Date.now(),name:name,contact:document.getElementById("sup-contact").value.trim(),notes:document.getElementById("sup-notes").value.trim()});
+  ["sup-name","sup-contact","sup-notes"].forEach(function(id){document.getElementById(id).value="";});
+  save();renderSuppliers();if(btn)buttonFlash(btn,"✅ Added!");
+}
+function renderSuppliers(){
+  if(!S.suppliers)S.suppliers=[];
+  var list=document.getElementById("supplier-list");
+  if(!S.suppliers.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No suppliers yet.</p>';return;}
+  list.innerHTML=S.suppliers.map(function(s){
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+s.name+'</div><div class="worker-role-label">'+s.contact+'</div><div class="worker-pay-label">'+s.notes+'</div></div><button class="pr-btn pr-del" onclick="deleteSupplier('+s.id+')">Del</button></div>';
+  }).join("");
+}
+function deleteSupplier(id){if(!S.suppliers)return;S.suppliers=S.suppliers.filter(function(s){return s.id!==id;});save();renderSuppliers();}
+
+function logPurchase(btn){
+  var item=document.getElementById("pur-item").value.trim();
+  var qty=parseInt(document.getElementById("pur-qty").value)||0;
+  var cost=parseFloat(document.getElementById("pur-cost").value)||0;
+  var supplier=document.getElementById("pur-supplier").value.trim();
+  if(!item){showToast("Enter item name!");return;}
+  if(!S.purchases)S.purchases=[];
+  var newPurchase = {id:Date.now(),item:item,qty:qty,cost:cost,supplier:supplier,by:currentWorkerName,date:new Date().toISOString()};
+  S.purchases.push(newPurchase);
+  ["pur-item","pur-qty","pur-cost","pur-supplier"].forEach(function(id){document.getElementById(id).value="";});
+  save();renderPurchases();
+  syncPurchaseToSheets(newPurchase);
+  if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function renderPurchases(){
+  if(!S.purchases)S.purchases=[];
+  var list=document.getElementById("purchase-list");
+  if(!S.purchases.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No purchases logged yet.</p>';return;}
+  var total=S.purchases.reduce(function(s,p){return s+p.cost;},0);
+  list.innerHTML='<div style="font-size:13px;font-weight:800;color:var(--red);margin-bottom:10px;">Total Spent: $'+total.toFixed(2)+'</div>'+
+    S.purchases.slice().reverse().map(function(p){
+      return '<div class="ledger-item"><div><div class="ledger-label">'+p.item+'</div><div class="ledger-sub">'+p.supplier+' · '+p.qty+' units · by '+p.by+' · '+fmtTime(p.date)+'</div></div><div class="ledger-amount ledger-out">-$'+p.cost.toFixed(2)+'</div></div>';
+    }).join("");
+}
+
+// ============================================================
+// OPERATIONS
+// ============================================================
+function renderOpsSummary(){
+  var revenue=S.orders.reduce(function(s,o){return s+o.total;},0);
+  var expenses=(S.expenses||[]).reduce(function(s,e){return s+e.amount;},0);
+  var tripCosts=(S.trips||[]).reduce(function(s,t){return s+t.cost;},0);
+  var payroll=(S.payments||[]).reduce(function(s,p){return s+p.amount;},0);
+  var purchases=(S.purchases||[]).reduce(function(s,p){return s+p.cost;},0);
+  var totalOut=expenses+tripCosts+payroll+purchases;
+  var netProfit=revenue-totalOut;
+  var profitEl=document.getElementById("ops-profit-val");
+  profitEl.textContent="$"+Math.abs(netProfit).toFixed(0);
+  profitEl.className="summary-profit "+(netProfit>=0?"profit-pos":"profit-neg");
+  document.getElementById("ops-summary-grid").innerHTML=
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#4caf50;">$'+revenue.toFixed(0)+'</div><div class="summary-tile-label">Revenue</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:var(--red);">$'+totalOut.toFixed(0)+'</div><div class="summary-tile-label">Total Out</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:var(--gold);">$'+expenses.toFixed(0)+'</div><div class="summary-tile-label">Expenses</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#4fc3f7;">$'+tripCosts.toFixed(0)+'</div><div class="summary-tile-label">Trip Costs</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#ce93d8;">$'+payroll.toFixed(0)+'</div><div class="summary-tile-label">Payroll</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#ffb74d;">$'+purchases.toFixed(0)+'</div><div class="summary-tile-label">Purchases</div></div>';
+  var hist=document.getElementById("ops-month-history");
+  hist.innerHTML=(!S.monthHistory||!S.monthHistory.length)?'<p style="color:var(--text-gray);font-size:14px;">No history yet.</p>':
+    S.monthHistory.slice().reverse().map(function(m){return '<div class="ot-row"><span class="ot-label">'+m.month+'</span><span class="ot-val">'+m.orders+' orders · $'+m.revenue+'</span></div>';}).join("");
+}
+
+function renderOpsIncome(){
+  var revenue=S.orders.reduce(function(s,o){return s+o.total;},0);
+  var avg=S.orders.length?revenue/S.orders.length:0;
+  document.getElementById("ops-income-stats").innerHTML=
+    '<div class="stat-card"><div class="stat-val">'+S.orders.length+'</div><div class="stat-label">Orders</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+revenue.toFixed(0)+'</div><div class="stat-label">Revenue</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+avg.toFixed(0)+'</div><div class="stat-label">Avg</div></div>';
+  var counts={};
+  S.orders.forEach(function(o){o.items.forEach(function(i){counts[i.name]=(counts[i.name]||0)+i.qty;});});
+  var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1];});
+  document.getElementById("ops-income-details").innerHTML=
+    '<div class="ot-row"><span class="ot-label">Gross Revenue</span><span class="ot-val" style="color:#4caf50;">$'+revenue.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Orders</span><span class="ot-val">'+S.orders.length+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Avg Order</span><span class="ot-val">$'+avg.toFixed(2)+'</span></div>';
+  document.getElementById("ops-bestsellers").innerHTML=!sorted.length?'<p style="color:var(--text-gray);font-size:14px;">No data yet.</p>':
+    sorted.slice(0,5).map(function(item,i){return '<div class="ot-row"><span class="ot-label">'+(i===0?"🏆 ":"")+item[0]+'</span><span class="ot-val">'+item[1]+' sold</span></div>';}).join("");
+}
+
+function logExpense(btn){
+  var desc=document.getElementById("exp-desc").value.trim();
+  var amount=parseFloat(document.getElementById("exp-amount").value);
+  var cat=document.getElementById("exp-cat").value;
+  if(!desc||isNaN(amount)){showToast("Enter description and amount!");return;}
+  if(!S.expenses)S.expenses=[];
+  var newExp={id:Date.now(),desc:desc,amount:amount,cat:cat,date:new Date().toISOString()};
+  S.expenses.push(newExp);
+  document.getElementById("exp-desc").value="";document.getElementById("exp-amount").value="";
+  save();renderExpenses();renderOpsSummary();
+  syncExpenseToSheets(newExp);
+  if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function renderExpenses(){
+  if(!S.expenses)S.expenses=[];
+  var total=S.expenses.reduce(function(s,e){return s+e.amount;},0);
+  document.getElementById("ops-exp-stats").innerHTML=
+    '<div class="stat-card"><div class="stat-val">'+S.expenses.length+'</div><div class="stat-label">Entries</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+total.toFixed(0)+'</div><div class="stat-label">Total Out</div></div>'+
+    '<div class="stat-card"><div class="stat-val stat-val" style="color:#4caf50;">$'+(S.orders.reduce(function(s,o){return s+o.total;},0)-total).toFixed(0)+'</div><div class="stat-label">After Exp</div></div>';
+  var list=document.getElementById("exp-list");
+  if(!S.expenses.length){list.innerHTML='<div class="empty-state"><div class="ei">💸</div><p>No expenses logged yet</p></div>';return;}
+  list.innerHTML=S.expenses.slice().reverse().map(function(e){
+    return '<div class="ledger-item"><div><div class="ledger-label">'+e.desc+'</div><div class="ledger-sub">'+e.cat+' · '+fmtTime(e.date)+'</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="ledger-amount ledger-out">-$'+e.amount.toFixed(2)+'</div><button class="pr-btn pr-del" onclick="deleteExpense('+e.id+')">Del</button></div></div>';
+  }).join("");
+}
+function deleteExpense(id){if(!S.expenses)return;S.expenses=S.expenses.filter(function(e){return e.id!==id;});save();renderExpenses();renderOpsSummary();}
+
+function logTrip(){
+  var dest=document.getElementById("t-dest").value.trim();
+  var miles=parseFloat(document.getElementById("t-miles").value);
+  var gas=parseFloat(document.getElementById("t-gas").value);
+  var mpg=parseFloat(document.getElementById("t-mpg").value);
+  var extra=parseFloat(document.getElementById("t-extra").value)||0;
+  var orders=parseInt(document.getElementById("t-orders-count").value)||0;
+  var revenue=parseFloat(document.getElementById("t-revenue").value)||0;
+  if(!dest||isNaN(miles)||isNaN(gas)||isNaN(mpg)){showToast("Fill in destination, miles, gas and MPG!");return;}
+  var gasCost=(miles/mpg)*gas;var wearTear=miles*0.67;var cost=gasCost+wearTear+extra;var profit=revenue-cost;
+  if(!S.trips)S.trips=[];
+  S.trips.push({dest:dest,miles:miles,gas:gas,mpg:mpg,gasCost:gasCost,wearTear:wearTear,extra:extra,cost:cost,revenue:revenue,profit:profit,orders:orders,date:new Date().toLocaleDateString()});
+  document.getElementById("trip-preview").innerHTML='<div class="trip-card" style="margin-top:10px;border-color:'+(profit>=0?"#4caf50":"var(--red)")+'"><div style="font-size:14px;font-weight:800;margin-bottom:8px;">Trip: '+dest+'</div><div class="ot-row"><span class="ot-label">Gas</span><span class="ot-val">$'+gasCost.toFixed(2)+'</span></div><div class="ot-row"><span class="ot-label">Wear & Tear</span><span class="ot-val">$'+wearTear.toFixed(2)+'</span></div><div class="ot-row"><span class="ot-label">Total Cost</span><span class="ot-val" style="color:var(--red);">$'+cost.toFixed(2)+'</span></div><div class="ot-row"><span class="ot-label">Revenue</span><span class="ot-val">$'+revenue.toFixed(2)+'</span></div><div style="font-size:22px;font-weight:800;color:'+(profit>=0?"#4caf50":"var(--red)")+';">Net Profit: $'+profit.toFixed(2)+'</div></div>';
+  ["t-dest","t-miles","t-gas","t-mpg","t-extra","t-orders-count","t-revenue"].forEach(function(id){document.getElementById(id).value="";});
+  save();renderTrips();renderOpsSummary();showToast("Trip saved!");
+}
+function renderTrips(){
+  if(!S.trips)S.trips=[];
+  var tMiles=S.trips.reduce(function(s,t){return s+t.miles;},0);
+  var tCost=S.trips.reduce(function(s,t){return s+t.cost;},0);
+  var tRev=S.trips.reduce(function(s,t){return s+t.revenue;},0);
+  var tProfit=tRev-tCost;
+  document.getElementById("trip-totals").innerHTML=
+    '<div class="ot-row"><span class="ot-label">Total Miles</span><span class="ot-val">'+tMiles.toFixed(0)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Costs</span><span class="ot-val" style="color:var(--red);">$'+tCost.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Revenue</span><span class="ot-val">$'+tRev.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Net Profit</span><span class="ot-val" style="color:'+(tProfit>=0?"#4caf50":"var(--red)")+';">$'+tProfit.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Trips Made</span><span class="ot-val">'+S.trips.length+'</span></div>';
+  document.getElementById("trip-history").innerHTML=S.trips.slice().reverse().map(function(t){
+    return '<div class="trip-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;"><div><div style="font-size:16px;font-weight:800;">'+t.dest+'</div><div style="font-size:12px;color:var(--text-gray);font-weight:600;">'+t.date+'</div></div><div class="trip-profit '+(t.profit>=0?"profit-pos":"profit-neg")+'">$'+t.profit.toFixed(0)+'</div></div>'+
+      '<div class="ot-row"><span class="ot-label">Miles</span><span class="ot-val">'+t.miles+'</span></div>'+
+      '<div class="ot-row"><span class="ot-label">Gas Cost</span><span class="ot-val">$'+t.gasCost.toFixed(2)+'</span></div>'+
+      '<div class="ot-row"><span class="ot-label">Wear & Tear</span><span class="ot-val">$'+t.wearTear.toFixed(2)+'</span></div>'+
+      '<div class="ot-row"><span class="ot-label">Total Cost</span><span class="ot-val" style="color:var(--red);">$'+t.cost.toFixed(2)+'</span></div>'+
+      '<div class="ot-row"><span class="ot-label">Revenue</span><span class="ot-val">$'+t.revenue.toFixed(2)+'</span></div>'+
+      '<div class="ot-row"><span class="ot-label">Net Profit</span><span class="ot-val" style="color:'+(t.profit>=0?"#4caf50":"var(--red)")+';">$'+t.profit.toFixed(2)+'</span></div></div>';
+  }).join("");
+}
+
+function renderPayroll(){
+  if(!S.workers)S.workers=[];if(!S.payments)S.payments=[];
+  var totalPaid=S.payments.reduce(function(s,p){return s+p.amount;},0);
+  document.getElementById("ops-payroll-stats").innerHTML=
+    '<div class="stat-card"><div class="stat-val">'+S.workers.length+'</div><div class="stat-label">Workers</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+totalPaid.toFixed(0)+'</div><div class="stat-label">Total Paid</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+S.payments.length+'</div><div class="stat-label">Payments</div></div>';
+  var sel=document.getElementById("pay-worker-select");
+  sel.innerHTML='<option value="">Select worker...</option>'+S.workers.map(function(w){return '<option value="'+w.id+'">'+w.name+' ($'+w.payPerTrip.toFixed(2)+'/trip)</option>';}).join("");
+  var summary=document.getElementById("payroll-summary");
+  if(!S.workers.length){summary.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No workers yet. Add in Admin.</p>';return;}
+  summary.innerHTML=S.workers.map(function(w){
+    var paid=S.payments.filter(function(p){return p.workerId===w.id;}).reduce(function(s,p){return s+p.amount;},0);
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+'</div><div class="worker-role-label">'+w.role+' · $'+w.payPerTrip.toFixed(2)+'/trip</div><div class="worker-pay-label">Total paid: $'+paid.toFixed(2)+'</div></div></div>';
+  }).join("");
+  var hist=document.getElementById("payroll-history");
+  hist.innerHTML=!S.payments.length?'<p style="color:var(--text-gray);font-size:14px;">No payments logged yet.</p>':
+    S.payments.slice().reverse().map(function(p){
+      var w=S.workers.find(function(x){return x.id===p.workerId;});
+      return '<div class="ledger-item"><div><div class="ledger-label">'+(w?w.name:"Unknown")+'</div><div class="ledger-sub">'+p.note+' · '+fmtTime(p.date)+'</div></div><div class="ledger-amount ledger-out">-$'+p.amount.toFixed(2)+'</div></div>';
+    }).join("");
+}
+function logPayment(btn){
+  var wid=parseInt(document.getElementById("pay-worker-select").value);
+  var amount=parseFloat(document.getElementById("pay-amount").value);
+  var note=document.getElementById("pay-note").value.trim()||"Payment";
+  if(!wid||isNaN(amount)){showToast("Select worker and enter amount!");return;}
+  if(!S.payments)S.payments=[];
+  var newPay={id:Date.now(),workerId:wid,amount:amount,note:note,date:new Date().toISOString()};
+  S.payments.push(newPay);
+  document.getElementById("pay-amount").value="";document.getElementById("pay-note").value="";
+  save();renderPayroll();renderOpsSummary();
+  var pw=S.workers.find(function(x){return x.id===wid;});
+  syncPaymentToSheets(newPay, pw?pw.name:"Unknown");
+  if(btn)buttonFlash(btn,"✅ Saved!");
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function fmtDT(dt){if(!dt)return "Not set";try{return new Date(dt).toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});}catch(e){return dt;}}
+function fmtTime(ts){if(!ts)return "";try{return new Date(ts).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}catch(e){return "";}}
+function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},2500);}
+
+function buttonFlash(btn,msg){
+  var orig=btn.textContent;
+  var origBg=btn.style.background;
+  btn.textContent=msg||"✅ Saved!";
+  btn.style.background="#2E7D32";
+  btn.style.color="#fff";
+  btn.disabled=true;
+  setTimeout(function(){
+    btn.textContent=orig;
+    btn.style.background=origBg||"";
+    btn.style.color="";
+    btn.disabled=false;
+  },1800);
+}
+
+
+
+// ============================================================
+// INVENTORY GOOGLE SHEETS SYNC
+// ============================================================
+var INV_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwE0JqY1aNFDKiGtssZERqk8FpfqeKF9ei1A5bo1AB3xy0vKKgI8L1Ook5ZMd6DPm7V/exec';
+
+function syncPurchaseToSheets(purchase) {
+  fetch(INV_SHEETS_URL, {
+    method: "POST", mode: "no-cors",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      type: "Purchases",
+      date: new Date(purchase.date).toLocaleString("en-US"),
+      item: purchase.item,
+      qty: purchase.qty,
+      cost: "$" + purchase.cost.toFixed(2),
+      supplier: purchase.supplier,
+      by: purchase.by
+    })
+  }).catch(function(e){ console.log("Sheets err:", e); });
+}
+
+function syncStockToSheets(product, amount, by) {
+  fetch(INV_SHEETS_URL, {
+    method: "POST", mode: "no-cors",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      type: "Stock",
+      date: new Date().toLocaleString("en-US"),
+      product: product.name,
+      amount: amount,
+      by: by
+    })
+  }).catch(function(e){ console.log("Sheets err:", e); });
+}
+
+function syncProductToSheets(product) {
+  fetch(INV_SHEETS_URL, {
+    method: "POST", mode: "no-cors",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      type: "Products",
+      name: product.name,
+      price: "$" + parseFloat(product.price).toFixed(2),
+      cost: "$" + parseFloat(product.cost||0).toFixed(2),
+      category: product.cat,
+      unit: product.unit,
+      stock: product.stock||0,
+      by: product.addedBy||"",
+      date: new Date().toLocaleString("en-US")
+    })
+  }).catch(function(e){ console.log("Sheets err:", e); });
+}
+
+
+
+// ============================================================
+// OPERATIONS GOOGLE SHEETS SYNC
+// ============================================================
+var OPS_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwHQZjLBrYR87AIizFlwiwNY5NuHl1HhNYGJ3PooAdUYqbDDvR0Gkjw7_CWekkWpsrd/exec';
+
+function syncExpenseToSheets(exp) {
+  fetch(OPS_SHEETS_URL, {
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"Expenses",
+      date:new Date(exp.date).toLocaleString("en-US"),
+      desc:exp.desc, cat:exp.cat,
+      amount:"$"+exp.amount.toFixed(2)
+    })
+  }).catch(function(e){console.log("Ops sheets err:",e);});
+}
+
+function syncPaymentToSheets(payment, workerName) {
+  fetch(OPS_SHEETS_URL, {
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"Payments",
+      date:new Date(payment.date).toLocaleString("en-US"),
+      worker:workerName,
+      amount:"$"+payment.amount.toFixed(2),
+      note:payment.note
+    })
+  }).catch(function(e){console.log("Ops sheets err:",e);});
+}
+
+function syncSummaryToSheets() {
+  var revenue=S.orders.reduce(function(s,o){return s+o.total;},0);
+  var expenses=(S.expenses||[]).reduce(function(s,e){return s+e.amount;},0);
+  var payroll=(S.payments||[]).reduce(function(s,p){return s+p.amount;},0);
+  var tripCosts=(S.trips||[]).reduce(function(s,t){return s+t.cost;},0);
+  var netProfit=revenue-expenses-payroll-tripCosts;
+  var month=new Date().toLocaleString("en-US",{month:"long",year:"numeric"});
+  fetch(OPS_SHEETS_URL, {
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"Summary",
+      month:month,
+      revenue:"$"+revenue.toFixed(2),
+      expenses:"$"+expenses.toFixed(2),
+      payroll:"$"+payroll.toFixed(2),
+      tripCosts:"$"+tripCosts.toFixed(2),
+      netProfit:"$"+netProfit.toFixed(2)
+    })
+  }).catch(function(e){console.log("Ops sheets err:",e);});
+}
+
+// ============================================================
+// DELIVERY APP
+// ============================================================
+function renderPickupList(){
+  var done=S.orders.filter(function(o){return o.status==="done"||o.status==="delivered";});
+  var total=done.length;
+  var pickedUp=done.filter(function(o){return o.deliveryStatus==="dropped_off";}).length;
+  var noShow=done.filter(function(o){return o.deliveryStatus==="no_show";}).length;
+  var left=total-pickedUp-noShow;
+  // Big countdown
+  var countdown=document.getElementById("del-countdown");
+  if(countdown){
+    countdown.textContent=left;
+    countdown.style.color=left===0?"#4caf50":"#FF9800";
+  }
+  var pct=total>0?((pickedUp+noShow)/total)*100:0;
+  var bar=document.getElementById("del-progress-bar");
+  if(bar) bar.style.width=pct+"%";
+  var lbl=document.getElementById("del-progress-label");
+  if(lbl) lbl.textContent=pickedUp+" dropped off · "+noShow+" no show · "+left+" remaining";
+  // Badge
+  var badge=document.getElementById("del-badge");
+  if(badge){badge.textContent=left;badge.style.display=left>0?"block":"none";}
+  var list=document.getElementById("del-pickup-list");
+  if(!list) return;
+  if(!done.length){
+    list.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>No completed orders yet</p></div>';
+    return;
+  }
+  // All done celebration
+  if(left===0&&total>0){
+    list.innerHTML='<div style="text-align:center;padding:30px 20px;">'+
+      '<div style="font-size:64px;">🎉</div>'+
+      '<div style="font-family:Black Ops One,cursive;font-size:28px;color:#4caf50;margin-top:12px;">ALL DONE!</div>'+
+      '<div style="font-size:15px;font-weight:700;color:var(--text-gray);margin-top:8px;">Every order delivered!</div>'+
+      '</div>';
+    return;
+  }
+  list.innerHTML=done.map(function(o){
+    var status=o.deliveryStatus||"pending";
+    var isPicked=status==="dropped_off";
+    var isNoShow=status==="no_show";
+    var cardClass="pickup-card"+(isPicked?" picked-up":isNoShow?" no-show":"");
+    var statusBadge=isPicked?'<span style="background:#1a3a1a;color:#4caf50;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;">✅ DROPPED OFF</span>':
+      isNoShow?'<span style="background:#2a0000;color:#ff6666;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;">❌ NO SHOW</span>':
+      '<span style="background:#1a1a00;color:var(--gold);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;">⏳ WAITING</span>';
+    var itemsSummary=o.items.map(function(i){return i.qty+"x "+i.name;}).join(", ");
+    var btns=(!isPicked&&!isNoShow)?
+      '<div style="display:flex;gap:8px;margin-top:10px;">'+
+        '<button style="flex:1;padding:10px;background:#1a3a1a;color:#4caf50;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;" onclick="markDroppedOff('+o.id+')">✅ Dropped Off</button>'+
+        '<button style="flex:1;padding:10px;background:#2a0000;color:#ff6666;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;" onclick="markNoShow('+o.id+')">❌ No Show</button>'+
+        '<a href="tel:'+o.phone+'" style="padding:10px 14px;background:#1a1a3a;color:#4fc3f7;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;text-decoration:none;">📞</a>'+
+      '</div>':"";
+    return '<div class="'+cardClass+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'+
+        '<div>'+
+          '<div style="font-family:Black Ops One,cursive;font-size:20px;color:#FF9800;">#'+o.slot+'</div>'+
+          '<div style="font-size:16px;font-weight:800;">'+o.name+'</div>'+
+          '<div style="font-size:13px;color:var(--text-gray);font-weight:600;">📞 '+o.phone+'</div>'+
+          '<div style="font-size:12px;color:var(--text-gray);font-weight:600;margin-top:4px;">'+itemsSummary+'</div>'+
+          '<div style="font-size:14px;font-weight:800;color:#FF9800;margin-top:2px;">$'+o.total.toFixed(2)+'</div>'+
+        '</div>'+
+        statusBadge+
+      '</div>'+
+      btns+
+    '</div>';
+  }).join("");
+}
+
+function markDroppedOff(id){
+  var o=S.orders.find(function(x){return x.id===id;});
+  if(o){
+    o.deliveryStatus="dropped_off";
+    o.droppedOffBy=currentWorkerName;
+    o.droppedOffAt=new Date().toISOString();
+    save();renderPickupList();
+    syncPickupToSheets(o,"✅ Dropped Off");
+    showToast("✅ "+o.name+" dropped off & synced!");
+  }
+}
+
+function markNoShow(id){
+  var o=S.orders.find(function(x){return x.id===id;});
+  if(o){
+    o.deliveryStatus="no_show";
+    o.noShowAt=new Date().toISOString();
+    save();renderPickupList();
+    syncPickupToSheets(o,"❌ No Show");
+    showToast("❌ "+o.name+" marked no show & synced");
+  }
+}
+
+function renderDeliveryLocation(){
+  var addr=document.getElementById("del-address");
+  var dt=document.getElementById("del-datetime");
+  var statusEl=document.getElementById("del-status-display");
+  var notesEl=document.getElementById("del-notes");
+  if(addr) addr.textContent=S.deliveryAddress||"Not set yet";
+  if(dt) dt.textContent=S.deliveryDt?fmtDT(S.deliveryDt):"Not set yet";
+  var statusMap={on_the_way:"🚗 On The Way",arrived:"📍 Arrived",done:"✅ All Done"};
+  if(statusEl) statusEl.textContent=S.deliveryStatusLabel?statusMap[S.deliveryStatusLabel]||"":"";
+  if(notesEl) notesEl.value=S.deliveryRouteNotes||"";
+}
+
+function setDeliveryStatus(status){
+  S.deliveryStatusLabel=status;
+  save();renderDeliveryLocation();
+  var msgs={on_the_way:"🚗 On the way!",arrived:"📍 Arrived at location!",done:"✅ Delivery complete!"};
+  showToast(msgs[status]);
+}
+
+function saveDeliveryNotes(btn){
+  var el=document.getElementById("del-notes");
+  if(el){S.deliveryRouteNotes=el.value;save();if(btn)buttonFlash(btn,"✅ Saved!");}
+}
+
+function logDeliveryTrip(){
+  var dest=document.getElementById("del-t-dest").value.trim();
+  var miles=parseFloat(document.getElementById("del-t-miles").value);
+  var gas=parseFloat(document.getElementById("del-t-gas").value);
+  var mpg=parseFloat(document.getElementById("del-t-mpg").value);
+  var extra=parseFloat(document.getElementById("del-t-extra").value)||0;
+  var orders=parseInt(document.getElementById("del-t-orders-count").value)||0;
+  var revenue=parseFloat(document.getElementById("del-t-revenue").value)||0;
+  if(!dest||isNaN(miles)||isNaN(gas)||isNaN(mpg)){showToast("Fill in destination, miles, gas and MPG!");return;}
+  var gasCost=(miles/mpg)*gas;var wearTear=miles*0.67;var cost=gasCost+wearTear+extra;var profit=revenue-cost;
+  var month=new Date().toLocaleString("en-US",{month:"long",year:"numeric"});
+  if(!S.trips)S.trips=[];
+  S.trips.push({dest:dest,miles:miles,gas:gas,mpg:mpg,gasCost:gasCost,wearTear:wearTear,extra:extra,cost:cost,revenue:revenue,profit:profit,orders:orders,month:month,date:new Date().toLocaleDateString(),by:currentWorkerName});
+  document.getElementById("del-trip-preview").innerHTML=
+    '<div class="trip-card" style="margin-top:10px;border-color:'+(profit>=0?"#4caf50":"var(--red)")+'">'+
+    '<div style="font-size:14px;font-weight:800;margin-bottom:8px;">Trip: '+dest+'</div>'+
+    '<div class="ot-row"><span class="ot-label">Gas</span><span class="ot-val">$'+gasCost.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Wear & Tear</span><span class="ot-val">$'+wearTear.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Cost</span><span class="ot-val" style="color:var(--red);">$'+cost.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Revenue</span><span class="ot-val">$'+revenue.toFixed(2)+'</span></div>'+
+    '<div style="font-size:22px;font-weight:800;color:'+(profit>=0?"#4caf50":"var(--red)")+';">Net: $'+profit.toFixed(2)+'</div></div>';
+  ["del-t-dest","del-t-miles","del-t-gas","del-t-mpg","del-t-extra","del-t-orders-count","del-t-revenue"].forEach(function(id){document.getElementById(id).value="";});
+  var savedTrip=S.trips[S.trips.length-1];
+  save();renderDeliveryTrips();renderOpsMonthlyMiles();
+  syncTripToSheets(savedTrip);
+  showToast("Trip saved & synced to Sheets!");
+}
+
+function renderDeliveryTrips(){
+  if(!S.trips)S.trips=[];
+  var tMiles=S.trips.reduce(function(s,t){return s+t.miles;},0);
+  var tCost=S.trips.reduce(function(s,t){return s+t.cost;},0);
+  var tRev=S.trips.reduce(function(s,t){return s+t.revenue;},0);
+  var tProfit=tRev-tCost;
+  document.getElementById("del-trip-totals").innerHTML=
+    '<div class="ot-row"><span class="ot-label">Total Miles</span><span class="ot-val">'+tMiles.toFixed(0)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Costs</span><span class="ot-val" style="color:var(--red);">$'+tCost.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Revenue</span><span class="ot-val">$'+tRev.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Net Profit</span><span class="ot-val" style="color:'+(tProfit>=0?"#4caf50":"var(--red)")+';">$'+tProfit.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Trips Made</span><span class="ot-val">'+S.trips.length+'</span></div>';
+  document.getElementById("del-trip-history").innerHTML=S.trips.slice().reverse().map(function(t){
+    return '<div class="trip-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'+
+      '<div><div style="font-size:16px;font-weight:800;">'+t.dest+'</div><div style="font-size:12px;color:var(--text-gray);font-weight:600;">'+t.date+(t.by?" · "+t.by:"")+'</div></div>'+
+      '<div class="trip-profit '+(t.profit>=0?"profit-pos":"profit-neg")+'">$'+t.profit.toFixed(0)+'</div></div>'+
+      '<div class="ot-row"><span class="ot-label">Miles</span><span class="ot-val">'+t.miles+'</span></div>'+
+      '<div class="ot-row"><span class="ot-label">Cost</span><span class="ot-val" style="color:var(--red);">$'+t.cost.toFixed(2)+'</span></div>'+
+      '<div class="ot-row"><span class="ot-label">Profit</span><span class="ot-val" style="color:'+(t.profit>=0?"#4caf50":"var(--red)")+';">$'+t.profit.toFixed(2)+'</span></div></div>';
+  }).join("");
+}
+
+function renderOpsMonthlyMiles(){
+  if(!S.trips)S.trips=[];
+  var tMiles=S.trips.reduce(function(s,t){return s+t.miles;},0);
+  var tCost=S.trips.reduce(function(s,t){return s+t.cost;},0);
+  var tProfit=S.trips.reduce(function(s,t){return s+t.profit;},0);
+  var statsEl=document.getElementById("ops-miles-stats");
+  if(statsEl) statsEl.innerHTML=
+    '<div class="stat-card"><div class="stat-val">'+tMiles.toFixed(0)+'</div><div class="stat-label">Total Miles</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+tCost.toFixed(0)+'</div><div class="stat-label">Total Cost</div></div>'+
+    '<div class="stat-card"><div class="stat-val" style="color:'+(tProfit>=0?"#4caf50":"var(--red)")+';">$'+Math.abs(tProfit).toFixed(0)+'</div><div class="stat-label">Net</div></div>';
+  // Group by month
+  var byMonth={};
+  S.trips.forEach(function(t){
+    var m=t.month||t.date||"Unknown";
+    if(!byMonth[m])byMonth[m]={miles:0,cost:0,profit:0,trips:0};
+    byMonth[m].miles+=t.miles;
+    byMonth[m].cost+=t.cost;
+    byMonth[m].profit+=t.profit;
+    byMonth[m].trips++;
+  });
+  var monthEl=document.getElementById("ops-monthly-miles-list");
+  if(monthEl){
+    var months=Object.keys(byMonth);
+    monthEl.innerHTML=!months.length?'<p style="color:var(--text-gray);font-size:14px;">No trips logged yet.</p>':
+      months.reverse().map(function(m){
+        var d=byMonth[m];
+        return '<div style="padding:12px 0;border-bottom:1px solid #2a2a2a;">'+
+          '<div style="font-size:15px;font-weight:800;margin-bottom:6px;">'+m+'</div>'+
+          '<div class="ot-row"><span class="ot-label">Miles</span><span class="ot-val">'+d.miles.toFixed(0)+'</span></div>'+
+          '<div class="ot-row"><span class="ot-label">Trips</span><span class="ot-val">'+d.trips+'</span></div>'+
+          '<div class="ot-row"><span class="ot-label">Cost</span><span class="ot-val" style="color:var(--red);">$'+d.cost.toFixed(2)+'</span></div>'+
+          '<div class="ot-row"><span class="ot-label">Profit</span><span class="ot-val" style="color:'+(d.profit>=0?"#4caf50":"var(--red)")+';">$'+d.profit.toFixed(2)+'</span></div>'+
+        '</div>';
+      }).join("");
+  }
+  var alltimeEl=document.getElementById("ops-miles-alltime");
+  if(alltimeEl) alltimeEl.innerHTML=
+    '<div class="ot-row"><span class="ot-label">Total Miles Ever</span><span class="ot-val">'+tMiles.toFixed(0)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Trips</span><span class="ot-val">'+S.trips.length+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Cost</span><span class="ot-val" style="color:var(--red);">$'+tCost.toFixed(2)+'</span></div>'+
+    '<div class="ot-row"><span class="ot-label">Total Profit</span><span class="ot-val" style="color:'+(tProfit>=0?"#4caf50":"var(--red)")+';">$'+tProfit.toFixed(2)+'</span></div>';
+}
+
+// ============================================================
+// GOOGLE SHEETS SYNC
+// ============================================================
+var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzECq8oZSQuwq1-h33t_moBhuGksVPyJITtYOr8IF6GB2H-kAIGTt_mgaZ3qaY1RNPQ/exec';
+
+function saveOrderToSheets(order) {
+  var itemsList = order.items.map(function(i) {
+    return i.qty + "x " + i.name + " ($" + (i.price * i.qty).toFixed(2) + ")";
+  }).join(", ");
+  
+  var payload = {
+    slot: order.slot,
+    name: order.name,
+    phone: order.phone,
+    items: itemsList,
+    total: "$" + order.total.toFixed(2),
+    status: order.status,
+    date: new Date(order.timestamp).toLocaleString("en-US"),
+    worker: order.claimedBy || ""
+  };
+  
+  fetch(SHEETS_URL, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  }).catch(function(err) {
+    console.log("Sheets sync error:", err);
+  });
+}
+
+function syncAllOrdersToSheets() {
+  S.orders.forEach(function(order, i) {
+    setTimeout(function() { saveOrderToSheets(order); }, i * 300);
+  });
+  showToast("Syncing " + S.orders.length + " orders to Sheets!");
+}
+
+
+// Live timer refresh for orders
+setInterval(function(){
+  var ordersPage=document.getElementById("o-page-orders");
+  if(ordersPage&&ordersPage.classList.contains("active")){
+    renderOrdersTab();
+  }
+},60000);
+
+
+
+// ============================================================
+// DELIVERY GOOGLE SHEETS SYNC
+// ============================================================
+var DEL_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwAvmG_5s69dTeIIlNAgz7xn7Mm_2d-wIrYVl6AhEydeEREFnCGSwXfOJu_emTWwFL0/exec';
+
+function syncPickupToSheets(order, status) {
+  var itemsList = order.items.map(function(i){return i.qty+"x "+i.name;}).join(", ");
+  fetch(DEL_SHEETS_URL, {
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"Pickups",
+      date:new Date().toLocaleString("en-US"),
+      slot:order.slot,
+      name:order.name,
+      phone:order.phone,
+      items:itemsList,
+      total:"$"+order.total.toFixed(2),
+      status:status,
+      worker:currentWorkerName||""
+    })
+  }).catch(function(e){console.log("Del sheets err:",e);});
+}
+
+function syncTripToSheets(trip) {
+  fetch(DEL_SHEETS_URL, {
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"Trips",
+      date:trip.date,
+      dest:trip.dest,
+      miles:trip.miles,
+      gasCost:"$"+trip.gasCost.toFixed(2),
+      wearTear:"$"+trip.wearTear.toFixed(2),
+      cost:"$"+trip.cost.toFixed(2),
+      revenue:"$"+trip.revenue.toFixed(2),
+      profit:"$"+trip.profit.toFixed(2),
+      by:trip.by||"",
+      orders:trip.orders||0
+    })
+  }).catch(function(e){console.log("Del sheets err:",e);});
+}
+
+// ============================================================
+// INIT
+// ============================================================
+checkAutoReset();
+renderShop();
+if(S.primaryColor&&S.primaryColor!=="#D32F2F"){document.documentElement.style.setProperty("--red",S.primaryColor);}
+if(S.backdropColor&&S.backdropColor!=="#1a1a1a"){document.documentElement.style.setProperty("--dark-bg",S.backdropColor);}
+applyBizName();
+</script>
+</body>
+</html>
