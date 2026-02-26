@@ -165,25 +165,25 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .dash-app.active{display:block;}
 .dash-topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
 .orders-topbar{background:linear-gradient(180deg,#0d1a2a,#0a1220);border-bottom:2px solid #1565C0;}
-.admin-topbar{background:linear-gradient(180deg,#1a1014,#140a0e);border-bottom:2px solid #ef5350;}
+.admin-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
 .inv-topbar{background:linear-gradient(180deg,#0a1a0e,#081408);border-bottom:2px solid #4caf50;}
 .ops-topbar{background:linear-gradient(180deg,#1a1400,#140e00);border-bottom:2px solid var(--gold);}
 .dash-brand{display:flex;align-items:center;gap:8px;}
 .dash-role{font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;}
 .orders-topbar .dash-role{background:#1565C0;color:#fff;}
-.admin-topbar .dash-role{background:#ef5350;color:#fff;}
+.admin-topbar .dash-role{background:var(--primary);color:#000;}
 .inv-topbar .dash-role{background:#4caf50;color:#fff;}
 .ops-topbar .dash-role{background:var(--gold);color:#000;}
 .worker-name-badge{font-size:11px;font-weight:800;color:var(--primary);background:rgba(38,198,218,0.1);padding:3px 8px;border-radius:8px;border:1px solid rgba(38,198,218,0.2);}
 .logout-btn{background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:14px;padding:6px 14px;font-family:"Nunito",sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
 .dash-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);display:flex;z-index:1000;box-shadow:0 -2px 20px rgba(0,0,0,0.4);}
 .orders-nav{background:#0a1220;border-top:1px solid #1a2a3a;}
-.admin-nav{background:#140a0e;border-top:1px solid #2a1a1e;}
+.admin-nav{background:#0a1214;border-top:1px solid var(--card-border);}
 .inv-nav{background:#081408;border-top:1px solid #1a2a1a;}
 .ops-nav{background:#140e00;border-top:1px solid #2a2200;}
 .d-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#4a5a5e;transition:color 0.2s;border:none;background:none;position:relative;}
 .orders-nav .d-nav-item.active{color:#4fc3f7;}
-.admin-nav .d-nav-item.active{color:#ef5350;}
+.admin-nav .d-nav-item.active{color:var(--primary);}
 .inv-nav .d-nav-item.active{color:#66bb6a;}
 .ops-nav .d-nav-item.active{color:var(--gold);}
 .d-page{
@@ -388,12 +388,12 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   </div>
   <div class="page" id="page-qr">
     <div class="qr-inner">
-      <h2>Share El Toro! 🐂</h2>
-      <p style="color:var(--text-gray);font-size:14px;font-weight:600;margin-bottom:24px;text-align:center;">Scan or share this QR code so friends can order too!</p>
+      <h2 id="qr-title">Share El Toro! 🐂</h2>
+      <p style="color:var(--text-gray);font-size:14px;font-weight:600;margin-bottom:24px;text-align:center;" id="qr-subtitle">Scan or share this QR code so friends can order too!</p>
       <div id="qr-box"></div>
       <div class="qr-link" id="qr-url"></div>
-      <button class="qr-action-btn" style="background:var(--primary);color:#000;margin-top:16px;" onclick="shareApp()">📤 Share Link</button>
-      <button class="qr-action-btn" style="background:var(--card-bg);color:#fff;border:1px solid #444;margin-top:10px;" onclick="copyLink()">📋 Copy Link</button>
+      <button class="qr-action-btn" style="background:var(--primary);color:#000;margin-top:16px;" onclick="shareApp()" id="qr-share-btn">📤 Share Link</button>
+      <button class="qr-action-btn" style="background:var(--card-bg);color:#fff;border:1px solid #444;margin-top:10px;" onclick="copyLink()" id="qr-copy-btn">📋 Copy Link</button>
     </div>
   </div>
   <div class="cart-float hidden" id="cart-float">
@@ -948,6 +948,10 @@ var LANGS = {
     phonePlaceholder:"Your phone number",
     heroSub:"Order before the deadline and we'll deliver to you!",
     screenshotReminder:"Screenshot before submitting to save your order!",
+    qrTitle:"Share El Toro! 🐂",
+    qrSubtitle:"Scan or share this QR code so friends can order too!",
+    qrShare:"📤 Share Link",
+    qrCopy:"📋 Copy Link",
     placeOrder:"Place My Order",
     addMore:"⚠️ Need {n} more items (minimum {min})",
     orderConfirmed:"✅ Order #{n} Confirmed!",
@@ -977,6 +981,10 @@ var LANGS = {
     phonePlaceholder:"Tu número de teléfono",
     heroSub:"¡Ordena antes de la fecha límite y te lo entregamos!",
     screenshotReminder:"¡Toma captura antes de enviar para guardar tu pedido!",
+    qrTitle:"¡Comparte El Toro! 🐂",
+    qrSubtitle:"¡Escanea o comparte este código QR para que tus amigos también puedan ordenar!",
+    qrShare:"📤 Compartir Enlace",
+    qrCopy:"📋 Copiar Enlace",
     placeOrder:"Hacer Mi Pedido",
     addMore:"⚠️ Necesitas {n} artículos más (mínimo {min})",
     orderConfirmed:"✅ ¡Pedido #{n} Confirmado!",
@@ -1017,12 +1025,17 @@ function setLang(lang) {
     var btn = document.getElementById("lang-"+l);
     if(!btn) return;
     btn.style.opacity = l === lang ? "1" : "0.4";
-    btn.style.border = l === lang ? "2px solid var(--red)" : "2px solid transparent";
+    btn.style.border = l === lang ? "2px solid var(--primary)" : "2px solid transparent";
   });
   // ONLY re-render customer shopping pages
   renderShop();
   renderCart();
   renderBoard();
+  // Update QR page text
+  var qrT=document.getElementById("qr-title");if(qrT)qrT.textContent=t("qrTitle");
+  var qrS=document.getElementById("qr-subtitle");if(qrS)qrS.textContent=t("qrSubtitle");
+  var qrSh=document.getElementById("qr-share-btn");if(qrSh)qrSh.textContent=t("qrShare");
+  var qrC=document.getElementById("qr-copy-btn");if(qrC)qrC.textContent=t("qrCopy");
   // Update bottom nav labels
   var navIds = {navShop:"nav-shop", navCart:"nav-cart", navBoard:"nav-board", navQr:"nav-qr"};
   Object.keys(navIds).forEach(function(key){
