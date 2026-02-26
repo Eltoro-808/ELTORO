@@ -452,6 +452,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="o-page-orders">
+    <div id="clock-timer-display"></div>
     <div class="page-title">All Orders</div>
     <div class="stats-bar" id="o-stats"></div>
     <div class="search-wrap"><input class="search-input" id="o-search" placeholder="🔍 Search by name..." oninput="renderOrdersTab()"/></div>
@@ -556,15 +557,26 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card">
       <h3>➕ Add Worker</h3>
       <input class="a-input" id="new-worker-name" type="text" placeholder="Worker name"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Type</label>
+      <div style="display:flex;gap:8px;margin:8px 0 12px;">
+        <button class="a-btn" id="type-worker-btn" style="flex:1;" onclick="setWorkerType('worker')">👷 Worker</button>
+        <button class="a-btn gray" id="type-boss-btn" style="flex:1;" onclick="setWorkerType('boss')">👑 Boss</button>
+      </div>
+      <input type="hidden" id="new-worker-type" value="worker"/>
       <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Assign Roles</label>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;">
+      <div id="roles-assign-wrap" style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0 12px;">
         <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-orders" value="Orders"/> 📦 Orders</label>
         <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-inventory" value="Inventory"/> 🗄️ Inventory</label>
         <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-operations" value="Operations"/> 💰 Operations</label>
         <label style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:700;cursor:pointer;"><input type="checkbox" id="wr-delivery" value="Delivery"/> 🚚 Delivery</label>
       </div>
-      <input class="a-input" id="new-worker-pay" type="number" step="0.01" placeholder="Pay per trip ($)"/>
-      <button class="a-btn" onclick="addWorker(this)">Add Worker</button>
+      <div id="hourly-rate-wrap">
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Hourly Rate ($)</label>
+        <input class="a-input" id="new-worker-hourly" type="number" step="0.01" placeholder="Hourly rate ($)" style="margin-top:4px;"/>
+      </div>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Trip Rate ($)</label>
+      <input class="a-input" id="new-worker-trip" type="number" step="0.01" placeholder="Pay per delivery trip ($)" style="margin-top:4px;"/>
+      <button class="a-btn blue" onclick="addWorker(this)">Add Worker</button>
     </div>
     <div class="card"><h3>👷 Worker List</h3><div id="worker-list"></div></div>
     <div class="card">
@@ -672,6 +684,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="i-page-products">
+    <div id="clock-timer-display-inv"></div>
     <div class="page-title">Products</div>
     <div class="card">
       <h3>➕ Add Product</h3>
@@ -782,6 +795,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   <div class="d-page" id="ops-page-payroll">
     <div class="page-title">Payroll</div>
     <div class="stats-bar" id="ops-payroll-stats"></div>
+    <div class="card"><h3>⏱ Timesheets</h3><div id="timesheets-list"></div></div>
     <div class="card">
       <h3>➕ Log Payment</h3>
       <select class="a-input" id="pay-worker-select"><option value="">Select worker...</option></select>
@@ -815,6 +829,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 
   <!-- DROP OFF LIST -->
   <div class="d-page active" id="del-page-pickup">
+    <div id="clock-timer-display-del"></div>
     <div class="page-title">📋 Drop Off List</div>
     <div id="del-countdown-wrap" style="text-align:center;padding:10px 12px 0;">
       <div id="del-countdown" style="font-family:'Black Ops One',cursive;font-size:64px;color:#FF9800;line-height:1;">0</div>
@@ -1095,6 +1110,7 @@ var S = {
     {name:"Household",emoji:"🏠"},{name:"Pet",emoji:"🐾"}
   ],
   depositRequired: false, depositAmount: 50, depositZelle: "", depositNote: "", depositName: "", depositQR: "",
+  timesheets: [], activeClocks: {},
   lastResetDate: null
 };
 
@@ -1249,6 +1265,10 @@ function doLogin() {
   }
   
   currentWorkerName = worker.name;
+  // Clock in worker (only if type is "worker", not "boss")
+  if(worker.type!=="boss"){
+    clockIn(worker);
+  }
   if(selRole==="orders" && pw===S.ordersPass) { closeLogin(); launchApp("orders"); }
   else if(selRole==="inventory" && pw===S.invPass) { closeLogin(); launchApp("inv"); }
   else if(selRole==="operations" && pw===S.opsPass) { closeLogin(); launchApp("ops"); }
@@ -1270,15 +1290,27 @@ function launchApp(which) {
     document.getElementById("inv-worker-name").textContent = currentWorkerName;
     renderInvProducts();
   }
-  if(which==="ops") { document.getElementById("ops-app").classList.add("active"); renderOpsSummary(); }
+  if(which==="ops") { document.getElementById("ops-app").classList.add("active"); renderOpsSummary(); renderPayroll(); }
   if(which==="delivery") {
     document.getElementById("delivery-app").classList.add("active");
     document.getElementById("delivery-worker-name").textContent = currentWorkerName;
     renderPickupList();
   }
+  // Start clock timer for workers
+  if(currentWorkerName && currentWorkerName!=="Admin"){
+    var worker=S.workers.find(function(w){return w.name===currentWorkerName;});
+    if(worker && worker.type!=="boss"){
+      startClockTimer(worker);
+    }
+  }
 }
 
 function logout() {
+  // Clock out worker if they were clocked in
+  if(currentWorkerName && currentWorkerName!=="Admin"){
+    clockOut(currentWorkerName);
+  }
+  if(clockTimerInterval){clearInterval(clockTimerInterval);clockTimerInterval=null;}
   document.getElementById("customer-app").style.display = "block";
   document.querySelectorAll(".dash-app").forEach(function(a){a.classList.remove("active");});
   currentWorkerName = "";
@@ -1896,6 +1928,25 @@ function exportCSV(){
 }
 
 // Workers
+function setWorkerType(type){
+  document.getElementById("new-worker-type").value=type;
+  var wBtn=document.getElementById("type-worker-btn");
+  var bBtn=document.getElementById("type-boss-btn");
+  var hourlyWrap=document.getElementById("hourly-rate-wrap");
+  var rolesWrap=document.getElementById("roles-assign-wrap");
+  var roleIds=["wr-orders","wr-inventory","wr-operations","wr-delivery"];
+  if(type==="boss"){
+    bBtn.className="a-btn";wBtn.className="a-btn gray";
+    hourlyWrap.style.display="none";
+    roleIds.forEach(function(id){document.getElementById(id).checked=true;document.getElementById(id).disabled=true;});
+    rolesWrap.style.opacity="0.5";
+  } else {
+    wBtn.className="a-btn";bBtn.className="a-btn gray";
+    hourlyWrap.style.display="block";
+    roleIds.forEach(function(id){document.getElementById(id).checked=false;document.getElementById(id).disabled=false;});
+    rolesWrap.style.opacity="1";
+  }
+}
 function addWorker(btn){
   var name=document.getElementById("new-worker-name").value.trim();
   var roles=[];
@@ -1903,14 +1954,19 @@ function addWorker(btn){
   if(document.getElementById("wr-inventory").checked) roles.push("Inventory");
   if(document.getElementById("wr-operations").checked) roles.push("Operations");
   if(document.getElementById("wr-delivery").checked) roles.push("Delivery");
-  var pay=parseFloat(document.getElementById("new-worker-pay").value)||0;
+  var wType=document.getElementById("new-worker-type").value||"worker";
+  if(wType==="boss") roles=["Orders","Inventory","Operations","Delivery"];
+  var hourly=parseFloat(document.getElementById("new-worker-hourly").value)||0;
+  var tripPay=parseFloat(document.getElementById("new-worker-trip").value)||0;
   if(!name){showToast("Enter worker name!");return;}
-  if(!roles.length){showToast("Pick at least one role!");return;}
+  if(wType!=="boss"&&!roles.length){showToast("Pick at least one role!");return;}
   if(!S.workers)S.workers=[];
-  S.workers.push({id:Date.now(),name:name,role:roles.join(", "),roles:roles,payPerTrip:pay,active:true});
+  S.workers.push({id:Date.now(),name:name,role:roles.join(", "),roles:roles,type:wType,hourlyRate:hourly,tripRate:tripPay,payPerTrip:tripPay,active:true});
   document.getElementById("new-worker-name").value="";
-  document.getElementById("new-worker-pay").value="";
+  document.getElementById("new-worker-hourly").value="";
+  document.getElementById("new-worker-trip").value="";
   ["wr-orders","wr-inventory","wr-operations","wr-delivery"].forEach(function(id){document.getElementById(id).checked=false;});
+  setWorkerType("worker");
   save();renderWorkerList();renderPayroll();if(btn)buttonFlash(btn,"✅ Added!");
 }
 function renderWorkerList(){
@@ -1918,19 +1974,121 @@ function renderWorkerList(){
   var list=document.getElementById("worker-list");
   if(!S.workers.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No workers yet.</p>';return;}
   list.innerHTML=S.workers.map(function(w){
-    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+'</div><div class="worker-role-label">'+w.role+'</div><div class="worker-pay-label">$'+w.payPerTrip.toFixed(2)+' per trip</div></div><div style="display:flex;gap:6px;"><button class="pr-btn pr-edit" onclick="editWorkerPay('+w.id+')">Edit Pay</button><button class="pr-btn pr-del" onclick="deleteWorker('+w.id+')">Del</button></div></div>';
+    var typeBadge=w.type==="boss"?'<span style="background:#2a2a00;color:#FFD54F;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;">👑 BOSS</span>':'<span style="background:var(--primary-dim);color:var(--primary);padding:2px 8px;border-radius:6px;font-size:10px;font-weight:800;">👷 WORKER</span>';
+    var payInfo='';
+    if(w.type!=="boss"&&w.hourlyRate)payInfo+='$'+w.hourlyRate.toFixed(2)+'/hr';
+    if(w.tripRate||w.payPerTrip){
+      var tr=w.tripRate||w.payPerTrip||0;
+      if(payInfo)payInfo+=' · ';
+      payInfo+='$'+tr.toFixed(2)+'/trip';
+    }
+    if(!payInfo)payInfo='No pay set';
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+' '+typeBadge+'</div><div class="worker-role-label">'+w.role+'</div><div class="worker-pay-label">'+payInfo+'</div></div><div style="display:flex;gap:6px;"><button class="pr-btn pr-edit" onclick="editWorkerPay('+w.id+')">Edit</button><button class="pr-btn pr-del" onclick="deleteWorker('+w.id+')">Del</button></div></div>';
   }).join("");
 }
 function editWorkerPay(id){
   var w=S.workers.find(function(x){return x.id===id;});if(!w)return;
-  var amt=parseFloat(prompt("New pay per trip for "+w.name+"?",w.payPerTrip));
-  if(!isNaN(amt)&&amt>=0){w.payPerTrip=amt;save();renderWorkerList();showToast("Pay updated!");}
+  var isB=w.type==="boss";
+  var html='<button class="modal-close" onclick="closeModal()">✕</button>'+
+    '<h3>Edit '+w.name+'</h3>'+
+    '<label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Type</label>'+
+    '<div style="display:flex;gap:8px;margin:8px 0 12px;">'+
+    '<button class="a-btn '+(isB?"gray":"")+'" id="edit-type-worker" style="flex:1;" onclick="toggleEditType(\'worker\')">👷 Worker</button>'+
+    '<button class="a-btn '+(isB?"":"gray")+'" id="edit-type-boss" style="flex:1;" onclick="toggleEditType(\'boss\')">👑 Boss</button>'+
+    '</div>'+
+    '<input type="hidden" id="edit-worker-type" value="'+(w.type||"worker")+'"/>'+
+    '<div id="edit-hourly-wrap" style="'+(isB?"display:none;":"")+'">'+
+    '<label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Hourly Rate ($)</label>'+
+    '<input class="a-input" id="edit-worker-hourly" type="number" step="0.01" value="'+(w.hourlyRate||0)+'" style="margin-top:4px;"/>'+
+    '</div>'+
+    '<label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Trip Rate ($)</label>'+
+    '<input class="a-input" id="edit-worker-trip" type="number" step="0.01" value="'+(w.tripRate||w.payPerTrip||0)+'" style="margin-top:4px;"/>'+
+    '<button class="a-btn" onclick="saveWorkerEdit('+w.id+',this)">Save Changes</button>';
+  document.querySelector(".modal-card").innerHTML=html;
+  document.querySelector(".modal-overlay").classList.add("active");
+}
+function toggleEditType(type){
+  document.getElementById("edit-worker-type").value=type;
+  var wBtn=document.getElementById("edit-type-worker");
+  var bBtn=document.getElementById("edit-type-boss");
+  var hw=document.getElementById("edit-hourly-wrap");
+  if(type==="boss"){bBtn.className="a-btn";wBtn.className="a-btn gray";hw.style.display="none";}
+  else{wBtn.className="a-btn";bBtn.className="a-btn gray";hw.style.display="block";}
+}
+function saveWorkerEdit(id,btn){
+  var w=S.workers.find(function(x){return x.id===id;});if(!w)return;
+  w.type=document.getElementById("edit-worker-type").value||"worker";
+  if(w.type==="boss"){w.roles=["Orders","Inventory","Operations","Delivery"];w.role="Orders, Inventory, Operations, Delivery";}
+  w.hourlyRate=parseFloat(document.getElementById("edit-worker-hourly").value)||0;
+  w.tripRate=parseFloat(document.getElementById("edit-worker-trip").value)||0;
+  w.payPerTrip=w.tripRate;
+  save();renderWorkerList();renderPayroll();
+  if(btn)buttonFlash(btn,"✅ Saved!");
+  setTimeout(closeModal,600);
 }
 function deleteWorker(id){
   var w=S.workers.find(function(x){return x.id===id;});
   var name=w?w.name:"this worker";
   showConfirm("Delete Worker?","Are you sure you want to delete "+name+"?",function(){
     S.workers=S.workers.filter(function(w){return w.id!==id;});save();renderWorkerList();showToast("Worker deleted!");
+  });
+}
+
+// CLOCK IN/OUT SYSTEM
+var clockTimerInterval=null;
+function clockIn(worker){
+  if(!S.activeClocks)S.activeClocks={};
+  S.activeClocks[worker.name]={clockedIn:new Date().toISOString(),role:selRole||"",workerId:worker.id};
+  save();
+  startClockTimer(worker);
+}
+function clockOut(workerName){
+  if(!S.activeClocks||!S.activeClocks[workerName])return;
+  var session=S.activeClocks[workerName];
+  var start=new Date(session.clockedIn);
+  var end=new Date();
+  var hours=(end-start)/3600000;
+  var worker=S.workers.find(function(w){return w.name===workerName;});
+  var rate=worker?worker.hourlyRate||0:0;
+  if(!S.timesheets)S.timesheets=[];
+  S.timesheets.push({
+    id:Date.now(),workerId:session.workerId,name:workerName,role:session.role,
+    clockIn:session.clockedIn,clockOut:end.toISOString(),
+    hours:Math.round(hours*100)/100,hourlyRate:rate,earned:Math.round(hours*rate*100)/100,
+    date:end.toISOString().split("T")[0]
+  });
+  delete S.activeClocks[workerName];
+  save();
+}
+function startClockTimer(worker){
+  if(clockTimerInterval)clearInterval(clockTimerInterval);
+  clockTimerInterval=setInterval(function(){
+    updateClockDisplay(worker);
+  },1000);
+  // Initial update
+  setTimeout(function(){updateClockDisplay(worker);},100);
+}
+function updateClockDisplay(worker){
+  var ids=["clock-timer-display","clock-timer-display-inv","clock-timer-display-del"];
+  ids.forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    if(!S.activeClocks||!S.activeClocks[worker.name]){el.innerHTML="";return;}
+    var start=new Date(S.activeClocks[worker.name].clockedIn);
+    var now=new Date();
+    var diff=now-start;
+    var hrs=Math.floor(diff/3600000);
+    var mins=Math.floor((diff%3600000)/60000);
+    var secs=Math.floor((diff%60000)/1000);
+    var pad=function(n){return n<10?"0"+n:n;};
+    var timeStr=pad(hrs)+":"+pad(mins)+":"+pad(secs);
+    var earned=(diff/3600000)*(worker.hourlyRate||0);
+    el.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--primary-dim);border:1px solid var(--primary);border-radius:12px;margin:0 12px 12px;">'+
+      '<div><div style="font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:1px;">⏱ Clocked In</div>'+
+      '<div style="font-family:Black Ops One,cursive;font-size:28px;color:#fff;margin-top:2px;">'+timeStr+'</div></div>'+
+      '<div style="text-align:right;"><div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;">Earning</div>'+
+      '<div style="font-family:Black Ops One,cursive;font-size:24px;color:#4caf50;">$'+earned.toFixed(2)+'</div>'+
+      '<div style="font-size:11px;color:var(--text-gray);font-weight:700;">@ $'+(worker.hourlyRate||0).toFixed(2)+'/hr</div></div></div>';
   });
 }
 
@@ -2254,20 +2412,51 @@ function renderTrips(){
 }
 
 function renderPayroll(){
-  if(!S.workers)S.workers=[];if(!S.payments)S.payments=[];
+  if(!S.workers)S.workers=[];if(!S.payments)S.payments=[];if(!S.timesheets)S.timesheets=[];
   var totalPaid=S.payments.reduce(function(s,p){return s+p.amount;},0);
+  var totalHours=S.timesheets.reduce(function(s,t){return s+t.hours;},0);
+  var totalEarned=S.timesheets.reduce(function(s,t){return s+t.earned;},0);
   document.getElementById("ops-payroll-stats").innerHTML=
     '<div class="stat-card"><div class="stat-val">'+S.workers.length+'</div><div class="stat-label">Workers</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+totalPaid.toFixed(0)+'</div><div class="stat-label">Total Paid</div></div>'+
-    '<div class="stat-card"><div class="stat-val">'+S.payments.length+'</div><div class="stat-label">Payments</div></div>';
+    '<div class="stat-card"><div class="stat-val">'+totalHours.toFixed(1)+'</div><div class="stat-label">Hours</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+totalPaid.toFixed(0)+'</div><div class="stat-label">Paid</div></div>';
+  // Timesheets
+  var tsEl=document.getElementById("timesheets-list");
+  if(!S.timesheets.length){
+    tsEl.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No timesheets yet. Workers clock in/out automatically.</p>';
+  } else {
+    tsEl.innerHTML=S.timesheets.slice().reverse().slice(0,20).map(function(t){
+      var inTime=new Date(t.clockIn);
+      var outTime=new Date(t.clockOut);
+      var inStr=inTime.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+      var outStr=outTime.toLocaleTimeString("en-US",{hour:"numeric",minute:"2-digit"});
+      var dateStr=inTime.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+      return '<div class="ledger-item"><div><div class="ledger-label">'+t.name+'</div><div class="ledger-sub">'+dateStr+' · '+inStr+' → '+outStr+' · '+t.hours.toFixed(1)+' hrs</div></div><div class="ledger-amount ledger-in">$'+t.earned.toFixed(2)+'</div></div>';
+    }).join("");
+  }
+  // Worker select for payments
   var sel=document.getElementById("pay-worker-select");
-  sel.innerHTML='<option value="">Select worker...</option>'+S.workers.map(function(w){return '<option value="'+w.id+'">'+w.name+' ($'+w.payPerTrip.toFixed(2)+'/trip)</option>';}).join("");
+  sel.innerHTML='<option value="">Select worker...</option>'+S.workers.map(function(w){
+    var payLabel=[];
+    if(w.hourlyRate)payLabel.push('$'+w.hourlyRate.toFixed(2)+'/hr');
+    if(w.tripRate||w.payPerTrip)payLabel.push('$'+(w.tripRate||w.payPerTrip).toFixed(2)+'/trip');
+    return '<option value="'+w.id+'">'+w.name+(payLabel.length?' ('+payLabel.join(' · ')+')':'')+'</option>';
+  }).join("");
+  // Worker summaries
   var summary=document.getElementById("payroll-summary");
   if(!S.workers.length){summary.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No workers yet. Add in Admin.</p>';return;}
   summary.innerHTML=S.workers.map(function(w){
+    var typeBadge=w.type==="boss"?'👑':'👷';
+    var hours=S.timesheets.filter(function(t){return t.workerId===w.id;}).reduce(function(s,t){return s+t.hours;},0);
+    var earned=S.timesheets.filter(function(t){return t.workerId===w.id;}).reduce(function(s,t){return s+t.earned;},0);
     var paid=S.payments.filter(function(p){return p.workerId===w.id;}).reduce(function(s,p){return s+p.amount;},0);
-    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+'</div><div class="worker-role-label">'+w.role+' · $'+w.payPerTrip.toFixed(2)+'/trip</div><div class="worker-pay-label">Total paid: $'+paid.toFixed(2)+'</div></div></div>';
+    var payInfo=[];
+    if(w.hourlyRate)payInfo.push('$'+w.hourlyRate.toFixed(2)+'/hr');
+    if(w.tripRate||w.payPerTrip)payInfo.push('$'+(w.tripRate||w.payPerTrip).toFixed(2)+'/trip');
+    var owed=earned-paid;
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+typeBadge+' '+w.name+'</div><div class="worker-role-label">'+w.role+(payInfo.length?' · '+payInfo.join(' · '):'')+'</div><div class="worker-pay-label">'+hours.toFixed(1)+' hrs · Earned: $'+earned.toFixed(2)+' · Paid: $'+paid.toFixed(2)+(owed>0?' · <span style="color:#ff6666;">Owed: $'+owed.toFixed(2)+'</span>':'')+'</div></div></div>';
   }).join("");
+  // Payment history
   var hist=document.getElementById("payroll-history");
   hist.innerHTML=!S.payments.length?'<p style="color:var(--text-gray);font-size:14px;">No payments logged yet.</p>':
     S.payments.slice().reverse().map(function(p){
@@ -2299,15 +2488,15 @@ function showToast(msg){var t=document.getElementById("toast");t.textContent=msg
 
 function buttonFlash(btn,msg){
   var orig=btn.textContent;
-  var origBg=btn.style.background;
+  var origClass=btn.className;
   btn.textContent=msg||"✅ Saved!";
-  btn.style.background="#2E7D32";
-  btn.style.color="#fff";
+  btn.className="a-btn";
+  btn.style.cssText="background:#2E7D32 !important;color:#fff !important;";
   btn.disabled=true;
   setTimeout(function(){
     btn.textContent=orig;
-    btn.style.background=origBg||"";
-    btn.style.color="";
+    btn.className=origClass;
+    btn.style.cssText="";
     btn.disabled=false;
   },1800);
 }
