@@ -11,9 +11,9 @@
   --primary:#26C6DA; --primary-dim:#0d3a40; --primary-glow:rgba(38,198,218,0.3); --primary-text:#26C6DA;
   --accent:#FF9800; --accent-glow:rgba(255,152,0,0.3);
   --gold:#FFD54F; --green:#4caf50; --red:#ef5350;
-  --dark-bg:#0a1214; --card-bg:#0d1a1e; --card-border:#1a2e34;
-  --surface:#111a1e; --gray:#1a2a2e; --mid:#2a3a3e; --text-gray:#7a9a9e;
-  --white:#fff; --black:#0a1214;
+  --dark-bg:#0b0f11; --card-bg:#0e191d; --card-border:#1a3038;
+  --surface:#101a1e; --gray:#182828; --mid:#283838; --text-gray:#7a9a9e;
+  --white:#fff; --black:#0b0f11;
   --nav-h:65px; --top-h:60px;
   --blue:#1565C0;
 }
@@ -23,13 +23,13 @@ html,body{height:100%;margin:0;padding:0;}
 body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;height:100%;}
 
 /* TOPBAR */
-.topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);background:linear-gradient(180deg,#0d1a1e 0%,#0a1214 100%);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;border-bottom:2px solid var(--primary-dim);box-shadow:0 2px 20px rgba(0,0,0,0.5);}
+.topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);background:linear-gradient(180deg,#0e191d 0%,#0b0f11 100%);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;border-bottom:2px solid var(--primary-dim);box-shadow:0 2px 20px rgba(0,0,0,0.5);}
 .logo-text{font-family:"Black Ops One",cursive;font-size:20px;color:#fff;}
 .logo-text em{color:var(--primary);font-style:normal;text-shadow:0 0 20px var(--primary-glow);}
 .emp-btn{background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;border:none;border-radius:22px;padding:9px 16px;font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;cursor:pointer;box-shadow:0 2px 12px var(--primary-glow);}
 
 /* BOTTOM NAV */
-.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:linear-gradient(0deg,#0d1a1e 0%,#0a1214 100%);display:flex;z-index:1000;border-top:1px solid var(--card-border);box-shadow:0 -2px 20px rgba(0,0,0,0.5);}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:linear-gradient(0deg,#0e191d 0%,#0b0f11 100%);display:flex;z-index:1000;border-top:1px solid var(--card-border);box-shadow:0 -2px 20px rgba(0,0,0,0.5);}
 .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#4a6a6e;transition:color 0.2s;border:none;background:none;position:relative;}
 .nav-item.active{color:var(--primary);}
 .nav-icon{font-size:22px;}
@@ -122,7 +122,7 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .submit-btn.ready{background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;box-shadow:0 4px 20px var(--primary-glow);}
 
 /* BOARD */
-.arrival-banner{background:linear-gradient(135deg,#0d1a1e,#0a2028);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin:0 12px 12px;text-align:center;position:relative;overflow:hidden;}
+.arrival-banner{background:linear-gradient(135deg,#0e191d,#0a2028);border:1px solid var(--card-border);border-radius:14px;padding:16px;margin:0 12px 12px;text-align:center;position:relative;overflow:hidden;}
 .arrival-banner::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(38,198,218,0.06) 0%,transparent 70%);}
 .ab-label{font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:1px;position:relative;}
 .ab-text{font-family:"Black Ops One",cursive;font-size:18px;color:#fff;margin-top:4px;line-height:1.3;position:relative;}
@@ -165,10 +165,10 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .dash-app{display:none;position:fixed;inset:0;background:var(--dark-bg);z-index:500;}
 .dash-app.active{display:block;}
 .dash-topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
-.orders-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
-.admin-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
-.inv-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
-.ops-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
+.orders-topbar{background:linear-gradient(180deg,#0e191d,#0b0f11);border-bottom:2px solid var(--primary);}
+.admin-topbar{background:linear-gradient(180deg,#0e191d,#0b0f11);border-bottom:2px solid var(--primary);}
+.inv-topbar{background:linear-gradient(180deg,#0e191d,#0b0f11);border-bottom:2px solid var(--primary);}
+.ops-topbar{background:linear-gradient(180deg,#0e191d,#0b0f11);border-bottom:2px solid var(--primary);}
 .dash-brand{display:flex;align-items:center;gap:8px;}
 .dash-role{font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;}
 .orders-topbar .dash-role{background:var(--primary);color:#000;}
@@ -178,10 +178,10 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .worker-name-badge{font-size:11px;font-weight:800;color:var(--primary);background:rgba(38,198,218,0.1);padding:3px 8px;border-radius:8px;border:1px solid rgba(38,198,218,0.2);}
 .logout-btn{background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:14px;padding:6px 14px;font-family:"Nunito",sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
 .dash-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);display:flex;z-index:1000;box-shadow:0 -2px 20px rgba(0,0,0,0.4);}
-.orders-nav{background:#0a1214;border-top:1px solid var(--card-border);}
-.admin-nav{background:#0a1214;border-top:1px solid var(--card-border);}
-.inv-nav{background:#0a1214;border-top:1px solid var(--card-border);}
-.ops-nav{background:#0a1214;border-top:1px solid var(--card-border);}
+.orders-nav{background:#0b0f11;border-top:1px solid var(--card-border);}
+.admin-nav{background:#0b0f11;border-top:1px solid var(--card-border);}
+.inv-nav{background:#0b0f11;border-top:1px solid var(--card-border);}
+.ops-nav{background:#0b0f11;border-top:1px solid var(--card-border);}
 .d-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#4a5a5e;transition:color 0.2s;border:none;background:none;position:relative;}
 .orders-nav .d-nav-item.active{color:var(--primary);}
 .admin-nav .d-nav-item.active{color:var(--primary);}
@@ -313,8 +313,8 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .modal-close{float:right;background:var(--gray);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:14px;cursor:pointer;}
 
 
-.delivery-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
-.delivery-nav{background:#0a1214;border-top:1px solid var(--card-border);}
+.delivery-topbar{background:linear-gradient(180deg,#0e191d,#0b0f11);border-bottom:2px solid var(--primary);}
+.delivery-nav{background:#0b0f11;border-top:1px solid var(--card-border);}
 .delivery-nav .d-nav-item.active{color:var(--primary);}
 .pickup-card{background:var(--card-bg);border-radius:14px;padding:16px;margin:0 12px 10px;border:1px solid var(--card-border);transition:all 0.3s;}
 .pickup-card.picked-up{border-color:#4caf50;background:#0a1a0a;opacity:0.7;}
@@ -622,25 +622,39 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
 
     <div class="card">
-      <h3>🎨 PRIMARY COLOR</h3>
-      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Changes buttons, text accents and highlights.</p>
-      <input class="a-input" id="set-primary-color" type="color" value="#D32F2F" style="height:44px;padding:4px;"/>
-      <button class="a-btn" onclick="savePrimaryColor(this)">Apply Color</button>
-    </div>
-
-    <div class="card">
-      <h3>🎨 BACKDROP COLOR</h3>
-      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Changes the background color of the entire app.</p>
-      <input class="a-input" id="set-backdrop-color" type="color" value="#1a1a1a" style="height:44px;padding:4px;"/>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
-        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#1a1a1a'" style="font-size:11px;">Dark (Default)</button>
-        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0a0a0a'" style="font-size:11px;">Pitch Black</button>
-        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#1a0000'" style="font-size:11px;">Dark Red</button>
-        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0a0a1a'" style="font-size:11px;">Dark Blue</button>
-        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#1a1a0a'" style="font-size:11px;">Dark Gold</button>
-        <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0a1a0a'" style="font-size:11px;">Dark Green</button>
+      <h3>🎨 APP THEME</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Quick themes — tap to apply instantly</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <button class="a-btn" style="padding:12px;font-size:12px;background:linear-gradient(135deg,#26C6DA,#1aa8b8);color:#000;" onclick="applyTheme('#26C6DA','#0b0f11')">🐂 El Toro Teal</button>
+        <button class="a-btn" style="padding:12px;font-size:12px;background:linear-gradient(135deg,#4fc3f7,#0288d1);color:#000;" onclick="applyTheme('#4fc3f7','#0a1220')">💎 Ocean Blue</button>
+        <button class="a-btn" style="padding:12px;font-size:12px;background:linear-gradient(135deg,#4caf50,#2e7d32);color:#fff;" onclick="applyTheme('#4caf50','#0a140a')">🌿 Forest Green</button>
+        <button class="a-btn" style="padding:12px;font-size:12px;background:linear-gradient(135deg,#FFD54F,#f9a825);color:#000;" onclick="applyTheme('#FFD54F','#141208')">👑 Royal Gold</button>
+        <button class="a-btn" style="padding:12px;font-size:12px;background:linear-gradient(135deg,#ce93d8,#9c27b0);color:#fff;" onclick="applyTheme('#ce93d8','#140a1a')">💜 Purple Reign</button>
+        <button class="a-btn" style="padding:12px;font-size:12px;background:linear-gradient(135deg,#FF9800,#e65100);color:#000;" onclick="applyTheme('#FF9800','#1a1208')">🔥 Sunset Orange</button>
       </div>
-      <button class="a-btn" onclick="saveBackdrop(this)">Apply Backdrop</button>
+      <div style="border-top:1px solid var(--card-border);padding-top:12px;">
+        <p style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Custom Primary Color</p>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="a-input" id="set-primary-color" type="color" value="#26C6DA" style="height:44px;padding:4px;margin-bottom:0;flex:1;"/>
+          <button class="a-btn" onclick="savePrimaryColor(this)" style="margin-bottom:0;white-space:nowrap;">Apply</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--card-border);padding-top:12px;margin-top:12px;">
+        <p style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Custom Background</p>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input class="a-input" id="set-backdrop-color" type="color" value="#0b0f11" style="height:44px;padding:4px;margin-bottom:0;flex:1;"/>
+          <button class="a-btn" onclick="saveBackdrop(this)" style="margin-bottom:0;white-space:nowrap;">Apply</button>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;">
+          <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0b0f11'" style="font-size:10px;padding:6px 10px;">Dark Teal</button>
+          <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#000000'" style="font-size:10px;padding:6px 10px;">Pitch Black</button>
+          <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#0e191d'" style="font-size:10px;padding:6px 10px;">Deep Ocean</button>
+          <button class="a-btn gray" onclick="document.getElementById('set-backdrop-color').value='#111111'" style="font-size:10px;padding:6px 10px;">Charcoal</button>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--card-border);padding-top:12px;margin-top:12px;">
+        <button class="a-btn gray" onclick="applyTheme('#26C6DA','#0b0f11')" style="width:100%;font-size:12px;">🔄 Reset to Default (El Toro Teal)</button>
+      </div>
     </div>
 
     <div class="card">
@@ -666,10 +680,22 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
     <div class="card"><h3>📂 All Categories</h3><div id="cat-list"></div></div>
   </div>
+  <div class="d-page" id="a-page-customers">
+    <div class="page-title">Customers</div>
+    <div class="card">
+      <h3>🎁 Give 5% Loyalty Discount</h3>
+      <input class="a-input" id="loyalty-phone-input" type="tel" placeholder="Customer phone number"/>
+      <button class="a-btn blue" onclick="adminAssignLoyalty(this)">Give 5% Discount</button>
+    </div>
+    <div class="card"><h3>🏆 Qualifying Customers ($400+ spent)</h3><div id="admin-qualifying-list"></div></div>
+    <div class="card"><h3>🎁 Active Discounts</h3><div id="admin-loyalty-list"></div></div>
+    <div class="card"><h3>👥 All Customers</h3><div id="admin-customer-list"></div></div>
+  </div>
   <div class="dash-nav admin-nav">
     <button class="d-nav-item active" onclick="showDPage('a','delivery',this)"><span class="nav-icon">🚚</span><span class="nav-label">Delivery</span></button>
     <button class="d-nav-item" onclick="showDPage('a','cats',this)"><span class="nav-icon">📂</span><span class="nav-label">Categories</span></button>
     <button class="d-nav-item" onclick="showDPage('a','workers',this)"><span class="nav-icon">👷</span><span class="nav-label">Workers</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','customers',this);renderAdminCustomers();"><span class="nav-icon">👥</span><span class="nav-label">Customers</span></button>
     <button class="d-nav-item" onclick="showDPage('a','settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
   </div>
 </div>
@@ -686,6 +712,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   </div>
   <div class="d-page active" id="i-page-products">
     <div id="clock-timer-display-inv"></div>
+    <div id="low-stock-alerts"></div>
     <div class="page-title">Products</div>
     <div class="card">
       <h3>➕ Add Product</h3>
@@ -710,6 +737,17 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <select class="a-input" id="np-cat"></select>
       <input class="a-input" id="np-stock" type="number" placeholder="Starting quantity"/>
       <input class="a-input" id="np-low" type="number" placeholder="Low stock alert at (e.g. 5)"/>
+      <div style="margin:8px 0;">
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">🎨 Enable Variants (Colors/Sizes)</label>
+        <div style="display:flex;gap:8px;margin:6px 0;">
+          <button class="a-btn gray" id="np-variant-off" onclick="toggleVariantForm(false)" style="flex:1;">Off</button>
+          <button class="a-btn gray" id="np-variant-on" onclick="toggleVariantForm(true)" style="flex:1;">On</button>
+        </div>
+      </div>
+      <div id="np-variant-wrap" style="display:none;">
+        <input class="a-input" id="np-colors" type="text" placeholder="Colors (e.g. Red, Blue, Black)"/>
+        <input class="a-input" id="np-sizes" type="text" placeholder="Sizes (e.g. S, M, L, XL)"/>
+      </div>
       <button class="a-btn" onclick="addProduct(this)">Add Product</button>
     </div>
     <div class="card"><h3>📦 All Products</h3><div id="inv-products-list"></div></div>
@@ -807,12 +845,19 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>👷 Worker Pay Summary</h3><div id="payroll-summary"></div></div>
     <div class="card"><h3>📋 Payment History</h3><div id="payroll-history"></div></div>
   </div>
+  <div class="d-page" id="ops-page-customers">
+    <div class="page-title">Customers</div>
+    <div class="stats-bar" id="ops-customer-stats"></div>
+    <div class="card"><h3>🏆 Top Customers</h3><div id="customer-list"></div></div>
+    <div class="card"><h3>🎁 Active Loyalty Discounts</h3><div id="loyalty-list"></div></div>
+  </div>
   <div class="dash-nav ops-nav">
     <button class="d-nav-item active" onclick="showDPage('ops','summary',this)"><span class="nav-icon">📊</span><span class="nav-label">Summary</span></button>
     <button class="d-nav-item" onclick="showDPage('ops','income',this)"><span class="nav-icon">💰</span><span class="nav-label">Income</span></button>
     <button class="d-nav-item" onclick="showDPage('ops','expenses',this)"><span class="nav-icon">💸</span><span class="nav-label">Expenses</span></button>
     <button class="d-nav-item" onclick="showDPage('ops','trips',this);renderOpsMonthlyMiles();"><span class="nav-icon">📊</span><span class="nav-label">Miles</span></button>
     <button class="d-nav-item" onclick="showDPage('ops','payroll',this)"><span class="nav-icon">👷</span><span class="nav-label">Payroll</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','customers',this);renderCustomers();"><span class="nav-icon">👥</span><span class="nav-label">Customers</span></button>
   </div>
 </div>
 
@@ -918,7 +963,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <p style="color:var(--text-gray);font-size:14px;font-weight:600;margin-bottom:20px;" id="confirm-msg">This action cannot be undone.</p>
     <div style="display:flex;gap:10px;">
       <button class="a-btn gray" style="flex:1;padding:14px;" onclick="closeConfirm()">No, Cancel</button>
-      <button class="a-btn" style="flex:1;padding:14px;background:#D32F2F;" id="confirm-yes-btn" onclick="">Yes, Delete</button>
+      <button class="a-btn" style="flex:1;padding:14px;background:#ef5350;" id="confirm-yes-btn" onclick="">Yes, Delete</button>
     </div>
   </div>
 </div>
@@ -1101,8 +1146,8 @@ var S = {
   invPass: "1993", opsPass: "1992", deliveryPass: "1995",
   heroTitle: "SHOP NOW!", heroSub: "Order before the deadline and we'll deliver to you!",
   arrivalText: "Date & location coming soon!",
-  appUrl: window.location.href, nextOrderId: 1, primaryColor: "#D32F2F",
-  bannerEmoji: "🐂", bizName: "EL TORO", bizEmoji: "🐂", backdropColor: "#1a1a1a",
+  appUrl: window.location.href, nextOrderId: 1, primaryColor: "#26C6DA",
+  bannerEmoji: "🐂", bizName: "EL TORO", bizEmoji: "🐂", backdropColor: "#0b0f11",
   categories: [
     {name:"Dairy",emoji:"🥛"},{name:"Meat",emoji:"🍖"},{name:"Bread & Grains",emoji:"🍞"},
     {name:"Eggs",emoji:"🥚"},{name:"Essentials",emoji:"🧴"},{name:"Produce",emoji:"🥦"},
@@ -1112,6 +1157,7 @@ var S = {
   ],
   depositRequired: false, depositAmount: 50, depositZelle: "", depositNote: "", depositName: "", depositQR: "",
   timesheets: [], activeClocks: {},
+  customerLog: [], loyaltyDiscounts: {},
   lastResetDate: null
 };
 
@@ -1176,6 +1222,7 @@ function showDPage(app, name, btn) {
   if(app==="a" && name==="cats") renderCatList();
   if(app==="a" && name==="workers") renderWorkerList();
   if(app==="a" && name==="settings") loadSettingsInputs();
+  if(app==="a" && name==="customers") renderAdminCustomers();
   if(app==="i" && name==="products") renderInvProducts();
   if(app==="i" && name==="stock") renderStock();
   if(app==="i" && name==="suppliers") renderSuppliers();
@@ -1185,6 +1232,7 @@ function showDPage(app, name, btn) {
   if(app==="ops" && name==="expenses") renderExpenses();
   if(app==="ops" && name==="trips") renderTrips();
   if(app==="ops" && name==="payroll") renderPayroll();
+  if(app==="ops" && name==="customers") renderCustomers();
   if(app==="del" && name==="pickup") renderPickupList();
   if(app==="del" && name==="location") renderDeliveryLocation();
   if(app==="del" && name==="trips") renderDeliveryTrips();
@@ -1289,7 +1337,7 @@ function launchApp(which) {
   if(which==="inv") {
     document.getElementById("inv-app").classList.add("active");
     document.getElementById("inv-worker-name").textContent = currentWorkerName;
-    renderInvProducts();
+    renderInvProducts();renderLowStockAlerts();
   }
   if(which==="ops") { document.getElementById("ops-app").classList.add("active"); renderOpsSummary(); renderPayroll(); }
   if(which==="delivery") {
@@ -1409,10 +1457,20 @@ function renderShop() {
       ? '<div class="product-photo"><img src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>'
       : '<div class="product-photo">'+p.emoji+'</div>';
     var cartQty = getCartQty(p.id);
+    var variantHtml="";
+    if(p.hasVariants){
+      if(p.colors&&p.colors.length){
+        variantHtml+='<select class="a-input" id="color-'+p.id+'" style="font-size:12px;padding:6px 8px;margin:3px 0;"><option value="">Select Color</option>'+p.colors.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join("")+'</select>';
+      }
+      if(p.sizes&&p.sizes.length){
+        variantHtml+='<select class="a-input" id="size-'+p.id+'" style="font-size:12px;padding:6px 8px;margin:3px 0;"><option value="">Select Size</option>'+p.sizes.map(function(s){return '<option value="'+s+'">'+s+'</option>';}).join("")+'</select>';
+      }
+    }
+    var lowStockHtml=(p.lowAlert&&p.stock!==undefined&&p.stock<=p.lowAlert&&p.stock>0)?'<div style="font-size:10px;font-weight:800;color:#ff6666;margin-top:2px;">⚠️ Low Stock</div>':"";
     var actionHtml = (p.soldOut||locked)
       ? '<div class="sold-out-badge">'+(locked?t("closed"):t("soldOut"))+'</div>'
-      : '<div class="qty-row"><button class="qty-btn" onclick="changeProductQty('+p.id+',-1)">−</button><span class="qty-num">'+cartQty+'</span><button class="qty-btn" onclick="changeProductQty('+p.id+',1)">+</button></div><button class="add-btn" onclick="addToCart('+p.id+')">'+ t("addToCart") +'</button>';
-    return '<div class="product-card">'+photoHtml+'<div class="product-info"><div class="product-name">'+p.name+'</div><div class="product-price">$'+parseFloat(p.price).toFixed(2)+'</div><div class="product-unit">'+p.unit+'</div>'+actionHtml+'</div></div>';
+      : variantHtml+'<div class="qty-row"><button class="qty-btn" onclick="changeProductQty('+p.id+',-1)">−</button><span class="qty-num">'+cartQty+'</span><button class="qty-btn" onclick="changeProductQty('+p.id+',1)">+</button></div><button class="add-btn" onclick="addToCart('+p.id+')">'+ t("addToCart") +'</button>';
+    return '<div class="product-card">'+photoHtml+'<div class="product-info"><div class="product-name">'+p.name+'</div><div class="product-price">$'+parseFloat(p.price).toFixed(2)+'</div><div class="product-unit">'+p.unit+'</div>'+lowStockHtml+actionHtml+'</div></div>';
   }).join("");
   var ail=document.getElementById("available-items-label");if(ail)ail.textContent=t("availableItems");
   updateCartFloat();
@@ -1420,20 +1478,34 @@ function renderShop() {
 
 function setCat(cat){activeCat=cat;renderShop();}
 function isLocked(){return S.deadline&&new Date()>new Date(S.deadline);}
-function getCartQty(id){var i=S.cart.find(function(c){return c.id===id;});return i?i.qty:0;}
+function getCartQty(id){return S.cart.filter(function(c){return c.id===id;}).reduce(function(s,c){return s+c.qty;},0);}
 
 function changeProductQty(id,delta){
   var p=S.products.find(function(x){return x.id===id;});if(!p)return;
-  var ex=S.cart.find(function(c){return c.id===id;});
-  if(ex){ex.qty=Math.max(0,ex.qty+delta);if(ex.qty===0)S.cart=S.cart.filter(function(c){return c.id!==id;});}
-  else if(delta>0) S.cart.push({id:p.id,name:p.name,emoji:p.emoji,photo:p.photo,price:p.price,cost:p.cost||0,unit:p.unit,qty:1});
+  var color="",size="";
+  if(p.hasVariants){
+    var ce=document.getElementById("color-"+id);if(ce)color=ce.value;
+    var se=document.getElementById("size-"+id);if(se)size=se.value;
+    if((p.colors&&p.colors.length&&!color)||(p.sizes&&p.sizes.length&&!size)){showToast("Pick your options first!");return;}
+  }
+  var vKey=id+"-"+color+"-"+size;
+  var ex=S.cart.find(function(c){return (c.vKey||c.id+"-"+""+""+"")=== vKey;});
+  if(ex){ex.qty=Math.max(0,ex.qty+delta);if(ex.qty===0)S.cart=S.cart.filter(function(c){return (c.vKey||c.id+"-"+""+""+"")!==vKey;});}
+  else if(delta>0) S.cart.push({id:p.id,vKey:vKey,name:p.name,emoji:p.emoji,photo:p.photo,price:p.price,cost:p.cost||0,unit:p.unit,qty:1,color:color,size:size});
   save();renderShop();
 }
 function addToCart(id){
   var p=S.products.find(function(x){return x.id===id;});if(!p)return;
-  var ex=S.cart.find(function(c){return c.id===id;});
+  var color="",size="";
+  if(p.hasVariants){
+    var ce=document.getElementById("color-"+id);if(ce)color=ce.value;
+    var se=document.getElementById("size-"+id);if(se)size=se.value;
+    if((p.colors&&p.colors.length&&!color)||(p.sizes&&p.sizes.length&&!size)){showToast("Pick your options first!");return;}
+  }
+  var vKey=id+"-"+color+"-"+size;
+  var ex=S.cart.find(function(c){return c.vKey===vKey;});
   if(ex) ex.qty++;
-  else S.cart.push({id:p.id,name:p.name,emoji:p.emoji,photo:p.photo,price:p.price,cost:p.cost||0,unit:p.unit,qty:1});
+  else S.cart.push({id:p.id,vKey:vKey,name:p.name,emoji:p.emoji,photo:p.photo,price:p.price,cost:p.cost||0,unit:p.unit,qty:1,color:color,size:size});
   save();renderShop();showToast(p.emoji+" Added!");
 }
 function updateCartFloat(){
@@ -1462,21 +1534,22 @@ function renderCart(){
   var meetsMin=totalQty>=S.minItems;
   var itemsHtml=S.cart.map(function(item){
     var imgHtml = item.photo ? '<img class="ci-photo" src="'+item.photo+'" onerror="this.style.display=\'none\'" />' : '<span class="ci-emoji">'+item.emoji+'</span>';
-    return '<div class="cart-item">'+imgHtml+'<div style="flex:1;"><div class="ci-name">'+item.name+'</div><div class="ci-price">$'+(item.price*item.qty).toFixed(2)+'</div></div><div class="ci-controls"><button class="ci-qty-btn" onclick="cartQty('+item.id+',-1)">−</button><span class="ci-qty">'+item.qty+'</span><button class="ci-qty-btn" onclick="cartQty('+item.id+',1)">+</button></div></div>';
+    var variantLabel=(item.color||item.size)?'<div style="font-size:11px;color:var(--primary);font-weight:700;">'+[item.color,item.size].filter(Boolean).join(", ")+'</div>':"";
+    return '<div class="cart-item">'+imgHtml+'<div style="flex:1;"><div class="ci-name">'+item.name+'</div>'+variantLabel+'<div class="ci-price">$'+(item.price*item.qty).toFixed(2)+'</div></div><div class="ci-controls"><button class="ci-qty-btn" onclick="cartQty('+(item.vKey?"\'"+item.vKey+"\'":item.id)+',-1)">−</button><span class="ci-qty">'+item.qty+'</span><button class="ci-qty-btn" onclick="cartQty('+(item.vKey?"\'"+item.vKey+"\'":item.id)+',1)">+</button></div></div>';
   }).join("");
   var minWarn=!meetsMin?'<div class="min-warning">'+t("addMore",{n:S.minItems-totalQty,min:S.minItems})+'</div>':'';
   body.innerHTML=itemsHtml+minWarn+
-    '<div class="order-total-card"><div class="ot-row"><span class="ot-label">Items</span><span class="ot-val">'+totalQty+'</span></div><div class="ot-row"><span class="ot-label">Total</span><span class="ot-total">$'+totalPrice.toFixed(2)+'</span></div></div>'+
-    '<div class="customer-form"><h3>'+t("yourInfo")+'</h3><input class="form-input" id="c-name" type="text" placeholder="'+t("namePlaceholder")+'"/><input class="form-input" id="c-phone" type="tel" placeholder="'+t("phonePlaceholder")+'"/></div>'+
+    '<div class="order-total-card"><div class="ot-row"><span class="ot-label">Items</span><span class="ot-val">'+totalQty+'</span></div><div class="ot-row"><span class="ot-label">Total</span><span class="ot-total">$'+totalPrice.toFixed(2)+'</span></div><div id="loyalty-discount-msg"></div></div>'+
+    '<div class="customer-form"><h3>'+t("yourInfo")+'</h3><input class="form-input" id="c-name" type="text" placeholder="'+t("namePlaceholder")+'"/><input class="form-input" id="c-phone" type="tel" placeholder="'+t("phonePlaceholder")+'" oninput="checkLoyaltyDiscount()"/></div>'+
     '<div style="background:#1a1a00;border:2px solid var(--gold);border-radius:8px;padding:10px 14px;margin:8px 0;display:flex;align-items:center;gap:8px;">'+
     '<span style="font-size:16px;">📸</span>'+
     '<span style="font-size:13px;font-weight:800;color:var(--gold);">'+ t("screenshotReminder") +'</span>'+
     '</div>'+
     '<button class="submit-btn '+(meetsMin?"ready":"locked")+'" '+(meetsMin?"":"disabled")+' id="place-order-btn" onclick="submitOrder()">'+(meetsMin?t("placeOrder"):t("addMore",{n:S.minItems-totalQty,min:S.minItems}))+'</button><div style="height:20px;"></div>';
 }
-function cartQty(id,delta){
-  var item=S.cart.find(function(i){return i.id===id;});if(!item)return;
-  item.qty+=delta;if(item.qty<=0)S.cart=S.cart.filter(function(i){return i.id!==id;});
+function cartQty(key,delta){
+  var item=S.cart.find(function(i){return (i.vKey||i.id)===key;});if(!item)return;
+  item.qty+=delta;if(item.qty<=0)S.cart=S.cart.filter(function(i){return (i.vKey||i.id)!==key;});
   save();renderCart();updateCartFloat();
 }
 function submitOrder(){
@@ -1487,11 +1560,36 @@ function submitOrder(){
   var totalQty=S.cart.reduce(function(s,i){return s+i.qty;},0);
   if(totalQty<S.minItems){showToast(t("addMore",{n:S.minItems-totalQty,min:S.minItems}));return;}
   var total=S.cart.reduce(function(s,i){return s+i.price*i.qty;},0);
+  // Check loyalty discount
+  var discount=0;var loyaltyMsg="";
+  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
+  var cleanPhone=phone.replace(/\D/g,"");
+  var loyalty=S.loyaltyDiscounts[cleanPhone];
+  if(loyalty&&!loyalty.used){
+    discount=total*(loyalty.percent/100);
+    total=total-discount;
+    loyaltyMsg=currentLang==="es"?
+      "🎉 ¡Gracias por ser un cliente leal! "+loyalty.percent+"% de descuento aplicado!":
+      "🎉 Thank you for being a loyal customer! "+loyalty.percent+"% discount applied!";
+    loyalty.used=true;loyalty.usedAt=new Date().toISOString();
+    save();
+  }
+  // Track customer
+  if(!S.customerLog)S.customerLog=[];
+  var existCust=S.customerLog.find(function(c){return c.phone.replace(/\D/g,"")===cleanPhone;});
+  if(existCust){existCust.orders++;existCust.totalSpent+=total;existCust.lastOrder=new Date().toISOString();existCust.name=name;}
+  else{S.customerLog.push({phone:phone,name:name,orders:1,totalSpent:total,firstOrder:new Date().toISOString(),lastOrder:new Date().toISOString()});}
+  var items=S.cart.map(function(i){
+    var n=i.name;
+    var variant=[i.color,i.size].filter(Boolean).join(", ");
+    if(variant)n+=" ("+variant+")";
+    return {id:i.id,name:n,baseName:i.baseName||i.name,emoji:i.emoji,photo:i.photo,price:i.price,cost:i.cost||0,unit:i.unit,qty:i.qty,color:i.color||"",size:i.size||""};
+  });
   var order={id:S.nextOrderId++,slot:S.orders.length+1,name:name,phone:phone,
-    items:S.cart.map(function(i){return Object.assign({},i);}),total:total,status:"new",timestamp:new Date().toISOString(),
+    items:items,total:total,discount:discount,loyaltyMsg:loyaltyMsg,status:"new",timestamp:new Date().toISOString(),
     depositRequired:!!S.depositRequired,depositAmount:S.depositAmount||0,depositSent:false};
   S.orders.push(order);
-  order.items.forEach(function(oi){var p=S.products.find(function(x){return x.id===oi.id;});if(p)p.stock=Math.max(0,(p.stock||0)-oi.qty);});
+  items.forEach(function(oi){var p=S.products.find(function(x){return x.id===oi.id;});if(p)p.stock=Math.max(0,(p.stock||0)-oi.qty);});
   S.cart=[];save();
   saveOrderToSheets(order);
   
@@ -1532,6 +1630,10 @@ function submitOrder(){
         '<div style="font-size:36px;">✅</div>'+
         '<div style="font-size:18px;font-weight:800;color:#4caf50;margin:6px 0;">Order #'+order.slot+' Confirmed!</div>'+
         '<div style="font-size:13px;font-weight:700;color:#ccc;">'+order.name+' · $'+order.total.toFixed(2)+'</div>'+
+        (order.discount?'<div style="font-size:12px;font-weight:700;color:#FFD54F;margin-top:4px;">🎁 Discount: -$'+order.discount.toFixed(2)+'</div>':'')+
+        '<div style="margin-top:12px;display:flex;gap:8px;justify-content:center;">'+
+        '<button class="a-btn" style="font-size:12px;padding:10px 16px;" onclick="shareReceipt('+order.id+')">📤 Share Receipt</button>'+
+        '</div>'+
         '</div>';
     }
   }
@@ -1814,7 +1916,20 @@ function applyBizName(){
 }
 function savePrimaryColor(btn){
   var color=document.getElementById("set-primary-color").value;
-  document.documentElement.style.setProperty("--red",color);S.primaryColor=color;save();buttonFlash(btn,"✅ Saved!");
+  document.documentElement.style.setProperty("--primary",color);
+  document.documentElement.style.setProperty("--primary-glow","rgba("+parseInt(color.slice(1,3),16)+","+parseInt(color.slice(3,5),16)+","+parseInt(color.slice(5,7),16)+",0.3)");
+  S.primaryColor=color;save();buttonFlash(btn,"✅ Saved!");
+}
+
+function applyTheme(primary,backdrop){
+  document.documentElement.style.setProperty("--primary",primary);
+  document.documentElement.style.setProperty("--primary-glow","rgba("+parseInt(primary.slice(1,3),16)+","+parseInt(primary.slice(3,5),16)+","+parseInt(primary.slice(5,7),16)+",0.3)");
+  document.documentElement.style.setProperty("--dark-bg",backdrop);
+  document.body.style.background=backdrop;
+  S.primaryColor=primary;S.backdropColor=backdrop;save();
+  document.getElementById("set-primary-color").value=primary;
+  document.getElementById("set-backdrop-color").value=backdrop;
+  showToast("✅ Theme applied!");
 }
 function saveBackdrop(btn){
   var color=document.getElementById("set-backdrop-color").value;
@@ -1826,8 +1941,8 @@ function loadSettingsInputs(){
   document.getElementById("set-banner-emoji").value=S.bannerEmoji||"";
   document.getElementById("set-biz-name").value=S.bizName||"EL TORO";
   document.getElementById("set-biz-emoji").value=S.bizEmoji||"";
-  document.getElementById("set-primary-color").value=S.primaryColor||"#D32F2F";
-  document.getElementById("set-backdrop-color").value=S.backdropColor||"#1a1a1a";
+  document.getElementById("set-primary-color").value=S.primaryColor||"#26C6DA";
+  document.getElementById("set-backdrop-color").value=S.backdropColor||"#0b0f11";
 }
 function saveAppUrl(btn){S.appUrl=document.getElementById("set-app-url").value.trim();save();if(btn)buttonFlash(btn,"✅ Saved!");}
 
@@ -2119,17 +2234,27 @@ function addProduct(btn){
   var unit=document.getElementById("np-unit").value.trim();
   var cat=document.getElementById("np-cat").value;
   var stock=parseInt(document.getElementById("np-stock").value)||0;
-  var lowAt=parseInt(document.getElementById("np-low").value)||5;
+  var lowAt=parseInt(document.getElementById("np-low").value)||0;
   var urlInput=document.getElementById("np-photo-url");
   var photo=newProductPhoto||(urlInput?urlInput.value.trim():"");
+  // Variants
+  var variantOn=document.getElementById("np-variant-on").className.indexOf("gray")===-1;
+  var colors=[];var sizes=[];
+  if(variantOn){
+    var colorsVal=document.getElementById("np-colors").value.trim();
+    var sizesVal=document.getElementById("np-sizes").value.trim();
+    if(colorsVal) colors=colorsVal.split(",").map(function(c){return c.trim();}).filter(Boolean);
+    if(sizesVal) sizes=sizesVal.split(",").map(function(s){return s.trim();}).filter(Boolean);
+  }
   var id=S.products.length?Math.max.apply(null,S.products.map(function(p){return p.id;}))+1:1;
-  S.products.push({id:id,emoji:emoji,name:name,price:price,cost:cost,unit:unit,cat:cat,visible:true,soldOut:false,photo:photo,stock:stock,lowAt:lowAt,addedBy:currentWorkerName,addedAt:new Date().toISOString()});
-  ["np-emoji","np-name","np-price","np-cost","np-unit","np-stock","np-low"].forEach(function(id){document.getElementById(id).value="";});
+  S.products.push({id:id,emoji:emoji,name:name,price:price,cost:cost,unit:unit,cat:cat,visible:true,soldOut:false,photo:photo,stock:stock,lowAlert:lowAt,addedBy:currentWorkerName,addedAt:new Date().toISOString(),hasVariants:variantOn,colors:colors,sizes:sizes});
+  ["np-emoji","np-name","np-price","np-cost","np-unit","np-stock","np-low","np-colors","np-sizes"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
   if(urlInput)urlInput.value="";newProductPhoto="";
+  toggleVariantForm(false);
   var area=document.getElementById("photo-upload-area");var img=area.querySelector("img");if(img)img.remove();
   document.getElementById("photo-overlay").style.display="flex";
   var newProd = S.products[S.products.length-1];
-  save();renderInvProducts();renderShop();
+  save();renderInvProducts();renderShop();renderLowStockAlerts();
   syncProductToSheets(newProd);
   if(btn)buttonFlash(btn,"✅ Added!");
 }
@@ -2563,7 +2688,10 @@ function syncProductToSheets(product) {
       unit: product.unit,
       stock: product.stock||0,
       by: product.addedBy||"",
-      date: new Date().toLocaleString("en-US")
+      date: new Date().toLocaleString("en-US"),
+      photo: product.photo||"",
+      colors: (product.colors||[]).join(", "),
+      sizes: (product.sizes||[]).join(", ")
     })
   }).catch(function(e){ console.log("Sheets err:", e); });
 }
@@ -2998,12 +3126,230 @@ function deleteTripFromSheets(trip) {
 }
 
 // ============================================================
+// ADMIN CUSTOMERS & LOYALTY
+// ============================================================
+function renderAdminCustomers(){
+  if(!S.customerLog)S.customerLog=[];
+  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
+  var sorted=S.customerLog.slice().sort(function(a,b){return b.totalSpent-a.totalSpent;});
+  // Qualifying ($400+)
+  var qualifying=sorted.filter(function(c){
+    var cp=c.phone.replace(/\D/g,"");
+    return c.totalSpent>=400&&(!S.loyaltyDiscounts[cp]||S.loyaltyDiscounts[cp].used);
+  });
+  var qualEl=document.getElementById("admin-qualifying-list");
+  if(!qualifying.length){
+    qualEl.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No customers have spent $400+ yet.</p>';
+  } else {
+    qualEl.innerHTML=qualifying.map(function(c){
+      var cp=c.phone.replace(/\D/g,"");
+      return '<div class="ledger-item"><div><div class="ledger-label">🏆 '+c.name+'</div><div class="ledger-sub">📞 '+c.phone+' · $'+c.totalSpent.toFixed(2)+' spent · '+c.orders+' orders</div></div><div><button class="a-btn" style="font-size:11px;padding:6px 12px;" onclick="adminGiveLoyalty(\''+cp+'\',this)">🎁 Give 5%</button></div></div>';
+    }).join("");
+  }
+  // Active discounts
+  var loyaltyEl=document.getElementById("admin-loyalty-list");
+  var activeKeys=Object.keys(S.loyaltyDiscounts).filter(function(k){return !S.loyaltyDiscounts[k].used;});
+  var usedKeys=Object.keys(S.loyaltyDiscounts).filter(function(k){return S.loyaltyDiscounts[k].used;});
+  if(!activeKeys.length&&!usedKeys.length){
+    loyaltyEl.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No discounts assigned yet.</p>';
+  } else {
+    var html="";
+    if(activeKeys.length){
+      html+=activeKeys.map(function(phone){
+        var d=S.loyaltyDiscounts[phone];
+        var cust=S.customerLog.find(function(c){return c.phone.replace(/\D/g,"")===phone;});
+        return '<div class="ledger-item"><div><div class="ledger-label" style="color:#4caf50;">🎁 '+(cust?cust.name:phone)+'</div><div class="ledger-sub">5% off · Assigned '+new Date(d.assignedAt).toLocaleDateString("en-US",{month:"short",day:"numeric"})+'</div></div><div><button class="a-btn gray" style="font-size:11px;padding:6px 10px;" onclick="removeLoyalty(\''+phone+'\')">Remove</button></div></div>';
+      }).join("");
+    }
+    if(usedKeys.length){
+      html+='<div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;padding:8px 0 4px;">Used</div>';
+      html+=usedKeys.map(function(phone){
+        var d=S.loyaltyDiscounts[phone];
+        var cust=S.customerLog.find(function(c){return c.phone.replace(/\D/g,"")===phone;});
+        return '<div class="ledger-item" style="opacity:0.5;"><div><div class="ledger-label">'+(cust?cust.name:phone)+'</div><div class="ledger-sub">5% · Used '+new Date(d.usedAt).toLocaleDateString("en-US",{month:"short",day:"numeric"})+'</div></div><div style="color:var(--text-gray);font-size:11px;font-weight:800;">✅ Used</div></div>';
+      }).join("");
+    }
+    loyaltyEl.innerHTML=html;
+  }
+  // All customers
+  var allEl=document.getElementById("admin-customer-list");
+  if(!sorted.length){
+    allEl.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No customers yet.</p>';
+  } else {
+    allEl.innerHTML=sorted.map(function(c){
+      var badge=c.orders>=5?'🏆':c.orders>=3?'⭐':'';
+      var spent400=c.totalSpent>=400?'<span style="color:#4caf50;font-weight:800;"> ✓ $400+</span>':'';
+      return '<div class="ledger-item"><div><div class="ledger-label">'+badge+' '+c.name+spent400+'</div><div class="ledger-sub">📞 '+c.phone+' · '+c.orders+' orders · $'+c.totalSpent.toFixed(2)+' spent</div></div></div>';
+    }).join("");
+  }
+}
+
+function adminAssignLoyalty(btn){
+  var phoneEl=document.getElementById("loyalty-phone-input");
+  var phone=phoneEl.value.replace(/\D/g,"");
+  if(!phone||phone.length<10){showToast("Enter a valid phone number!");return;}
+  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
+  if(S.loyaltyDiscounts[phone]&&!S.loyaltyDiscounts[phone].used){showToast("This customer already has an active discount!");return;}
+  S.loyaltyDiscounts[phone]={percent:5,assignedAt:new Date().toISOString(),used:false};
+  phoneEl.value="";
+  save();renderAdminCustomers();buttonFlash(btn,"✅ Assigned!");
+}
+
+function adminGiveLoyalty(phone,btn){
+  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
+  S.loyaltyDiscounts[phone]={percent:5,assignedAt:new Date().toISOString(),used:false};
+  save();renderAdminCustomers();if(btn)buttonFlash(btn,"✅ Done!");
+}
+
+// ============================================================
+// VARIANT TOGGLE
+// ============================================================
+function toggleVariantForm(on){
+  var wrap=document.getElementById("np-variant-wrap");
+  var onBtn=document.getElementById("np-variant-on");
+  var offBtn=document.getElementById("np-variant-off");
+  if(on){wrap.style.display="block";onBtn.className="a-btn";offBtn.className="a-btn gray";}
+  else{wrap.style.display="none";offBtn.className="a-btn";onBtn.className="a-btn gray";}
+}
+
+// ============================================================
+// LOYALTY DISCOUNT CHECK (live at checkout)
+// ============================================================
+function checkLoyaltyDiscount(){
+  var phoneEl=document.getElementById("c-phone");if(!phoneEl)return;
+  var phone=phoneEl.value.replace(/\D/g,"");
+  var msgEl=document.getElementById("loyalty-discount-msg");if(!msgEl)return;
+  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
+  var loyalty=S.loyaltyDiscounts[phone];
+  if(loyalty&&!loyalty.used){
+    msgEl.innerHTML='<div style="background:#1a2a1a;border:1px solid #4caf50;border-radius:8px;padding:10px;margin-top:8px;text-align:center;"><div style="font-size:14px;font-weight:800;color:#4caf50;">'+(currentLang==="es"?"🎉 ¡Gracias por ser un cliente leal!":"🎉 Thank you for being a loyal customer!")+'</div><div style="font-size:13px;font-weight:700;color:#fff;margin-top:4px;">'+loyalty.percent+'% '+(currentLang==="es"?"de descuento será aplicado!":"discount will be applied!")+'</div></div>';
+  } else {
+    msgEl.innerHTML="";
+  }
+}
+
+// ============================================================
+// SHARE RECEIPT
+// ============================================================
+function shareReceipt(orderId){
+  var order=S.orders.find(function(o){return o.id===orderId;});if(!order)return;
+  var itemsList=order.items.map(function(i){return i.qty+"x "+i.name+" ($"+(i.price*i.qty).toFixed(2)+")";}).join("\n");
+  var receipt="🐂 EL TORO - Order Receipt\n"+
+    "========================\n"+
+    "Order #"+order.slot+"\n"+
+    "Name: "+order.name+"\n"+
+    "Phone: "+order.phone+"\n"+
+    "========================\n"+
+    itemsList+"\n"+
+    "========================\n"+
+    (order.discount?"Discount: -$"+order.discount.toFixed(2)+"\n":"")+
+    "TOTAL: $"+order.total.toFixed(2)+"\n"+
+    (order.loyaltyMsg?"\n"+order.loyaltyMsg+"\n":"")+
+    "========================\n"+
+    "Date: "+new Date(order.timestamp).toLocaleString("en-US")+"\n"+
+    "Thank you for your order!";
+  if(navigator.share){
+    navigator.share({title:"El Toro Receipt #"+order.slot,text:receipt}).catch(function(){});
+  } else {
+    var ta=document.createElement("textarea");ta.value=receipt;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);
+    showToast("Receipt copied! Paste in a text message.");
+  }
+}
+
+// ============================================================
+// CUSTOMERS (Operations)
+// ============================================================
+function renderCustomers(){
+  if(!S.customerLog)S.customerLog=[];
+  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
+  var sorted=S.customerLog.slice().sort(function(a,b){return b.orders-a.orders;});
+  var totalCustomers=sorted.length;
+  var repeatCustomers=sorted.filter(function(c){return c.orders>1;}).length;
+  var totalRevenue=sorted.reduce(function(s,c){return s+c.totalSpent;},0);
+  var statsEl=document.getElementById("ops-customer-stats");
+  if(statsEl) statsEl.innerHTML=
+    '<div class="stat-card"><div class="stat-val">'+totalCustomers+'</div><div class="stat-label">Customers</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+repeatCustomers+'</div><div class="stat-label">Repeat</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+totalRevenue.toFixed(0)+'</div><div class="stat-label">Revenue</div></div>';
+  var listEl=document.getElementById("customer-list");
+  if(!sorted.length){listEl.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No customers yet. They appear after orders are placed.</p>';} 
+  else {
+    listEl.innerHTML=sorted.map(function(c){
+      var cleanPhone=c.phone.replace(/\D/g,"");
+      var hasDiscount=S.loyaltyDiscounts[cleanPhone]&&!S.loyaltyDiscounts[cleanPhone].used;
+      var badge=c.orders>=5?'🏆':c.orders>=3?'⭐':'';
+      return '<div class="ledger-item"><div><div class="ledger-label">'+badge+' '+c.name+'</div><div class="ledger-sub">📞 '+c.phone+' · '+c.orders+' orders · $'+c.totalSpent.toFixed(2)+' spent</div><div class="ledger-sub">Last: '+new Date(c.lastOrder).toLocaleDateString("en-US",{month:"short",day:"numeric"})+'</div></div></div>';
+    }).join("");
+  }
+  // Active loyalty discounts
+  var loyaltyEl=document.getElementById("loyalty-list");
+  var activeDiscounts=Object.keys(S.loyaltyDiscounts).filter(function(k){return !S.loyaltyDiscounts[k].used;});
+  var usedDiscounts=Object.keys(S.loyaltyDiscounts).filter(function(k){return S.loyaltyDiscounts[k].used;});
+  if(!activeDiscounts.length&&!usedDiscounts.length){
+    loyaltyEl.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No loyalty discounts assigned yet.</p>';
+  } else {
+    var html="";
+    if(activeDiscounts.length){
+      html+=activeDiscounts.map(function(phone){
+        var d=S.loyaltyDiscounts[phone];
+        var cust=S.customerLog.find(function(c){return c.phone.replace(/\D/g,"")===phone;});
+        return '<div class="ledger-item"><div><div class="ledger-label" style="color:#4caf50;">🎁 '+(cust?cust.name:phone)+'</div><div class="ledger-sub">'+d.percent+'% off · Assigned '+new Date(d.assignedAt).toLocaleDateString("en-US",{month:"short",day:"numeric"})+'</div></div><div><button class="a-btn gray" style="font-size:11px;padding:6px 10px;" onclick="removeLoyalty(\''+phone+'\')">Remove</button></div></div>';
+      }).join("");
+    }
+    if(usedDiscounts.length){
+      html+='<div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;padding:8px 0 4px;">Used</div>';
+      html+=usedDiscounts.map(function(phone){
+        var d=S.loyaltyDiscounts[phone];
+        var cust=S.customerLog.find(function(c){return c.phone.replace(/\D/g,"")===phone;});
+        return '<div class="ledger-item" style="opacity:0.5;"><div><div class="ledger-label">'+(cust?cust.name:phone)+'</div><div class="ledger-sub">'+d.percent+'% · Used '+new Date(d.usedAt).toLocaleDateString("en-US",{month:"short",day:"numeric"})+'</div></div><div style="color:var(--text-gray);font-size:11px;font-weight:800;">✅ Used</div></div>';
+      }).join("");
+    }
+    loyaltyEl.innerHTML=html;
+  }
+}
+
+function assignLoyalty(phone){
+  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
+  S.loyaltyDiscounts[phone]={percent:5,assignedAt:new Date().toISOString(),used:false};
+  save();renderCustomers();showToast("🎁 5% loyalty discount assigned!");
+}
+
+function removeLoyalty(phone){
+  if(!S.loyaltyDiscounts)return;
+  delete S.loyaltyDiscounts[phone];
+  save();renderCustomers();showToast("Discount removed.");
+}
+
+// ============================================================
+// LOW STOCK ALERTS (Inventory)
+// ============================================================
+function renderLowStockAlerts(){
+  var alertEl=document.getElementById("low-stock-alerts");if(!alertEl)return;
+  var low=S.products.filter(function(p){return p.lowAlert&&p.stock!==undefined&&p.stock<=p.lowAlert&&p.stock>0;});
+  var out=S.products.filter(function(p){return p.stock!==undefined&&p.stock<=0&&!p.soldOut;});
+  if(!low.length&&!out.length){alertEl.innerHTML="";return;}
+  var html='<div style="margin:0 12px 12px;">';
+  if(out.length){
+    html+='<div style="background:#2a0000;border:1px solid #ff6666;border-radius:10px;padding:10px;margin-bottom:8px;"><div style="font-size:12px;font-weight:800;color:#ff6666;text-transform:uppercase;">🚨 Out of Stock</div>';
+    html+=out.map(function(p){return '<div style="font-size:13px;font-weight:700;color:#fff;padding:2px 0;">'+p.emoji+' '+p.name+' — 0 left</div>';}).join("");
+    html+='</div>';
+  }
+  if(low.length){
+    html+='<div style="background:#2a1a00;border:1px solid #FFD54F;border-radius:10px;padding:10px;"><div style="font-size:12px;font-weight:800;color:#FFD54F;text-transform:uppercase;">⚠️ Low Stock</div>';
+    html+=low.map(function(p){return '<div style="font-size:13px;font-weight:700;color:#fff;padding:2px 0;">'+p.emoji+' '+p.name+' — '+p.stock+' left (alert at '+p.lowAlert+')</div>';}).join("");
+    html+='</div>';
+  }
+  html+='</div>';
+  alertEl.innerHTML=html;
+}
+
+// ============================================================
 // INIT
 // ============================================================
 checkAutoReset();
 renderShop();
-if(S.primaryColor&&S.primaryColor!=="#D32F2F"){document.documentElement.style.setProperty("--red",S.primaryColor);}
-if(S.backdropColor&&S.backdropColor!=="#1a1a1a"){document.documentElement.style.setProperty("--dark-bg",S.backdropColor);}
+if(S.primaryColor&&S.primaryColor!=="#26C6DA"){document.documentElement.style.setProperty("--primary",S.primaryColor);}
+if(S.backdropColor&&S.backdropColor!=="#0b0f11"){document.documentElement.style.setProperty("--dark-bg",S.backdropColor);document.body.style.background=S.backdropColor;}
 applyBizName();
 </script>
 </body>
