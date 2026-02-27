@@ -15,6 +15,7 @@
   --surface:#111a1e; --gray:#1a2a2e; --mid:#2a3a3e; --text-gray:#7a9a9e;
   --white:#fff; --black:#0a1214;
   --nav-h:65px; --top-h:60px;
+  --blue:#1565C0;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;margin:0;padding:0;}
@@ -164,28 +165,28 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .dash-app{display:none;position:fixed;inset:0;background:var(--dark-bg);z-index:500;}
 .dash-app.active{display:block;}
 .dash-topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
-.orders-topbar{background:linear-gradient(180deg,#0d1a2a,#0a1220);border-bottom:2px solid #1565C0;}
+.orders-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
 .admin-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
-.inv-topbar{background:linear-gradient(180deg,#0a1a0e,#081408);border-bottom:2px solid #4caf50;}
-.ops-topbar{background:linear-gradient(180deg,#1a1400,#140e00);border-bottom:2px solid var(--gold);}
+.inv-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
+.ops-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
 .dash-brand{display:flex;align-items:center;gap:8px;}
 .dash-role{font-size:12px;font-weight:800;padding:4px 10px;border-radius:10px;}
-.orders-topbar .dash-role{background:#1565C0;color:#fff;}
+.orders-topbar .dash-role{background:var(--primary);color:#000;}
 .admin-topbar .dash-role{background:var(--primary);color:#000;}
-.inv-topbar .dash-role{background:#4caf50;color:#fff;}
-.ops-topbar .dash-role{background:var(--gold);color:#000;}
+.inv-topbar .dash-role{background:var(--primary);color:#000;}
+.ops-topbar .dash-role{background:var(--primary);color:#000;}
 .worker-name-badge{font-size:11px;font-weight:800;color:var(--primary);background:rgba(38,198,218,0.1);padding:3px 8px;border-radius:8px;border:1px solid rgba(38,198,218,0.2);}
 .logout-btn{background:rgba(255,255,255,0.08);color:#fff;border:none;border-radius:14px;padding:6px 14px;font-family:"Nunito",sans-serif;font-weight:800;font-size:12px;cursor:pointer;}
 .dash-nav{position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);display:flex;z-index:1000;box-shadow:0 -2px 20px rgba(0,0,0,0.4);}
-.orders-nav{background:#0a1220;border-top:1px solid #1a2a3a;}
+.orders-nav{background:#0a1214;border-top:1px solid var(--card-border);}
 .admin-nav{background:#0a1214;border-top:1px solid var(--card-border);}
-.inv-nav{background:#081408;border-top:1px solid #1a2a1a;}
-.ops-nav{background:#140e00;border-top:1px solid #2a2200;}
+.inv-nav{background:#0a1214;border-top:1px solid var(--card-border);}
+.ops-nav{background:#0a1214;border-top:1px solid var(--card-border);}
 .d-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:#4a5a5e;transition:color 0.2s;border:none;background:none;position:relative;}
-.orders-nav .d-nav-item.active{color:#4fc3f7;}
+.orders-nav .d-nav-item.active{color:var(--primary);}
 .admin-nav .d-nav-item.active{color:var(--primary);}
-.inv-nav .d-nav-item.active{color:#66bb6a;}
-.ops-nav .d-nav-item.active{color:var(--gold);}
+.inv-nav .d-nav-item.active{color:var(--primary);}
+.ops-nav .d-nav-item.active{color:var(--primary);}
 .d-page{
   display:none;
   position:fixed;
@@ -312,9 +313,9 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .modal-close{float:right;background:var(--gray);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:14px;cursor:pointer;}
 
 
-.delivery-topbar{background:linear-gradient(180deg,#1a1400,#140e00);border-bottom:2px solid #FF9800;}
-.delivery-nav{background:#140e00;border-top:1px solid #2a2200;}
-.delivery-nav .d-nav-item.active{color:#FF9800;}
+.delivery-topbar{background:linear-gradient(180deg,#0d1a1e,#0a1214);border-bottom:2px solid var(--primary);}
+.delivery-nav{background:#0a1214;border-top:1px solid var(--card-border);}
+.delivery-nav .d-nav-item.active{color:var(--primary);}
 .pickup-card{background:var(--card-bg);border-radius:14px;padding:16px;margin:0 12px 10px;border:1px solid var(--card-border);transition:all 0.3s;}
 .pickup-card.picked-up{border-color:#4caf50;background:#0a1a0a;opacity:0.7;}
 .pickup-card.no-show{border-color:#ff4444;background:#1a0000;opacity:0.7;}
@@ -343,7 +344,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="logo-text">EL <em>TORO</em> 🐂</div>
     <div style="display:flex;align-items:center;gap:6px;">
       <div style="display:flex;gap:4px;background:#1a1a1a;border-radius:20px;padding:4px;">
-        <button id="lang-en" onclick="setLang('en')" style="background:none;border:2px solid var(--red);border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;padding:0;">🇺🇸</button>
+        <button id="lang-en" onclick="setLang('en')" style="background:none;border:2px solid var(--primary);border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;padding:0;">🇺🇸</button>
         <button id="lang-es" onclick="setLang('es')" style="background:none;border:2px solid transparent;border-radius:50%;width:32px;height:32px;font-size:18px;cursor:pointer;padding:0;opacity:0.5;">🇲🇽</button>
       </div>
       <button class="emp-btn" onclick="openLogin()">👤 <span id="emp-btn-label">Employees</span></button>
@@ -445,7 +446,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 <div class="dash-app" id="orders-app">
   <div class="dash-topbar orders-topbar">
     <div class="dash-brand">
-      <span class="logo-text">EL <em style="color:#4fc3f7;">TORO</em></span>
+      <span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span>
       <span class="dash-role">Orders</span>
       <span class="worker-name-badge" id="orders-worker-name"></span>
     </div>
@@ -677,7 +678,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 <div class="dash-app" id="inv-app">
   <div class="dash-topbar inv-topbar">
     <div class="dash-brand">
-      <span class="logo-text">EL <em style="color:#66bb6a;">TORO</em></span>
+      <span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span>
       <span class="dash-role">Inventory</span>
       <span class="worker-name-badge" id="inv-worker-name"></span>
     </div>
@@ -751,7 +752,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 <!-- OPERATIONS APP -->
 <div class="dash-app" id="ops-app">
   <div class="dash-topbar ops-topbar">
-    <div class="dash-brand"><span class="logo-text">EL <em style="color:var(--gold);">TORO</em></span><span class="dash-role">Operations</span></div>
+    <div class="dash-brand"><span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span><span class="dash-role">Operations</span></div>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="ops-page-summary">
@@ -820,8 +821,8 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 <div class="dash-app" id="delivery-app">
   <div class="dash-topbar delivery-topbar">
     <div class="dash-brand">
-      <span class="logo-text">EL <em style="color:#FF9800;">TORO</em></span>
-      <span class="dash-role" style="background:#FF9800;color:#000;">🚚 Delivery</span>
+      <span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span>
+      <span class="dash-role" style="background:var(--primary);color:#000;">🚚 Delivery</span>
       <span class="worker-name-badge" id="delivery-worker-name"></span>
     </div>
     <button class="logout-btn" onclick="logout()">Logout</button>
@@ -832,10 +833,10 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div id="clock-timer-display-del"></div>
     <div class="page-title">📋 Drop Off List</div>
     <div id="del-countdown-wrap" style="text-align:center;padding:10px 12px 0;">
-      <div id="del-countdown" style="font-family:'Black Ops One',cursive;font-size:64px;color:#FF9800;line-height:1;">0</div>
+      <div id="del-countdown" style="font-family:'Black Ops One',cursive;font-size:64px;color:var(--primary);line-height:1;">0</div>
       <div style="font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Left to Drop Off</div>
       <div id="del-progress-wrap" style="background:#333;border-radius:99px;height:10px;margin:10px 24px;">
-        <div id="del-progress-bar" style="height:100%;background:#FF9800;border-radius:99px;transition:width 0.4s;width:0%;"></div>
+        <div id="del-progress-bar" style="height:100%;background:var(--primary);border-radius:99px;transition:width 0.4s;width:0%;"></div>
       </div>
       <div id="del-progress-label" style="font-size:12px;font-weight:800;color:var(--text-gray);margin-bottom:10px;"></div>
     </div>
@@ -1682,14 +1683,14 @@ function toggleCheck(orderId, itemIdx, el) {
 
 function takeOrder(id){
   var o=S.orders.find(function(x){return x.id===id;});
-  if(o){o.status="packing";o.claimedBy=currentWorkerName;o.claimedAt=new Date().toISOString();save();renderOrdersTab();showToast("Order #"+o.slot+" claimed by "+currentWorkerName+"!");}
+  if(o){o.status="packing";o.claimedBy=currentWorkerName;o.claimedAt=new Date().toISOString();save();renderOrdersTab();updateOrderInSheets(o);showToast("Order #"+o.slot+" claimed by "+currentWorkerName+"!");}
 }
 function completeOrder(id){
   var o=S.orders.find(function(x){return x.id===id;});
   if(o){
     o.status="done";o.completedBy=currentWorkerName;o.completedAt=new Date().toISOString();
     save();renderOrdersTab();
-    saveOrderToSheets(o);
+    updateOrderInSheets(o);
     showToast("Order #"+o.slot+" done & synced!");
   }
 }
@@ -1706,6 +1707,7 @@ function deleteOrder(id){
   var o=S.orders.find(function(x){return x.id===id;});
   var name=o?o.name:"this order";
   showConfirm("Delete Order?","Are you sure you want to delete "+name+"'s order? This cannot be undone.",function(){
+    if(o) deleteOrderFromSheets(o);
     S.orders=S.orders.filter(function(o){return o.id!==id;});save();renderOrdersTab();showToast("Order deleted!");
   });
 }
@@ -2135,6 +2137,7 @@ function deleteProduct(id){
   var p=S.products.find(function(x){return x.id===id;});
   var name=p?p.name:"this product";
   showConfirm("Delete Product?","Are you sure you want to delete "+name+"?",function(){
+    if(p) deleteProductFromSheets(p.name);
     S.products=S.products.filter(function(p){return p.id!==id;});save();renderInvProducts();renderShop();showToast("Product deleted!");
   });
 }
@@ -2170,7 +2173,7 @@ function saveEditProduct(){
   var urlVal=document.getElementById("edit-url").value.trim();
   if(editProductPhoto)p.photo=editProductPhoto;else if(urlVal)p.photo=urlVal;
   p.editedBy=currentWorkerName;p.editedAt=new Date().toISOString();
-  closeEditModal();save();renderInvProducts();renderShop();showToast("Product updated!");
+  closeEditModal();save();renderInvProducts();renderShop();updateProductInSheets(p);showToast("Product updated!");
 }
 
 function renderStock(){
@@ -2370,7 +2373,16 @@ function renderExpenses(){
     return '<div class="ledger-item"><div><div class="ledger-label">'+e.desc+'</div><div class="ledger-sub">'+e.cat+' · '+fmtTime(e.date)+'</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="ledger-amount ledger-out">-$'+e.amount.toFixed(2)+'</div><button class="pr-btn pr-del" onclick="deleteExpense('+e.id+')">Del</button></div></div>';
   }).join("");
 }
-function deleteExpense(id){if(!S.expenses)return;S.expenses=S.expenses.filter(function(e){return e.id!==id;});save();renderExpenses();renderOpsSummary();}
+function deleteExpense(id){
+  if(!S.expenses)return;
+  var exp=S.expenses.find(function(e){return e.id===id;});
+  if(exp){
+    fetch(OPS_SHEETS_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({type:"Expenses",action:"delete",desc:exp.desc,amount:"$"+exp.amount.toFixed(2)})
+    }).catch(function(e){});
+  }
+  S.expenses=S.expenses.filter(function(e){return e.id!==id;});save();renderExpenses();renderOpsSummary();
+}
 
 function logTrip(){
   var dest=document.getElementById("t-dest").value.trim();
@@ -2506,7 +2518,7 @@ function buttonFlash(btn,msg){
 // ============================================================
 // INVENTORY GOOGLE SHEETS SYNC
 // ============================================================
-var INV_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwE0JqY1aNFDKiGtssZERqk8FpfqeKF9ei1A5bo1AB3xy0vKKgI8L1Ook5ZMd6DPm7V/exec';
+var INV_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzQ8D_a2-ys2lNkIHXC8vWdZ57YJGxmwlZTRF6JNpeyMa7zT6TkTws0UhEgVmlUcpaD/exec';
 
 function syncPurchaseToSheets(purchase) {
   fetch(INV_SHEETS_URL, {
@@ -2556,12 +2568,36 @@ function syncProductToSheets(product) {
   }).catch(function(e){ console.log("Sheets err:", e); });
 }
 
+function deleteProductFromSheets(productName) {
+  fetch(INV_SHEETS_URL, {
+    method: "POST", mode: "no-cors",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ type: "Products", action: "delete", name: productName })
+  }).catch(function(e){ console.log("Sheets delete err:", e); });
+}
+
+function updateProductInSheets(product) {
+  fetch(INV_SHEETS_URL, {
+    method: "POST", mode: "no-cors",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      type: "Products", action: "update",
+      name: product.name,
+      price: "$" + parseFloat(product.price).toFixed(2),
+      cost: "$" + parseFloat(product.cost||0).toFixed(2),
+      category: product.cat,
+      unit: product.unit,
+      stock: product.stock||0
+    })
+  }).catch(function(e){ console.log("Sheets update err:", e); });
+}
+
 
 
 // ============================================================
 // OPERATIONS GOOGLE SHEETS SYNC
 // ============================================================
-var OPS_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwHQZjLBrYR87AIizFlwiwNY5NuHl1HhNYGJ3PooAdUYqbDDvR0Gkjw7_CWekkWpsrd/exec';
+var OPS_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyFLx8UmFUhpb02L7WOpB_hDaK9raHQErLikg6ZairUlqJ6cLX1PXlVEDekCAyG2LHh/exec';
 
 function syncExpenseToSheets(exp) {
   fetch(OPS_SHEETS_URL, {
@@ -2625,7 +2661,7 @@ function renderPickupList(){
   var countdown=document.getElementById("del-countdown");
   if(countdown){
     countdown.textContent=left;
-    countdown.style.color=left===0?"#4caf50":"#FF9800";
+    countdown.style.color=left===0?"#4caf50":"#26C6DA";
   }
   var pct=total>0?((pickedUp+noShow)/total)*100:0;
   var bar=document.getElementById("del-progress-bar");
@@ -2668,11 +2704,11 @@ function renderPickupList(){
     return '<div class="'+cardClass+'">'+
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'+
         '<div>'+
-          '<div style="font-family:Black Ops One,cursive;font-size:20px;color:#FF9800;">#'+o.slot+'</div>'+
+          '<div style="font-family:Black Ops One,cursive;font-size:20px;color:#26C6DA;">#'+o.slot+'</div>'+
           '<div style="font-size:16px;font-weight:800;">'+o.name+'</div>'+
           '<div style="font-size:13px;color:var(--text-gray);font-weight:600;">📞 '+o.phone+'</div>'+
           '<div style="font-size:12px;color:var(--text-gray);font-weight:600;margin-top:4px;">'+itemsSummary+'</div>'+
-          '<div style="font-size:14px;font-weight:800;color:#FF9800;margin-top:2px;">$'+o.total.toFixed(2)+'</div>'+
+          '<div style="font-size:14px;font-weight:800;color:#26C6DA;margin-top:2px;">$'+o.total.toFixed(2)+'</div>'+
         '</div>'+
         statusBadge+
       '</div>'+
@@ -2824,7 +2860,7 @@ function renderOpsMonthlyMiles(){
 // ============================================================
 // GOOGLE SHEETS SYNC
 // ============================================================
-var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzECq8oZSQuwq1-h33t_moBhuGksVPyJITtYOr8IF6GB2H-kAIGTt_mgaZ3qaY1RNPQ/exec';
+var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwDwx0uES015d1QKO7wZzMVz3hDFLc2fQwdz1-GxV9fCjxIQYsGvEKS-q7nzbAZnElG/exec';
 
 function saveOrderToSheets(order) {
   var itemsList = order.items.map(function(i) {
@@ -2859,6 +2895,30 @@ function syncAllOrdersToSheets() {
   showToast("Syncing " + S.orders.length + " orders to Sheets!");
 }
 
+function deleteOrderFromSheets(order) {
+  fetch(SHEETS_URL, {
+    method: "POST", mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "delete", slot: order.slot, name: order.name })
+  }).catch(function(err) { console.log("Sheets delete error:", err); });
+}
+
+function updateOrderInSheets(order) {
+  var itemsList = order.items.map(function(i) {
+    return i.qty + "x " + i.name + " ($" + (i.price * i.qty).toFixed(2) + ")";
+  }).join(", ");
+  fetch(SHEETS_URL, {
+    method: "POST", mode: "no-cors",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "update", slot: order.slot, name: order.name, phone: order.phone,
+      items: itemsList, total: "$" + order.total.toFixed(2),
+      status: order.status, worker: order.claimedBy || "",
+      date: new Date(order.timestamp).toLocaleString("en-US")
+    })
+  }).catch(function(err) { console.log("Sheets update error:", err); });
+}
+
 
 // Live timer refresh for orders
 setInterval(function(){
@@ -2873,7 +2933,7 @@ setInterval(function(){
 // ============================================================
 // DELIVERY GOOGLE SHEETS SYNC
 // ============================================================
-var DEL_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwAvmG_5s69dTeIIlNAgz7xn7Mm_2d-wIrYVl6AhEydeEREFnCGSwXfOJu_emTWwFL0/exec';
+var DEL_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx5PHdTkevkXTUswiQJunniuofHUeO5HsCRNA9H5ZtgQOhxFv_l8yUpaZM8thrWFKDT/exec';
 
 function syncPickupToSheets(order, status) {
   var itemsList = order.items.map(function(i){return i.qty+"x "+i.name;}).join(", ");
@@ -2912,6 +2972,29 @@ function syncTripToSheets(trip) {
       orders:trip.orders||0
     })
   }).catch(function(e){console.log("Del sheets err:",e);});
+}
+
+function updatePickupInSheets(order, status) {
+  fetch(DEL_SHEETS_URL, {
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"Pickups", action:"update",
+      slot:order.slot, name:order.name, status:status,
+      worker:currentWorkerName||""
+    })
+  }).catch(function(e){console.log("Del sheets update err:",e);});
+}
+
+function deleteTripFromSheets(trip) {
+  fetch(DEL_SHEETS_URL, {
+    method:"POST", mode:"no-cors",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"Trips", action:"delete",
+      date:trip.date, dest:trip.dest
+    })
+  }).catch(function(e){console.log("Del sheets delete err:",e);});
 }
 
 // ============================================================
