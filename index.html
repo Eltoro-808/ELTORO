@@ -306,9 +306,9 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .sec-title{font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1.5px;padding:0 16px;margin-bottom:10px;}
 
 /* MODAL */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2500;align-items:flex-end;justify-content:center;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:2500;align-items:center;justify-content:center;}
 .modal-overlay.active{display:flex;}
-.modal-card{background:var(--card-bg);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:500px;border:1px solid var(--card-border);border-bottom:none;max-height:90vh;overflow-y:auto;}
+.modal-card{background:var(--card-bg);border-radius:20px;padding:24px;width:90%;max-width:500px;border:1px solid var(--card-border);max-height:90vh;overflow-y:auto;}
 .modal-card h3{font-family:"Black Ops One",cursive;font-size:20px;margin-bottom:16px;}
 .modal-close{float:right;background:var(--gray);border:none;border-radius:50%;width:30px;height:30px;color:#fff;font-size:14px;cursor:pointer;}
 
@@ -2450,11 +2450,12 @@ function renderWorkerList(){
       payInfo+='$'+tr.toFixed(2)+'/trip';
     }
     if(!payInfo)payInfo='No pay set';
-    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+' '+typeBadge+'</div><div class="worker-role-label">'+w.role+'</div><div class="worker-pay-label">'+payInfo+'</div></div><div style="display:flex;gap:6px;"><button class="pr-btn pr-edit" onclick="editWorkerPay('+w.id+')">Edit</button><button class="pr-btn pr-del" onclick="deleteWorker('+w.id+')">Del</button></div></div>';
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+' '+typeBadge+'</div><div class="worker-role-label">'+w.role+'</div><div class="worker-pay-label">'+payInfo+'</div></div><div style="display:flex;gap:6px;"><button class="pr-btn pr-edit" onclick="editWorkerPay(\''+w.id+'\')">Edit</button><button class="pr-btn pr-del" onclick="deleteWorker(\''+w.id+'\')">Del</button></div></div>';
   }).join("");
 }
 function editWorkerPay(id){
-  var w=S.workers.find(function(x){return x.id===id;});if(!w)return;
+  id=String(id);
+  var w=S.workers.find(function(x){return String(x.id)===id;});if(!w)return;
   var isB=w.type==="boss";
   var html='<button class="modal-close" onclick="closeModal()">✕</button>'+
     '<h3>Edit '+w.name+'</h3>'+
@@ -2470,7 +2471,7 @@ function editWorkerPay(id){
     '</div>'+
     '<label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Trip Rate ($)</label>'+
     '<input class="a-input" id="edit-worker-trip" type="number" step="0.01" value="'+(w.tripRate||w.payPerTrip||0)+'" style="margin-top:4px;"/>'+
-    '<button class="a-btn" onclick="saveWorkerEdit('+w.id+',this)">Save Changes</button>';
+    '<button class="a-btn" style="margin-top:12px;" onclick="saveWorkerEdit(\''+w.id+'\',this)">Save Changes</button>';
   document.querySelector(".modal-card").innerHTML=html;
   document.querySelector(".modal-overlay").classList.add("active");
 }
@@ -2483,7 +2484,8 @@ function toggleEditType(type){
   else{wBtn.className="a-btn";bBtn.className="a-btn gray";hw.style.display="block";}
 }
 function saveWorkerEdit(id,btn){
-  var w=S.workers.find(function(x){return x.id===id;});if(!w)return;
+  id=String(id);
+  var w=S.workers.find(function(x){return String(x.id)===id;});if(!w)return;
   w.type=document.getElementById("edit-worker-type").value||"worker";
   if(w.type==="boss"){w.roles=["Orders","Inventory","Operations","Delivery"];w.role="Orders, Inventory, Operations, Delivery";}
   w.hourlyRate=parseFloat(document.getElementById("edit-worker-hourly").value)||0;
@@ -2494,10 +2496,12 @@ function saveWorkerEdit(id,btn){
   setTimeout(closeModal,600);
 }
 function deleteWorker(id){
-  var w=S.workers.find(function(x){return x.id===id;});
+  id=String(id);
+  var w=S.workers.find(function(x){return String(x.id)===id;});
   var name=w?w.name:"this worker";
   showConfirm("Delete Worker?","Are you sure you want to delete "+name+"?",function(){
-    S.workers=S.workers.filter(function(w){return w.id!==id;});save();renderWorkerList();showToast("Worker deleted!");
+    api("DELETE", "/auth/workers/"+id);
+    S.workers=S.workers.filter(function(w){return String(w.id)!==id;});save();renderWorkerList();showToast("Worker deleted!");
   });
 }
 
@@ -2754,10 +2758,10 @@ function renderSuppliers(){
   var list=document.getElementById("supplier-list");
   if(!S.suppliers.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No suppliers yet.</p>';return;}
   list.innerHTML=S.suppliers.map(function(s){
-    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+s.name+'</div><div class="worker-role-label">'+s.contact+'</div><div class="worker-pay-label">'+s.notes+'</div></div><button class="pr-btn pr-del" onclick="deleteSupplier('+s.id+')">Del</button></div>';
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+s.name+'</div><div class="worker-role-label">'+s.contact+'</div><div class="worker-pay-label">'+s.notes+'</div></div><button class="pr-btn pr-del" onclick="deleteSupplier(\''+s.id+'\')">Del</button></div>';
   }).join("");
 }
-function deleteSupplier(id){if(!S.suppliers)return;S.suppliers=S.suppliers.filter(function(s){return s.id!==id;});save();renderSuppliers();}
+function deleteSupplier(id){if(!S.suppliers)return;id=String(id);api("DELETE","/suppliers/"+id);S.suppliers=S.suppliers.filter(function(s){return String(s.id)!==id;});save();renderSuppliers();}
 
 function logPurchase(btn){
   var item=document.getElementById("pur-item").value.trim();
@@ -2851,13 +2855,14 @@ function renderExpenses(){
   var list=document.getElementById("exp-list");
   if(!S.expenses.length){list.innerHTML='<div class="empty-state"><div class="ei">💸</div><p>No expenses logged yet</p></div>';return;}
   list.innerHTML=S.expenses.slice().reverse().map(function(e){
-    return '<div class="ledger-item"><div><div class="ledger-label">'+e.desc+'</div><div class="ledger-sub">'+e.cat+' · '+fmtTime(e.date)+'</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="ledger-amount ledger-out">-$'+e.amount.toFixed(2)+'</div><button class="pr-btn pr-del" onclick="deleteExpense('+e.id+')">Del</button></div></div>';
+    return '<div class="ledger-item"><div><div class="ledger-label">'+e.desc+'</div><div class="ledger-sub">'+e.cat+' · '+fmtTime(e.date)+'</div></div><div style="display:flex;align-items:center;gap:8px;"><div class="ledger-amount ledger-out">-$'+e.amount.toFixed(2)+'</div><button class="pr-btn pr-del" onclick="deleteExpense(\''+e.id+'\')">Del</button></div></div>';
   }).join("");
 }
 function deleteExpense(id){
   if(!S.expenses)return;
+  id=String(id);
   api("DELETE", "/expenses/"+id);
-  S.expenses=S.expenses.filter(function(e){return e.id!==id;});save();renderExpenses();renderOpsSummary();
+  S.expenses=S.expenses.filter(function(e){return String(e.id)!==id;});save();renderExpenses();renderOpsSummary();
 }
 
 function logTrip(){
