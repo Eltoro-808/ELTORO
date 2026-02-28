@@ -1597,9 +1597,37 @@ function triggerPhotoInput() {
 function handlePhotoUpload(event) {
   var file = event.target.files[0];
   if(!file) return;
+  // Show local preview immediately
   var reader = new FileReader();
-  reader.onload = function(e) { newProductPhoto = e.target.result; showPhotoPreview("photo-upload-area","photo-overlay",newProductPhoto); };
+  reader.onload = function(e) { 
+    showPhotoPreview("photo-upload-area","photo-overlay",e.target.result); 
+  };
   reader.readAsDataURL(file);
+  // Upload to R2
+  var formData = new FormData();
+  formData.append("file", file);
+  formData.append("type", "product");
+  fetch(API_BASE + "/images/upload", {
+    method: "POST",
+    headers: authToken ? { "Authorization": "Bearer " + authToken } : {},
+    body: formData
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(data && data.url) {
+      newProductPhoto = data.url;
+      showToast("📷 Photo uploaded!");
+    } else {
+      // Fallback to base64 if R2 fails
+      var fr = new FileReader();
+      fr.onload = function(e2){ newProductPhoto = e2.target.result; };
+      fr.readAsDataURL(file);
+      showToast("Photo saved locally");
+    }
+  }).catch(function(err){
+    console.log("R2 upload err:", err);
+    var fr = new FileReader();
+    fr.onload = function(e2){ newProductPhoto = e2.target.result; };
+    fr.readAsDataURL(file);
+  });
 }
 function showPhotoPreview(areaId, overlayId, src) {
   var area = document.getElementById(areaId);
@@ -1616,9 +1644,32 @@ function previewUrlPhoto() {
 function triggerEditPhoto(){document.getElementById("edit-photo-input").click();}
 function handleEditPhoto(event) {
   var file=event.target.files[0]; if(!file) return;
+  // Show local preview immediately
   var reader=new FileReader();
-  reader.onload=function(e){editProductPhoto=e.target.result;showPhotoPreview("edit-photo-area","edit-photo-overlay",editProductPhoto);};
+  reader.onload=function(e){showPhotoPreview("edit-photo-area","edit-photo-overlay",e.target.result);};
   reader.readAsDataURL(file);
+  // Upload to R2
+  var formData = new FormData();
+  formData.append("file", file);
+  formData.append("type", "product");
+  fetch(API_BASE + "/images/upload", {
+    method: "POST",
+    headers: authToken ? { "Authorization": "Bearer " + authToken } : {},
+    body: formData
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(data && data.url) {
+      editProductPhoto = data.url;
+      showToast("📷 Photo uploaded!");
+    } else {
+      var fr=new FileReader();
+      fr.onload=function(e2){editProductPhoto=e2.target.result;};
+      fr.readAsDataURL(file);
+    }
+  }).catch(function(err){
+    var fr=new FileReader();
+    fr.onload=function(e2){editProductPhoto=e2.target.result;};
+    fr.readAsDataURL(file);
+  });
 }
 
 // ============================================================
@@ -2257,15 +2308,40 @@ function saveDeposit(btn){
 }
 function uploadZelleQR(input){
   if(!input.files||!input.files[0])return;
+  var file=input.files[0];
+  // Show preview immediately
   var reader=new FileReader();
   reader.onload=function(e){
-    S.depositQR=e.target.result;
-    document.getElementById("zelle-qr-img").src=S.depositQR;
+    document.getElementById("zelle-qr-img").src=e.target.result;
     document.getElementById("zelle-qr-preview").style.display="block";
     document.getElementById("zelle-qr-remove").style.display="block";
-    save();showToast("QR code uploaded!");
   };
-  reader.readAsDataURL(input.files[0]);
+  reader.readAsDataURL(file);
+  // Upload to R2
+  var formData = new FormData();
+  formData.append("file", file);
+  formData.append("type", "deposit_qr");
+  fetch(API_BASE + "/images/upload", {
+    method: "POST",
+    headers: authToken ? { "Authorization": "Bearer " + authToken } : {},
+    body: formData
+  }).then(function(r){ return r.json(); }).then(function(data){
+    if(data && data.url) {
+      S.depositQR = data.url;
+      document.getElementById("zelle-qr-img").src = data.url;
+      save();showToast("QR code uploaded to cloud!");
+      api("PUT", "/settings", {deposit_qr: data.url});
+    } else {
+      // Fallback to base64
+      var fr=new FileReader();
+      fr.onload=function(e2){S.depositQR=e2.target.result;save();showToast("QR code saved!");};
+      fr.readAsDataURL(file);
+    }
+  }).catch(function(err){
+    var fr=new FileReader();
+    fr.onload=function(e2){S.depositQR=e2.target.result;save();showToast("QR code saved!");};
+    fr.readAsDataURL(file);
+  });
 }
 function removeZelleQR(){
   S.depositQR="";
