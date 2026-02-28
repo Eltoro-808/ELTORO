@@ -595,8 +595,6 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <h3>🏘️ Local Delivery Settings</h3>
       <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Min Items Per Order</label>
       <input class="a-input" id="set-local-min-items" type="number" placeholder="4" style="margin-top:4px;"/>
-      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Delivery Fee ($)</label>
-      <input class="a-input" id="set-local-fee" type="number" step="0.01" placeholder="10" style="margin-top:4px;"/>
       <button class="a-btn" onclick="saveLocalSettings(this)">Save Local Delivery Settings</button>
     </div>
     </div>
@@ -630,6 +628,10 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
             <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="local-zelle-toggle-track"></span>
             <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="local-zelle-toggle-knob"></span>
           </label>
+        </div>
+        <div id="local-zelle-fee-wrap" style="display:none;padding:0 4px;">
+          <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Delivery Fee ($)</label>
+          <input class="a-input" id="set-local-fee-quick" type="number" step="0.01" placeholder="10" style="margin-top:4px;"/>
         </div>
         <p style="font-size:11px;color:var(--text-gray);font-weight:600;padding:0 4px;">Local customers Zelle the full order total (items + delivery fee)</p>
       </div>
@@ -2691,7 +2693,6 @@ function savePickupSettings(btn){
 }
 function saveLocalSettings(btn){
   S.localMinItems=parseInt(document.getElementById("set-local-min-items").value)||4;
-  S.localDeliveryFee=parseFloat(document.getElementById("set-local-fee").value)||10;
   save();renderDatesCard();
   api("PUT", "/settings", {local_min_items:S.localMinItems,local_delivery_fee:S.localDeliveryFee});
   if(btn)buttonFlash(btn,"✅ Saved!");
@@ -2700,7 +2701,6 @@ function loadPickupInputs(){
   var el1=document.getElementById("set-pickup-location");if(el1)el1.value=S.pickupLocation||"";
   var el2=document.getElementById("set-store-hours");if(el2)el2.value=S.storeHours||"";
   var el3=document.getElementById("set-local-min-items");if(el3)el3.value=S.localMinItems||4;
-  var el4=document.getElementById("set-local-fee");if(el4)el4.value=S.localDeliveryFee||10;
 }
 
 // ============================================================
@@ -2915,6 +2915,8 @@ function updateZelleUI(){
   var lt=document.getElementById("local-zelle-toggle");if(lt)lt.checked=!!locOn;
   var ltrack=document.getElementById("local-zelle-toggle-track");if(ltrack)ltrack.style.background=locOn?"var(--primary)":"#444";
   var lknob=document.getElementById("local-zelle-toggle-knob");if(lknob)lknob.style.left=locOn?"25px":"3px";
+  var lfw=document.getElementById("local-zelle-fee-wrap");if(lfw)lfw.style.display=locOn?"block":"none";
+  var lfq=document.getElementById("set-local-fee-quick");if(lfq&&S.localDeliveryFee)lfq.value=S.localDeliveryFee;
   // Show Zelle fields if either is on
   var fields=document.getElementById("deposit-fields");
   if(fields) fields.style.display=(depOn||locOn)?"block":"none";
@@ -2971,8 +2973,11 @@ function saveDeposit(btn){
   S.depositName=document.getElementById("set-deposit-name").value.trim();
   S.depositZelle=document.getElementById("set-deposit-zelle").value.trim();
   S.depositNote=document.getElementById("set-deposit-note").value.trim();
+  var lfq=document.getElementById("set-local-fee-quick");
+  if(lfq&&lfq.value) S.localDeliveryFee=parseFloat(lfq.value)||10;
   save();if(btn)buttonFlash(btn,"✅ Saved!");
-  api("PUT", "/settings", {deposit_amount:S.depositAmount,deposit_name:S.depositName,deposit_zelle:S.depositZelle,deposit_note:S.depositNote});
+  api("PUT", "/settings", {deposit_amount:S.depositAmount,deposit_name:S.depositName,deposit_zelle:S.depositZelle,deposit_note:S.depositNote,local_delivery_fee:S.localDeliveryFee});
+  renderDatesCard();
 }
 function uploadZelleQR(input){
   if(!input.files||!input.files[0])return;
