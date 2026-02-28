@@ -2287,13 +2287,20 @@ function submitOrder(){
           clearInterval(countInterval);
           var box=document.getElementById("order-confirm-box");
           if(box)box.style.display="none";
+          // Delivery goes to board, local/pickup go back to shop
+          if(order.orderType==="delivery"){showPage("board",document.querySelectorAll(".nav-item")[2]);renderBoard();}else{showPage("shop",document.querySelectorAll(".nav-item")[0]);}
         }
       },1000);
     }
   }
   showToast("Order placed! You are #"+order.slot);
   activeCat="All";renderShop();updateCartFloat();
-  showPage("board",document.querySelectorAll(".nav-item")[2]);renderBoard();
+  // Delivery goes to board, local/pickup stay on cart to show receipt then go to shop
+  if(order.orderType==="delivery"){
+    showPage("board",document.querySelectorAll(".nav-item")[2]);renderBoard();
+  } else {
+    showPage("cart",document.querySelectorAll(".nav-item")[1]);
+  }
   }); // end api().then()
 }
 
@@ -2962,7 +2969,10 @@ function confirmDepositSent(id){
         clearInterval(countInterval);
         var el=document.getElementById("order-confirm-msg");
         if(el){el.style.transition="opacity 0.5s";el.style.opacity="0";
-          setTimeout(function(){el.style.display="none";el.style.opacity="1";el.innerHTML="";},600);
+          setTimeout(function(){el.style.display="none";el.style.opacity="1";el.innerHTML="";
+            // Delivery goes to board, local/pickup go back to shop
+            if(o.orderType==="delivery"){showPage("board",document.querySelectorAll(".nav-item")[2]);renderBoard();}else{showPage("shop",document.querySelectorAll(".nav-item")[0]);}
+          },600);
         }
       }
     },1000);
