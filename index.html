@@ -58,9 +58,9 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .hero-bull{font-size:64px;filter:drop-shadow(0 0 16px var(--primary-glow));}
 
 /* DATES */
-.dates-card{margin:0 12px 12px;background:var(--card-bg);border-radius:14px;padding:14px 16px;border-left:4px solid var(--primary);}
-.dates-title{font-size:11px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
-.dates-row{display:flex;gap:24px;}
+.dates-card{flex:1 1 45%;min-width:45%;background:var(--card-bg);border-radius:14px;padding:14px 16px;border-left:4px solid var(--primary);margin:0 0 0;text-align:center;}
+.dates-title{font-size:10px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;white-space:nowrap;}
+.dates-row{display:flex;gap:12px;justify-content:center;}
 .date-item-label{font-size:10px;color:var(--text-gray);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
 .date-item-val{font-size:16px;font-weight:800;color:#fff;margin-top:2px;}
 
@@ -355,7 +355,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <div class="hero-text"><h1 id="hero-title">SHOP NOW!</h1><p id="hero-sub">Order before the deadline and we'll deliver to you!</p></div>
       <div class="hero-bull">🐂</div>
     </div>
-    <div id="dates-section">
+    <div id="dates-section" style="display:flex;gap:10px;padding:0 12px;justify-content:center;flex-wrap:wrap;">
       <div class="dates-card" id="dates-card-delivery" style="display:none;">
         <div class="dates-title" id="dt-delivery-title">🚚 Delivery</div>
         <div class="dates-row">
@@ -502,31 +502,41 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <h3>🏪 Store Mode</h3>
       <p style="font-size:12px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Turn on the modes you want customers to use</p>
       <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface);border-radius:10px;">
-          <span style="font-size:14px;font-weight:800;">🚚 Delivery</span>
-          <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
-            <input type="checkbox" id="toggle-delivery" onchange="toggleStoreMode('delivery')" style="opacity:0;width:0;height:0;"/>
-            <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="toggle-delivery-track"></span>
-            <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="toggle-delivery-knob"></span>
-          </label>
+        <div style="padding:12px;background:var(--surface);border-radius:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:800;">🚚 Delivery</span>
+            <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
+              <input type="checkbox" id="toggle-delivery" onchange="toggleStoreMode('delivery')" style="opacity:0;width:0;height:0;"/>
+              <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="toggle-delivery-track"></span>
+              <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="toggle-delivery-knob"></span>
+            </label>
+          </div>
+          <input class="a-input" id="set-delivery-name-label" type="text" placeholder="Location name (e.g. Mammoth)" style="margin:8px 0 0;font-size:13px;display:none;"/>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface);border-radius:10px;">
-          <span style="font-size:14px;font-weight:800;">🏘️ Local Delivery</span>
-          <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
-            <input type="checkbox" id="toggle-local" onchange="toggleStoreMode('local')" style="opacity:0;width:0;height:0;"/>
-            <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="toggle-local-track"></span>
-            <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="toggle-local-knob"></span>
-          </label>
+        <div style="padding:12px;background:var(--surface);border-radius:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:800;">🏘️ Local Delivery</span>
+            <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
+              <input type="checkbox" id="toggle-local" onchange="toggleStoreMode('local')" style="opacity:0;width:0;height:0;"/>
+              <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="toggle-local-track"></span>
+              <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="toggle-local-knob"></span>
+            </label>
+          </div>
+          <input class="a-input" id="set-local-name-label" type="text" placeholder="Area name (e.g. Riverside)" style="margin:8px 0 0;font-size:13px;display:none;"/>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface);border-radius:10px;">
-          <span style="font-size:14px;font-weight:800;">📍 Pickups</span>
-          <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
-            <input type="checkbox" id="toggle-pickup" onchange="toggleStoreMode('pickup')" style="opacity:0;width:0;height:0;"/>
-            <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="toggle-pickup-track"></span>
-            <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="toggle-pickup-knob"></span>
-          </label>
+        <div style="padding:12px;background:var(--surface);border-radius:10px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:800;">📍 Pickups</span>
+            <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
+              <input type="checkbox" id="toggle-pickup" onchange="toggleStoreMode('pickup')" style="opacity:0;width:0;height:0;"/>
+              <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="toggle-pickup-track"></span>
+              <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="toggle-pickup-knob"></span>
+            </label>
+          </div>
+          <input class="a-input" id="set-pickup-name-label" type="text" placeholder="Store name (e.g. El Toro Store)" style="margin:8px 0 0;font-size:13px;display:none;"/>
         </div>
       </div>
+      <button class="a-btn" onclick="saveModeNames(this)" style="margin-top:10px;">Save Mode Names</button>
     </div>
 
     <!-- Admin phone on receipt -->
@@ -1352,6 +1362,8 @@ var S = {
   // Store mode: "delivery" | "pickup" | "both" | "local"
   // Store mode toggles (independent on/off)
   deliveryEnabled: true, pickupEnabled: false, localEnabled: false,
+  // Mode names (admin sets these)
+  deliveryName: "", localName: "", pickupName: "",
   // Pickup settings
   pickupLocation: "", storeHours: "",
   // Local delivery settings
@@ -2045,7 +2057,7 @@ function renderCart(){
   // Order type selector tabs (if multiple modes active)
   var typeSelectorHtml="";
   if(modes.length>1){
-    var modeLabels={delivery:t("deliveryTitle")+(S.deliveryAddress?" - "+S.deliveryAddress:""),local:t("localTitle"),pickup:t("pickupTitle")+(S.pickupLocation?" - "+S.pickupLocation:"")};
+    var modeLabels={delivery:t("deliveryTitle")+(S.deliveryName?" - "+S.deliveryName:""),local:t("localTitle")+(S.localName?" - "+S.localName:""),pickup:t("pickupTitle")+(S.pickupName?" - "+S.pickupName:"")};
     var modeColors={delivery:"var(--primary)",local:"#FF9800",pickup:"#4caf50"};
     typeSelectorHtml='<div style="margin:12px 0;border-radius:12px;overflow:hidden;border:1px solid #333;">';
     typeSelectorHtml+=modes.map(function(m){
@@ -2307,7 +2319,7 @@ function renderOrdersTab(){
   var list=document.getElementById("o-orders-list");
   var q=document.getElementById("o-search");
   var search=q?q.value.toLowerCase():"";
-  var filtered=S.orders.filter(function(o){return o.status!=="done"&&o.status!=="delivered"&&o.name.toLowerCase().includes(search);});
+  var filtered=S.orders.filter(function(o){return o.status!=="done"&&o.status!=="delivered"&&o.status!=="picked_up"&&o.status!=="en_route"&&o.name.toLowerCase().includes(search);});
   var pending=S.orders.filter(function(o){return o.status==="new"||o.status==="pending_deposit";}).length;
   var badge=document.getElementById("o-badge");
   badge.textContent=pending;badge.style.display=pending>0?"block":"none";
@@ -2332,6 +2344,13 @@ function renderOrdersTab(){
       }
     }
     var workerHtml=o.claimedBy?'<div class="oc-worker">👤 Being packed by: '+o.claimedBy+'</div>':"";
+    // Order type badge with name
+    var typeLabel="";
+    var typeColor="";
+    if(o.orderType==="delivery"){typeLabel="🚚 "+(S.deliveryName||"Delivery");typeColor="var(--primary)";}
+    else if(o.orderType==="local"){typeLabel="🏘️ "+(S.localName||"Local");typeColor="#FF9800";}
+    else if(o.orderType==="pickup"){typeLabel="📍 "+(S.pickupName||"Pickup");typeColor="#4caf50";}
+    var typeBadge=typeLabel?'<div style="display:inline-block;background:rgba(0,0,0,0.3);border:1px solid '+typeColor+';border-radius:6px;padding:2px 8px;margin-top:3px;font-size:11px;font-weight:800;color:'+typeColor+';">'+typeLabel+'</div>':"";
     var itemsHtml=o.items.map(function(item,idx){
       var done=o.checked&&o.checked[idx];
       var strike=done?"text-decoration:line-through;color:#555;":"";
@@ -2356,6 +2375,7 @@ function renderOrdersTab(){
           '<div class="oc-phone">📞 '+o.phone+'</div>'+
           '<div class="oc-time">📅 '+fmtTime(o.timestamp)+'</div>'+
           '<div style="font-size:12px;font-weight:800;color:'+tColor+';margin-top:2px;">'+tText+'</div>'+
+          typeBadge+
           workerHtml+
         '</div>'+
         '<div style="text-align:right;">'+
@@ -2403,9 +2423,22 @@ function takeOrder(id){
 function completeOrder(id){
   var o=S.orders.find(function(x){return x.id===id;});
   if(o){
-    o.status="done";o.completedBy=currentWorkerName;o.completedAt=new Date().toISOString();
-    save();renderOrdersTab();showToast("Order #"+o.slot+" done!");
-    api("PUT", "/orders/"+id, {status:"done",completed_by:currentWorkerName});
+    // Route to correct status based on order type
+    if(o.orderType==="pickup"){
+      o.status="ready";
+      api("PUT", "/orders/"+id, {status:"ready",completed_by:currentWorkerName});
+      showToast("Order #"+o.slot+" ready for pickup! → Pickups dashboard");
+    } else if(o.orderType==="local"){
+      o.status="ready";
+      api("PUT", "/orders/"+id, {status:"ready",completed_by:currentWorkerName});
+      showToast("Order #"+o.slot+" ready! → Local Delivery dashboard");
+    } else {
+      o.status="done";
+      api("PUT", "/orders/"+id, {status:"done",completed_by:currentWorkerName});
+      showToast("Order #"+o.slot+" done! → Delivery dashboard");
+    }
+    o.completedBy=currentWorkerName;o.completedAt=new Date().toISOString();
+    save();renderOrdersTab();
   }
 }
 function showConfirm(title,msg,onYes){
@@ -2513,7 +2546,15 @@ function toggleStoreMode(mode){
   renderDatesCard();
   renderShop();
   api("PUT","/settings",{delivery_enabled:S.deliveryEnabled,local_enabled:S.localEnabled,pickup_enabled:S.pickupEnabled});
-  showToast(mode.charAt(0).toUpperCase()+mode.slice(1)+(S[mode+"Enabled"]||S.deliveryEnabled?" ON":" OFF"));
+  showToast(mode.charAt(0).toUpperCase()+mode.slice(1)+(mode==="delivery"?S.deliveryEnabled:mode==="local"?S.localEnabled:S.pickupEnabled?" ON":" OFF"));
+}
+function saveModeNames(btn){
+  var dn=document.getElementById("set-delivery-name-label");if(dn)S.deliveryName=dn.value.trim();
+  var ln=document.getElementById("set-local-name-label");if(ln)S.localName=ln.value.trim();
+  var pn=document.getElementById("set-pickup-name-label");if(pn)S.pickupName=pn.value.trim();
+  save();renderDatesCard();renderShop();
+  api("PUT","/settings",{delivery_name:S.deliveryName,local_name:S.localName,pickup_name:S.pickupName});
+  if(btn)buttonFlash(btn,"✅ Saved!");
 }
 function updateStoreModeUI(){
   // Update toggle visuals
@@ -2526,7 +2567,14 @@ function updateStoreModeUI(){
     var cb=document.getElementById("toggle-"+t.id);if(cb)cb.checked=!!t.val;
     var track=document.getElementById("toggle-"+t.id+"-track");if(track)track.style.background=t.val?"var(--primary)":"#444";
     var knob=document.getElementById("toggle-"+t.id+"-knob");if(knob)knob.style.left=t.val?"25px":"3px";
+    // Show name input when toggle is on
+    var nameInput=document.getElementById("set-"+t.id+"-name-label");
+    if(nameInput) nameInput.style.display=t.val?"block":"none";
   });
+  // Load name values
+  var dn=document.getElementById("set-delivery-name-label");if(dn&&S.deliveryName)dn.value=S.deliveryName;
+  var ln=document.getElementById("set-local-name-label");if(ln&&S.localName)ln.value=S.localName;
+  var pn=document.getElementById("set-pickup-name-label");if(pn&&S.pickupName)pn.value=S.pickupName;
   // Show/hide settings
   var dw=document.getElementById("delivery-settings-wrap");
   var pw=document.getElementById("pickup-settings-wrap");
@@ -2562,11 +2610,27 @@ function renderDatesCard(){
   if(dc) dc.style.display=S.deliveryEnabled?"block":"none";
   if(lc) lc.style.display=S.localEnabled?"block":"none";
   if(pc) pc.style.display=S.pickupEnabled?"block":"none";
-  // Apply translations
+
+  // Count active and style the last one full-width if 3 are active
+  var activeCards=[dc,lc,pc].filter(function(el){return el&&el.style.display!=="none";});
+  [dc,lc,pc].forEach(function(el){if(el){el.style.flex="1 1 45%";el.style.minWidth="45%";}});
+  if(activeCards.length===3){
+    activeCards[2].style.flex="1 1 100%";
+    activeCards[2].style.minWidth="100%";
+  }
+  if(activeCards.length===1){
+    activeCards[0].style.flex="1 1 100%";
+    activeCards[0].style.minWidth="100%";
+  }
+
+  // Apply translations with names
   var el;
-  el=document.getElementById("dt-delivery-title");if(el)el.textContent=t("deliveryTitle");
-  el=document.getElementById("dt-local-title");if(el)el.textContent=t("localTitle");
-  el=document.getElementById("dt-pickup-title");if(el)el.textContent=t("pickupTitle");
+  var dTitle=t("deliveryTitle")+(S.deliveryName?" - "+S.deliveryName:"");
+  var lTitle=t("localTitle")+(S.localName?" - "+S.localName:"");
+  var pTitle=t("pickupTitle")+(S.pickupName?" - "+S.pickupName:"");
+  el=document.getElementById("dt-delivery-title");if(el)el.textContent=dTitle;
+  el=document.getElementById("dt-local-title");if(el)el.textContent=lTitle;
+  el=document.getElementById("dt-pickup-title");if(el)el.textContent=pTitle;
   el=document.getElementById("shop-deadline-label");if(el)el.textContent=t("orderDeadline");
   el=document.getElementById("shop-delivery-label");if(el)el.textContent=t("deliveryDate");
   el=document.getElementById("dt-local-fee-label");if(el)el.textContent=t("deliveryFee");
