@@ -1161,9 +1161,191 @@ var S = {
   lastResetDate: null
 };
 
-function save() { try { localStorage.setItem("eltoro_v6", JSON.stringify(S)); } catch(e) {} }
-function load() { try { var d = localStorage.getItem("eltoro_v6"); if(d) { var p = JSON.parse(d); S = Object.assign({}, S, p); } } catch(e) {} S.cart = []; save(); }
+// ============================================================
+// API CLIENT
+// ============================================================
+var API_BASE = "https://eltoro-api.1-808-el-toro.workers.dev/api";
+var authToken = localStorage.getItem("eltoro_token") || "";
+
+function apiHeaders() {
+  var h = { "Content-Type": "application/json" };
+  if (authToken) h["Authorization"] = "Bearer " + authToken;
+  return h;
+}
+
+function api(method, path, body) {
+  var opts = { method: method, headers: apiHeaders() };
+  if (body && (method === "POST" || method === "PUT")) opts.body = JSON.stringify(body);
+  return fetch(API_BASE + path, opts).then(function(r) { return r.json(); }).catch(function(e) { console.log("API err:", e); return null; });
+}
+
+// Save to both localStorage (offline fallback) and API
+function save() { 
+  try { localStorage.setItem("eltoro_v6", JSON.stringify(S)); } catch(e) {} 
+}
+
+// Load from API first, fall back to localStorage
+function load() { 
+  try { 
+    var d = localStorage.getItem("eltoro_v6"); 
+    if(d) { var p = JSON.parse(d); S = Object.assign({}, S, p); } 
+  } catch(e) {} 
+  S.cart = []; 
+  save(); 
+}
+
+// Sync state from API (called on app load)
+function syncFromAPI() {
+  // Load settings
+  api("GET", "/settings").then(function(data) {
+    if (!data || data.error) return;
+    S.bizName = data.biz_name || S.bizName;
+    S.bizEmoji = data.biz_emoji || S.bizEmoji;
+    S.bannerEmoji = data.banner_emoji || S.bannerEmoji;
+    S.heroTitle = data.hero_title || S.heroTitle;
+    S.heroSub = data.hero_sub || S.heroSub;
+    S.deadline = data.deadline || S.deadline;
+    S.deliveryDt = data.delivery_date || S.deliveryDt;
+    S.deliveryAddress = data.delivery_location || S.deliveryAddress;
+    S.minItems = data.min_items || S.minItems;
+    S.minOrders = data.min_orders || S.minOrders;
+    S.primaryColor = data.primary_color || S.primaryColor;
+    S.backdropColor = data.backdrop_color || S.backdropColor;
+    S.depositRequired = !!data.deposit_required;
+    S.depositAmount = data.deposit_amount || S.depositAmount;
+    S.depositZelle = data.deposit_zelle || S.depositZelle;
+    S.depositName = data.deposit_name || S.depositName;
+    S.depositNote = data.deposit_note || S.depositNote;
+    S.depositQR = data.deposit_qr || S.depositQR;
+    S.appUrl = data.app_url || S.appUrl;
+    save(); renderShop(); applyBizName();
+  });
+
+  // Load products
+  api("GET", "/products?visible=1").then(function(data) {
+    if (!data || data.error) return;
+    S.products = data.map(function(p) {
+      return {
+        id: p.id, name: p.name, emoji: p.emoji, price: p.price, cost: p.cost,
+        unit: p.unit, cat: p.category, visible: !!p.visible, soldOut: !!p.sold_out,
+        photo: p.photo, stock: p.stock, lowAlert: p.low_alert,
+        hasVariants: p.hasVariants, colors: p.colors || [], sizes: p.sizes || [],
+        addedBy: p.added_by
+      };
+    });
+    save(); renderShop();
+  });
+
+  // Load categories
+  api("GET", "/categories").then(function(data) {
+    if (!data || data.error) return;
+    S.categories = data.map(function(c) { return { name: c.name, emoji: c.emoji, id: c.id }; });
+    save(); renderShop();
+  });
+
+  // Load orders
+  api("GET", "/orders").then(function(data) {
+    if (!data || data.error) return;
+    S.orders = data.map(function(o) {
+      return {
+        id: o.id, slot: o.slot, name: o.customer_name, phone: o.customer_phone,
+        items: (o.items || []).map(function(i) {
+          return { id: i.product_id, name: i.name, emoji: i.emoji, photo: i.photo, price: i.price, cost: i.cost, unit: i.unit, qty: i.qty, color: i.color, size: i.size };
+        }),
+        total: o.total, discount: o.discount, loyaltyMsg: o.loyalty_msg,
+        status: o.status, claimedBy: o.claimed_by, completedBy: o.completed_by,
+        timestamp: o.created_at,
+        depositRequired: !!o.deposit_required, depositAmount: o.deposit_amount, depositSent: !!o.deposit_sent
+      };
+    });
+    save();
+  });
+
+  // Load customers
+  api("GET", "/customers").then(function(data) {
+    if (!data || data.error) return;
+    S.customerLog = data.map(function(c) {
+      return { phone: c.phone, name: c.name, orders: c.orders_count, totalSpent: c.total_spent, firstOrder: c.first_order, lastOrder: c.last_order };
+    });
+    save();
+  });
+
+  // Load loyalty discounts
+  api("GET", "/loyalty").then(function(data) {
+    if (!data || data.error) return;
+    S.loyaltyDiscounts = {};
+    data.forEach(function(d) {
+      if (!d.used) S.loyaltyDiscounts[d.phone] = { percent: d.percent, assignedAt: d.assigned_at, used: false, dbId: d.id };
+    });
+    save();
+  });
+
+  // Load expenses
+  api("GET", "/expenses").then(function(data) {
+    if (!data || data.error) return;
+    S.expenses = data.map(function(e) {
+      return { id: e.id, desc: e.description, amount: e.amount, cat: e.category, date: e.date, by: e.added_by };
+    });
+    save();
+  });
+
+  // Load workers
+  api("GET", "/settings/full").then(function(data) {
+    if (!data || data.error) return;
+    // Only if admin/boss token
+    if (data.admin_pass) {
+      S.adminPass = data.admin_pass;
+      S.ordersPass = data.orders_pass;
+      S.invPass = data.inventory_pass;
+      S.opsPass = data.operations_pass;
+      S.deliveryPass = data.delivery_pass;
+      save();
+    }
+  });
+
+  // Load trips
+  api("GET", "/trips").then(function(data) {
+    if (!data || data.error) return;
+    S.trips = data.map(function(t) {
+      return { id: t.id, dest: t.destination, miles: t.miles, gasCost: t.gas_cost, wearTear: t.wear_tear, cost: t.cost, revenue: t.revenue, profit: t.profit, driver: t.driver, date: t.date, month: t.month };
+    });
+    save();
+  });
+
+  // Load suppliers
+  api("GET", "/suppliers").then(function(data) {
+    if (!data || data.error) return;
+    S.suppliers = data.map(function(s) { return { id: s.id, name: s.name, contact: s.contact, notes: s.notes }; });
+    save();
+  });
+
+  // Load purchases
+  api("GET", "/purchases").then(function(data) {
+    if (!data || data.error) return;
+    S.purchases = data.map(function(p) { return { id: p.id, item: p.item, qty: p.qty, cost: p.cost, supplier: p.supplier, date: p.date, by: p.added_by }; });
+    save();
+  });
+
+  // Load timesheets
+  api("GET", "/timesheets").then(function(data) {
+    if (!data || data.error) return;
+    S.timesheets = data.map(function(t) {
+      return { id: t.id, workerId: t.worker_id, name: t.worker_name, role: t.role, clockIn: t.clock_in, clockOut: t.clock_out, hours: t.hours, hourlyRate: t.hourly_rate, earned: t.earned, date: t.date };
+    });
+    save();
+  });
+
+  // Load payments
+  api("GET", "/payments").then(function(data) {
+    if (!data || data.error) return;
+    S.payments = data.map(function(p) { return { id: p.id, workerId: p.worker_id, name: p.worker_name, amount: p.amount, note: p.note, date: p.date }; });
+    save();
+  });
+}
+
 load();
+// Sync from API after initial localStorage load
+syncFromAPI();
 
 var currentWorkerName = "";
 
@@ -1555,39 +1737,59 @@ function submitOrder(){
   if(!name||!phone){showToast("Enter your name and phone!");return;}
   var totalQty=S.cart.reduce(function(s,i){return s+i.qty;},0);
   if(totalQty<S.minItems){showToast(t("addMore",{n:S.minItems-totalQty,min:S.minItems}));return;}
-  var total=S.cart.reduce(function(s,i){return s+i.price*i.qty;},0);
-  // Check loyalty discount
-  var discount=0;var loyaltyMsg="";
-  if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
-  var cleanPhone=phone.replace(/\D/g,"");
-  var loyalty=S.loyaltyDiscounts[cleanPhone];
-  if(loyalty&&!loyalty.used){
-    discount=total*(loyalty.percent/100);
-    total=total-discount;
-    loyaltyMsg=currentLang==="es"?
-      "🎉 ¡Gracias por ser un cliente leal! "+loyalty.percent+"% de descuento aplicado!":
-      "🎉 Thank you for being a loyal customer! "+loyalty.percent+"% discount applied!";
-    loyalty.used=true;loyalty.usedAt=new Date().toISOString();
-    save();
-  }
-  // Track customer
-  if(!S.customerLog)S.customerLog=[];
-  var existCust=S.customerLog.find(function(c){return c.phone.replace(/\D/g,"")===cleanPhone;});
-  if(existCust){existCust.orders++;existCust.totalSpent+=total;existCust.lastOrder=new Date().toISOString();existCust.name=name;}
-  else{S.customerLog.push({phone:phone,name:name,orders:1,totalSpent:total,firstOrder:new Date().toISOString(),lastOrder:new Date().toISOString()});}
+
   var items=S.cart.map(function(i){
     var n=i.name;
     var variant=[i.color,i.size].filter(Boolean).join(", ");
     if(variant)n+=" ("+variant+")";
     return {id:i.id,name:n,baseName:i.baseName||i.name,emoji:i.emoji,photo:i.photo,price:i.price,cost:i.cost||0,unit:i.unit,qty:i.qty,color:i.color||"",size:i.size||""};
   });
-  var order={id:S.nextOrderId++,slot:S.orders.length+1,name:name,phone:phone,
-    items:items,total:total,discount:discount,loyaltyMsg:loyaltyMsg,status:"new",timestamp:new Date().toISOString(),
-    depositRequired:!!S.depositRequired,depositAmount:S.depositAmount||0,depositSent:false};
-  S.orders.push(order);
-  items.forEach(function(oi){var p=S.products.find(function(x){return x.id===oi.id;});if(p)p.stock=Math.max(0,(p.stock||0)-oi.qty);});
-  S.cart=[];save();
-  saveOrderToSheets(order);
+
+  // Disable button to prevent double submit
+  var btn=document.getElementById("place-order-btn");
+  if(btn){btn.disabled=true;btn.textContent="Placing order...";}
+
+  // Send to API — API handles loyalty discount, customer tracking, stock updates
+  api("POST", "/orders", {
+    name: name,
+    phone: phone,
+    items: items,
+    deposit_required: !!S.depositRequired,
+    deposit_amount: S.depositAmount || 0
+  }).then(function(result) {
+    if(!result || result.error) {
+      showToast(result ? result.error : "Failed to place order. Please try again.");
+      if(btn){btn.disabled=false;btn.textContent=t("placeOrder");}
+      return;
+    }
+
+    var total = result.total || items.reduce(function(s,i){return s+i.price*i.qty;},0);
+    var discount = result.discount || 0;
+    var loyaltyMsg = result.loyaltyMsg || "";
+    var slot = result.slot;
+    var orderId = result.id;
+
+    // Build local order for UI
+    var order = {id:orderId,slot:slot,name:name,phone:phone,items:items,total:total,
+      discount:discount,loyaltyMsg:loyaltyMsg,status:"new",timestamp:new Date().toISOString(),
+      depositRequired:!!S.depositRequired,depositAmount:S.depositAmount||0,depositSent:false};
+    S.orders.push(order);
+    S.cart=[];save();
+
+    // Update local loyalty state
+    var cleanPhone=phone.replace(/\D/g,"");
+    if(S.loyaltyDiscounts&&S.loyaltyDiscounts[cleanPhone]&&!S.loyaltyDiscounts[cleanPhone].used){
+      S.loyaltyDiscounts[cleanPhone].used=true;
+      S.loyaltyDiscounts[cleanPhone].usedAt=new Date().toISOString();
+    }
+    // Update local customer state
+    if(!S.customerLog)S.customerLog=[];
+    var existCust=S.customerLog.find(function(c){return c.phone.replace(/\D/g,"")===cleanPhone;});
+    if(existCust){existCust.orders++;existCust.totalSpent+=total;existCust.lastOrder=new Date().toISOString();existCust.name=name;}
+    else{S.customerLog.push({phone:phone,name:name,orders:1,totalSpent:total,firstOrder:new Date().toISOString(),lastOrder:new Date().toISOString()});}
+    // Update local stock
+    items.forEach(function(oi){var p=S.products.find(function(x){return x.id===oi.id;});if(p)p.stock=Math.max(0,(p.stock||0)-oi.qty);});
+    save();
   
   var confirmEl = document.getElementById("order-confirm-msg");
   if(confirmEl){
@@ -1651,6 +1853,7 @@ function submitOrder(){
   showToast("Order placed! You are #"+order.slot);
   activeCat="All";renderShop();updateCartFloat();
   showPage("board",document.querySelectorAll(".nav-item")[2]);renderBoard();
+  }); // end api().then()
 }
 
 // ============================================================
@@ -1796,15 +1999,18 @@ function toggleCheck(orderId, itemIdx, el) {
 
 function takeOrder(id){
   var o=S.orders.find(function(x){return x.id===id;});
-  if(o){o.status="packing";o.claimedBy=currentWorkerName;o.claimedAt=new Date().toISOString();save();renderOrdersTab();updateOrderInSheets(o);showToast("Order #"+o.slot+" claimed by "+currentWorkerName+"!");}
+  if(o){
+    o.status="packing";o.claimedBy=currentWorkerName;o.claimedAt=new Date().toISOString();
+    save();renderOrdersTab();showToast("Order #"+o.slot+" claimed by "+currentWorkerName+"!");
+    api("PUT", "/orders/"+id, {status:"packing",claimed_by:currentWorkerName});
+  }
 }
 function completeOrder(id){
   var o=S.orders.find(function(x){return x.id===id;});
   if(o){
     o.status="done";o.completedBy=currentWorkerName;o.completedAt=new Date().toISOString();
-    save();renderOrdersTab();
-    updateOrderInSheets(o);
-    showToast("Order #"+o.slot+" done & synced!");
+    save();renderOrdersTab();showToast("Order #"+o.slot+" done!");
+    api("PUT", "/orders/"+id, {status:"done",completed_by:currentWorkerName});
   }
 }
 function showConfirm(title,msg,onYes){
@@ -1820,7 +2026,7 @@ function deleteOrder(id){
   var o=S.orders.find(function(x){return x.id===id;});
   var name=o?o.name:"this order";
   showConfirm("Delete Order?","Are you sure you want to delete "+name+"'s order? This cannot be undone.",function(){
-    if(o) deleteOrderFromSheets(o);
+    api("DELETE", "/orders/"+id);
     S.orders=S.orders.filter(function(o){return o.id!==id;});save();renderOrdersTab();showToast("Order deleted!");
   });
 }
@@ -1911,6 +2117,7 @@ function saveBizName(btn){
   if(name)S.bizName=name;
   S.bizEmoji=emoji;
   save();applyBizName();buttonFlash(btn,"✅ Saved!");
+  api("PUT", "/settings", {biz_name:S.bizName,biz_emoji:S.bizEmoji});
 }
 function applyBizName(){
   var logoEls=document.querySelectorAll(".logo-text");
@@ -1930,6 +2137,7 @@ function savePrimaryColor(btn){
   document.documentElement.style.setProperty("--primary",color);
   document.documentElement.style.setProperty("--primary-glow","rgba("+parseInt(color.slice(1,3),16)+","+parseInt(color.slice(3,5),16)+","+parseInt(color.slice(5,7),16)+",0.3)");
   S.primaryColor=color;save();buttonFlash(btn,"✅ Saved!");
+  api("PUT", "/settings", {primary_color:color});
 }
 
 function applyTheme(primary,backdrop){
@@ -1941,12 +2149,14 @@ function applyTheme(primary,backdrop){
   document.getElementById("set-primary-color").value=primary;
   document.getElementById("set-backdrop-color").value=backdrop;
   showToast("✅ Theme applied!");
+  api("PUT", "/settings", {primary_color:primary,backdrop_color:backdrop});
 }
 function saveBackdrop(btn){
   var color=document.getElementById("set-backdrop-color").value;
   S.backdropColor=color;
   document.documentElement.style.setProperty("--dark-bg",color);
   save();buttonFlash(btn,"✅ Saved!");
+  api("PUT", "/settings", {backdrop_color:color});
 }
 function loadSettingsInputs(){
   document.getElementById("set-banner-emoji").value=S.bannerEmoji||"";
@@ -1955,7 +2165,7 @@ function loadSettingsInputs(){
   document.getElementById("set-primary-color").value=S.primaryColor||"#26C6DA";
   document.getElementById("set-backdrop-color").value=S.backdropColor||"#0b0f11";
 }
-function saveAppUrl(btn){S.appUrl=document.getElementById("set-app-url").value.trim();save();if(btn)buttonFlash(btn,"✅ Saved!");}
+function saveAppUrl(btn){S.appUrl=document.getElementById("set-app-url").value.trim();save();api("PUT", "/settings", {app_url:S.appUrl});if(btn)buttonFlash(btn,"✅ Saved!");}
 
 function toggleDeposit(){
   var on=document.getElementById("deposit-toggle").checked;
@@ -2015,6 +2225,7 @@ function saveDeposit(btn){
   S.depositZelle=document.getElementById("set-deposit-zelle").value.trim();
   S.depositNote=document.getElementById("set-deposit-note").value.trim();
   save();if(btn)buttonFlash(btn,"✅ Saved!");
+  api("PUT", "/settings", {deposit_amount:S.depositAmount,deposit_name:S.depositName,deposit_zelle:S.depositZelle,deposit_note:S.depositNote});
 }
 function uploadZelleQR(input){
   if(!input.files||!input.files[0])return;
@@ -2262,7 +2473,6 @@ function addProduct(btn){
   var lowAt=parseInt(document.getElementById("np-low").value)||0;
   var urlInput=document.getElementById("np-photo-url");
   var photo=newProductPhoto||(urlInput?urlInput.value.trim():"");
-  // Variants
   var variantOn=document.getElementById("np-variant-on").className.indexOf("gray")===-1;
   var colors=[];var sizes=[];
   if(variantOn){
@@ -2271,23 +2481,27 @@ function addProduct(btn){
     if(colorsVal) colors=colorsVal.split(",").map(function(c){return c.trim();}).filter(Boolean);
     if(sizesVal) sizes=sizesVal.split(",").map(function(s){return s.trim();}).filter(Boolean);
   }
-  var id=S.products.length?Math.max.apply(null,S.products.map(function(p){return p.id;}))+1:1;
-  S.products.push({id:id,emoji:emoji,name:name,price:price,cost:cost,unit:unit,cat:cat,visible:true,soldOut:false,photo:photo,stock:stock,lowAlert:lowAt,addedBy:currentWorkerName,addedAt:new Date().toISOString(),hasVariants:variantOn,colors:colors,sizes:sizes});
+  // Save to API
+  api("POST", "/products", {
+    name:name,emoji:emoji,price:price,cost:cost,unit:unit,category:cat,
+    stock:stock,low_alert:lowAt,photo:photo,has_variants:variantOn,colors:colors,sizes:sizes
+  }).then(function(result) {
+    var id = (result && result.id) || (S.products.length ? Math.max.apply(null,S.products.map(function(p){return p.id;}))+1 : 1);
+    S.products.push({id:id,emoji:emoji,name:name,price:price,cost:cost,unit:unit,cat:cat,visible:true,soldOut:false,photo:photo,stock:stock,lowAlert:lowAt,addedBy:currentWorkerName,addedAt:new Date().toISOString(),hasVariants:variantOn,colors:colors,sizes:sizes});
+    save();renderInvProducts();renderShop();renderLowStockAlerts();
+  });
   ["np-emoji","np-name","np-price","np-cost","np-unit","np-stock","np-low","np-colors","np-sizes"].forEach(function(id){var el=document.getElementById(id);if(el)el.value="";});
   if(urlInput)urlInput.value="";newProductPhoto="";
   toggleVariantForm(false);
   var area=document.getElementById("photo-upload-area");var img=area.querySelector("img");if(img)img.remove();
   document.getElementById("photo-overlay").style.display="flex";
-  var newProd = S.products[S.products.length-1];
-  save();renderInvProducts();renderShop();renderLowStockAlerts();
-  syncProductToSheets(newProd);
   if(btn)buttonFlash(btn,"✅ Added!");
 }
 function deleteProduct(id){
   var p=S.products.find(function(x){return x.id===id;});
   var name=p?p.name:"this product";
   showConfirm("Delete Product?","Are you sure you want to delete "+name+"?",function(){
-    if(p) deleteProductFromSheets(p.name);
+    api("DELETE", "/products/"+id);
     S.products=S.products.filter(function(p){return p.id!==id;});save();renderInvProducts();renderShop();showToast("Product deleted!");
   });
 }
@@ -2323,7 +2537,8 @@ function saveEditProduct(){
   var urlVal=document.getElementById("edit-url").value.trim();
   if(editProductPhoto)p.photo=editProductPhoto;else if(urlVal)p.photo=urlVal;
   p.editedBy=currentWorkerName;p.editedAt=new Date().toISOString();
-  closeEditModal();save();renderInvProducts();renderShop();updateProductInSheets(p);showToast("Product updated!");
+  closeEditModal();save();renderInvProducts();renderShop();showToast("Product updated!");
+  api("PUT", "/products/"+p.id, {name:p.name,emoji:p.emoji,price:p.price,cost:p.cost,unit:p.unit,category:p.cat,stock:p.stock,low_alert:p.lowAlert,photo:p.photo,has_variants:p.hasVariants?1:0,colors:p.colors||[],sizes:p.sizes||[]});
 }
 
 function renderStock(){
@@ -2341,6 +2556,7 @@ function addCategory(btn){
   document.getElementById("new-cat-emoji").value="";
   document.getElementById("new-cat-name").value="";
   save();renderCatList();renderInvProducts();renderShop();
+  api("POST", "/categories", {name:name,emoji:emoji});
   buttonFlash(btn,"✅ Added!");
 }
 function renderCatList(){
@@ -2387,6 +2603,7 @@ function deleteCategory(idx){
   var msg="Are you sure you want to delete "+c.emoji+" "+c.name+"?";
   if(prodCount>0) msg+=" "+prodCount+" product(s) use this category.";
   showConfirm("Delete Category?",msg,function(){
+    if(c.id) api("DELETE", "/categories/"+c.id);
     S.categories.splice(idx,1);
     save();renderCatList();renderInvProducts();renderShop();showToast("Category deleted!");
   });
@@ -2439,7 +2656,7 @@ function logPurchase(btn){
   S.purchases.push(newPurchase);
   ["pur-item","pur-qty","pur-cost","pur-supplier"].forEach(function(id){document.getElementById(id).value="";});
   save();renderPurchases();
-  syncPurchaseToSheets(newPurchase);
+  api("POST", "/purchases", {item:item,qty:qty,cost:cost,supplier:supplier});
   if(btn)buttonFlash(btn,"✅ Saved!");
 }
 function renderPurchases(){
@@ -2507,7 +2724,7 @@ function logExpense(btn){
   S.expenses.push(newExp);
   document.getElementById("exp-desc").value="";document.getElementById("exp-amount").value="";
   save();renderExpenses();renderOpsSummary();
-  syncExpenseToSheets(newExp);
+  api("POST", "/expenses", {description:desc,amount:amount,category:cat});
   if(btn)buttonFlash(btn,"✅ Saved!");
 }
 function renderExpenses(){
@@ -2525,12 +2742,7 @@ function renderExpenses(){
 }
 function deleteExpense(id){
   if(!S.expenses)return;
-  var exp=S.expenses.find(function(e){return e.id===id;});
-  if(exp){
-    fetch(OPS_SHEETS_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({type:"Expenses",action:"delete",desc:exp.desc,amount:"$"+exp.amount.toFixed(2)})
-    }).catch(function(e){});
-  }
+  api("DELETE", "/expenses/"+id);
   S.expenses=S.expenses.filter(function(e){return e.id!==id;});save();renderExpenses();renderOpsSummary();
 }
 
@@ -2549,6 +2761,7 @@ function logTrip(){
   document.getElementById("trip-preview").innerHTML='<div class="trip-card" style="margin-top:10px;border-color:'+(profit>=0?"#4caf50":"var(--red)")+'"><div style="font-size:14px;font-weight:800;margin-bottom:8px;">Trip: '+dest+'</div><div class="ot-row"><span class="ot-label">Gas</span><span class="ot-val">$'+gasCost.toFixed(2)+'</span></div><div class="ot-row"><span class="ot-label">Wear & Tear</span><span class="ot-val">$'+wearTear.toFixed(2)+'</span></div><div class="ot-row"><span class="ot-label">Total Cost</span><span class="ot-val" style="color:var(--red);">$'+cost.toFixed(2)+'</span></div><div class="ot-row"><span class="ot-label">Revenue</span><span class="ot-val">$'+revenue.toFixed(2)+'</span></div><div style="font-size:22px;font-weight:800;color:'+(profit>=0?"#4caf50":"var(--red)")+';">Net Profit: $'+profit.toFixed(2)+'</div></div>';
   ["t-dest","t-miles","t-gas","t-mpg","t-extra","t-orders-count","t-revenue"].forEach(function(id){document.getElementById(id).value="";});
   save();renderTrips();renderOpsSummary();showToast("Trip saved!");
+  api("POST", "/trips", {destination:dest,miles:miles,gas_cost:gasCost,wear_tear:wearTear,cost:cost,revenue:revenue,profit:profit});
 }
 function renderTrips(){
   if(!S.trips)S.trips=[];
@@ -2632,12 +2845,12 @@ function logPayment(btn){
   var note=document.getElementById("pay-note").value.trim()||"Payment";
   if(!wid||isNaN(amount)){showToast("Select worker and enter amount!");return;}
   if(!S.payments)S.payments=[];
+  var pw=S.workers.find(function(x){return x.id===wid;});
   var newPay={id:Date.now(),workerId:wid,amount:amount,note:note,date:new Date().toISOString()};
   S.payments.push(newPay);
   document.getElementById("pay-amount").value="";document.getElementById("pay-note").value="";
   save();renderPayroll();renderOpsSummary();
-  var pw=S.workers.find(function(x){return x.id===wid;});
-  syncPaymentToSheets(newPay, pw?pw.name:"Unknown");
+  api("POST", "/payments", {worker_id:wid,worker_name:pw?pw.name:"Unknown",amount:amount,note:note});
   if(btn)buttonFlash(btn,"✅ Saved!");
 }
 
@@ -2666,492 +2879,9 @@ function buttonFlash(btn,msg){
 
 
 // ============================================================
-// INVENTORY GOOGLE SHEETS SYNC
-// ============================================================
-var INV_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzQ8D_a2-ys2lNkIHXC8vWdZ57YJGxmwlZTRF6JNpeyMa7zT6TkTws0UhEgVmlUcpaD/exec';
-
-function syncPurchaseToSheets(purchase) {
-  fetch(INV_SHEETS_URL, {
-    method: "POST", mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      type: "Purchases",
-      date: new Date(purchase.date).toLocaleString("en-US"),
-      item: purchase.item,
-      qty: purchase.qty,
-      cost: "$" + purchase.cost.toFixed(2),
-      supplier: purchase.supplier,
-      by: purchase.by
-    })
-  }).catch(function(e){ console.log("Sheets err:", e); });
-}
-
-function syncStockToSheets(product, amount, by) {
-  fetch(INV_SHEETS_URL, {
-    method: "POST", mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      type: "Stock",
-      date: new Date().toLocaleString("en-US"),
-      product: product.name,
-      amount: amount,
-      by: by
-    })
-  }).catch(function(e){ console.log("Sheets err:", e); });
-}
-
-function syncProductToSheets(product) {
-  fetch(INV_SHEETS_URL, {
-    method: "POST", mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      type: "Products",
-      name: product.name,
-      price: "$" + parseFloat(product.price).toFixed(2),
-      cost: "$" + parseFloat(product.cost||0).toFixed(2),
-      category: product.cat,
-      unit: product.unit,
-      stock: product.stock||0,
-      by: product.addedBy||"",
-      date: new Date().toLocaleString("en-US"),
-      photo: product.photo||"",
-      colors: (product.colors||[]).join(", "),
-      sizes: (product.sizes||[]).join(", ")
-    })
-  }).catch(function(e){ console.log("Sheets err:", e); });
-}
-
-function deleteProductFromSheets(productName) {
-  fetch(INV_SHEETS_URL, {
-    method: "POST", mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ type: "Products", action: "delete", name: productName })
-  }).catch(function(e){ console.log("Sheets delete err:", e); });
-}
-
-function updateProductInSheets(product) {
-  fetch(INV_SHEETS_URL, {
-    method: "POST", mode: "no-cors",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      type: "Products", action: "update",
-      name: product.name,
-      price: "$" + parseFloat(product.price).toFixed(2),
-      cost: "$" + parseFloat(product.cost||0).toFixed(2),
-      category: product.cat,
-      unit: product.unit,
-      stock: product.stock||0
-    })
-  }).catch(function(e){ console.log("Sheets update err:", e); });
-}
-
-
-
-// ============================================================
-// OPERATIONS GOOGLE SHEETS SYNC
-// ============================================================
-var OPS_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyFLx8UmFUhpb02L7WOpB_hDaK9raHQErLikg6ZairUlqJ6cLX1PXlVEDekCAyG2LHh/exec';
-
-function syncExpenseToSheets(exp) {
-  fetch(OPS_SHEETS_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      type:"Expenses",
-      date:new Date(exp.date).toLocaleString("en-US"),
-      desc:exp.desc, cat:exp.cat,
-      amount:"$"+exp.amount.toFixed(2)
-    })
-  }).catch(function(e){console.log("Ops sheets err:",e);});
-}
-
-function syncPaymentToSheets(payment, workerName) {
-  fetch(OPS_SHEETS_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      type:"Payments",
-      date:new Date(payment.date).toLocaleString("en-US"),
-      worker:workerName,
-      amount:"$"+payment.amount.toFixed(2),
-      note:payment.note
-    })
-  }).catch(function(e){console.log("Ops sheets err:",e);});
-}
-
-function syncSummaryToSheets() {
-  var revenue=S.orders.reduce(function(s,o){return s+o.total;},0);
-  var expenses=(S.expenses||[]).reduce(function(s,e){return s+e.amount;},0);
-  var payroll=(S.payments||[]).reduce(function(s,p){return s+p.amount;},0);
-  var tripCosts=(S.trips||[]).reduce(function(s,t){return s+t.cost;},0);
-  var netProfit=revenue-expenses-payroll-tripCosts;
-  var month=new Date().toLocaleString("en-US",{month:"long",year:"numeric"});
-  fetch(OPS_SHEETS_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      type:"Summary",
-      month:month,
-      revenue:"$"+revenue.toFixed(2),
-      expenses:"$"+expenses.toFixed(2),
-      payroll:"$"+payroll.toFixed(2),
-      tripCosts:"$"+tripCosts.toFixed(2),
-      netProfit:"$"+netProfit.toFixed(2)
-    })
-  }).catch(function(e){console.log("Ops sheets err:",e);});
-}
-
-// ============================================================
-// DELIVERY APP
-// ============================================================
-function renderPickupList(){
-  var done=S.orders.filter(function(o){return o.status==="done"||o.status==="delivered";});
-  var total=done.length;
-  var pickedUp=done.filter(function(o){return o.deliveryStatus==="dropped_off";}).length;
-  var noShow=done.filter(function(o){return o.deliveryStatus==="no_show";}).length;
-  var left=total-pickedUp-noShow;
-  // Big countdown
-  var countdown=document.getElementById("del-countdown");
-  if(countdown){
-    countdown.textContent=left;
-    countdown.style.color=left===0?"#4caf50":"#26C6DA";
-  }
-  var pct=total>0?((pickedUp+noShow)/total)*100:0;
-  var bar=document.getElementById("del-progress-bar");
-  if(bar) bar.style.width=pct+"%";
-  var lbl=document.getElementById("del-progress-label");
-  if(lbl) lbl.textContent=pickedUp+" dropped off · "+noShow+" no show · "+left+" remaining";
-  // Badge
-  var badge=document.getElementById("del-badge");
-  if(badge){badge.textContent=left;badge.style.display=left>0?"block":"none";}
-  var list=document.getElementById("del-pickup-list");
-  if(!list) return;
-  if(!done.length){
-    list.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>No completed orders yet</p></div>';
-    return;
-  }
-  // All done celebration
-  if(left===0&&total>0){
-    list.innerHTML='<div style="text-align:center;padding:30px 20px;">'+
-      '<div style="font-size:64px;">🎉</div>'+
-      '<div style="font-family:Black Ops One,cursive;font-size:28px;color:#4caf50;margin-top:12px;">ALL DONE!</div>'+
-      '<div style="font-size:15px;font-weight:700;color:var(--text-gray);margin-top:8px;">Every order delivered!</div>'+
-      '</div>';
-    return;
-  }
-  list.innerHTML=done.map(function(o){
-    var status=o.deliveryStatus||"pending";
-    var isPicked=status==="dropped_off";
-    var isNoShow=status==="no_show";
-    var cardClass="pickup-card"+(isPicked?" picked-up":isNoShow?" no-show":"");
-    var statusBadge=isPicked?'<span style="background:#1a3a1a;color:#4caf50;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;">✅ DROPPED OFF</span>':
-      isNoShow?'<span style="background:#2a0000;color:#ff6666;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;">❌ NO SHOW</span>':
-      '<span style="background:#1a1a00;color:var(--gold);padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;">⏳ WAITING</span>';
-    var itemsSummary=o.items.map(function(i){return i.qty+"x "+i.name;}).join(", ");
-    var btns=(!isPicked&&!isNoShow)?
-      '<div style="display:flex;gap:8px;margin-top:10px;">'+
-        '<button style="flex:1;padding:10px;background:#1a3a1a;color:#4caf50;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;" onclick="markDroppedOff('+o.id+')">✅ Dropped Off</button>'+
-        '<button style="flex:1;padding:10px;background:#2a0000;color:#ff6666;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;" onclick="markNoShow('+o.id+')">❌ No Show</button>'+
-        '<a href="tel:'+o.phone+'" style="padding:10px 14px;background:#1a1a3a;color:#4fc3f7;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;text-decoration:none;">📞</a>'+
-      '</div>':"";
-    return '<div class="'+cardClass+'">'+
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;">'+
-        '<div>'+
-          '<div style="font-family:Black Ops One,cursive;font-size:20px;color:#26C6DA;">#'+o.slot+'</div>'+
-          '<div style="font-size:16px;font-weight:800;">'+o.name+'</div>'+
-          '<div style="font-size:13px;color:var(--text-gray);font-weight:600;">📞 '+o.phone+'</div>'+
-          '<div style="font-size:12px;color:var(--text-gray);font-weight:600;margin-top:4px;">'+itemsSummary+'</div>'+
-          '<div style="font-size:14px;font-weight:800;color:#26C6DA;margin-top:2px;">$'+o.total.toFixed(2)+'</div>'+
-        '</div>'+
-        statusBadge+
-      '</div>'+
-      btns+
-    '</div>';
-  }).join("");
-}
-
-function markDroppedOff(id){
-  var o=S.orders.find(function(x){return x.id===id;});
-  if(o){
-    o.deliveryStatus="dropped_off";
-    o.droppedOffBy=currentWorkerName;
-    o.droppedOffAt=new Date().toISOString();
-    save();renderPickupList();
-    syncPickupToSheets(o,"✅ Dropped Off");
-    showToast("✅ "+o.name+" dropped off & synced!");
-  }
-}
-
-function markNoShow(id){
-  var o=S.orders.find(function(x){return x.id===id;});
-  if(o){
-    o.deliveryStatus="no_show";
-    o.noShowAt=new Date().toISOString();
-    save();renderPickupList();
-    syncPickupToSheets(o,"❌ No Show");
-    showToast("❌ "+o.name+" marked no show & synced");
-  }
-}
-
-function renderDeliveryLocation(){
-  var addr=document.getElementById("del-address");
-  var dt=document.getElementById("del-datetime");
-  var statusEl=document.getElementById("del-status-display");
-  var notesEl=document.getElementById("del-notes");
-  if(addr) addr.textContent=S.deliveryAddress||"Not set yet";
-  if(dt) dt.textContent=S.deliveryDt?fmtDT(S.deliveryDt):"Not set yet";
-  var statusMap={on_the_way:"🚗 On The Way",arrived:"📍 Arrived",done:"✅ All Done"};
-  if(statusEl) statusEl.textContent=S.deliveryStatusLabel?statusMap[S.deliveryStatusLabel]||"":"";
-  if(notesEl) notesEl.value=S.deliveryRouteNotes||"";
-}
-
-function setDeliveryStatus(status){
-  S.deliveryStatusLabel=status;
-  save();renderDeliveryLocation();
-  var msgs={on_the_way:"🚗 On the way!",arrived:"📍 Arrived at location!",done:"✅ Delivery complete!"};
-  showToast(msgs[status]);
-}
-
-function saveDeliveryNotes(btn){
-  var el=document.getElementById("del-notes");
-  if(el){S.deliveryRouteNotes=el.value;save();if(btn)buttonFlash(btn,"✅ Saved!");}
-}
-
-function logDeliveryTrip(){
-  var dest=document.getElementById("del-t-dest").value.trim();
-  var miles=parseFloat(document.getElementById("del-t-miles").value);
-  var gas=parseFloat(document.getElementById("del-t-gas").value);
-  var mpg=parseFloat(document.getElementById("del-t-mpg").value);
-  var extra=parseFloat(document.getElementById("del-t-extra").value)||0;
-  var orders=parseInt(document.getElementById("del-t-orders-count").value)||0;
-  var revenue=parseFloat(document.getElementById("del-t-revenue").value)||0;
-  if(!dest||isNaN(miles)||isNaN(gas)||isNaN(mpg)){showToast("Fill in destination, miles, gas and MPG!");return;}
-  var gasCost=(miles/mpg)*gas;var wearTear=miles*0.67;var cost=gasCost+wearTear+extra;var profit=revenue-cost;
-  var month=new Date().toLocaleString("en-US",{month:"long",year:"numeric"});
-  if(!S.trips)S.trips=[];
-  S.trips.push({dest:dest,miles:miles,gas:gas,mpg:mpg,gasCost:gasCost,wearTear:wearTear,extra:extra,cost:cost,revenue:revenue,profit:profit,orders:orders,month:month,date:new Date().toLocaleDateString(),by:currentWorkerName});
-  document.getElementById("del-trip-preview").innerHTML=
-    '<div class="trip-card" style="margin-top:10px;border-color:'+(profit>=0?"#4caf50":"var(--red)")+'">'+
-    '<div style="font-size:14px;font-weight:800;margin-bottom:8px;">Trip: '+dest+'</div>'+
-    '<div class="ot-row"><span class="ot-label">Gas</span><span class="ot-val">$'+gasCost.toFixed(2)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Wear & Tear</span><span class="ot-val">$'+wearTear.toFixed(2)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Total Cost</span><span class="ot-val" style="color:var(--red);">$'+cost.toFixed(2)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Revenue</span><span class="ot-val">$'+revenue.toFixed(2)+'</span></div>'+
-    '<div style="font-size:22px;font-weight:800;color:'+(profit>=0?"#4caf50":"var(--red)")+';">Net: $'+profit.toFixed(2)+'</div></div>';
-  ["del-t-dest","del-t-miles","del-t-gas","del-t-mpg","del-t-extra","del-t-orders-count","del-t-revenue"].forEach(function(id){document.getElementById(id).value="";});
-  var savedTrip=S.trips[S.trips.length-1];
-  save();renderDeliveryTrips();renderOpsMonthlyMiles();
-  syncTripToSheets(savedTrip);
-  showToast("Trip saved & synced to Sheets!");
-}
-
-function renderDeliveryTrips(){
-  if(!S.trips)S.trips=[];
-  var tMiles=S.trips.reduce(function(s,t){return s+t.miles;},0);
-  var tCost=S.trips.reduce(function(s,t){return s+t.cost;},0);
-  var tRev=S.trips.reduce(function(s,t){return s+t.revenue;},0);
-  var tProfit=tRev-tCost;
-  document.getElementById("del-trip-totals").innerHTML=
-    '<div class="ot-row"><span class="ot-label">Total Miles</span><span class="ot-val">'+tMiles.toFixed(0)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Total Costs</span><span class="ot-val" style="color:var(--red);">$'+tCost.toFixed(2)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Total Revenue</span><span class="ot-val">$'+tRev.toFixed(2)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Net Profit</span><span class="ot-val" style="color:'+(tProfit>=0?"#4caf50":"var(--red)")+';">$'+tProfit.toFixed(2)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Trips Made</span><span class="ot-val">'+S.trips.length+'</span></div>';
-  document.getElementById("del-trip-history").innerHTML=S.trips.slice().reverse().map(function(t){
-    return '<div class="trip-card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'+
-      '<div><div style="font-size:16px;font-weight:800;">'+t.dest+'</div><div style="font-size:12px;color:var(--text-gray);font-weight:600;">'+t.date+(t.by?" · "+t.by:"")+'</div></div>'+
-      '<div class="trip-profit '+(t.profit>=0?"profit-pos":"profit-neg")+'">$'+t.profit.toFixed(0)+'</div></div>'+
-      '<div class="ot-row"><span class="ot-label">Miles</span><span class="ot-val">'+t.miles+'</span></div>'+
-      '<div class="ot-row"><span class="ot-label">Cost</span><span class="ot-val" style="color:var(--red);">$'+t.cost.toFixed(2)+'</span></div>'+
-      '<div class="ot-row"><span class="ot-label">Profit</span><span class="ot-val" style="color:'+(t.profit>=0?"#4caf50":"var(--red)")+';">$'+t.profit.toFixed(2)+'</span></div></div>';
-  }).join("");
-}
-
-function renderOpsMonthlyMiles(){
-  if(!S.trips)S.trips=[];
-  var tMiles=S.trips.reduce(function(s,t){return s+t.miles;},0);
-  var tCost=S.trips.reduce(function(s,t){return s+t.cost;},0);
-  var tProfit=S.trips.reduce(function(s,t){return s+t.profit;},0);
-  var statsEl=document.getElementById("ops-miles-stats");
-  if(statsEl) statsEl.innerHTML=
-    '<div class="stat-card"><div class="stat-val">'+tMiles.toFixed(0)+'</div><div class="stat-label">Total Miles</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+tCost.toFixed(0)+'</div><div class="stat-label">Total Cost</div></div>'+
-    '<div class="stat-card"><div class="stat-val" style="color:'+(tProfit>=0?"#4caf50":"var(--red)")+';">$'+Math.abs(tProfit).toFixed(0)+'</div><div class="stat-label">Net</div></div>';
-  // Group by month
-  var byMonth={};
-  S.trips.forEach(function(t){
-    var m=t.month||t.date||"Unknown";
-    if(!byMonth[m])byMonth[m]={miles:0,cost:0,profit:0,trips:0};
-    byMonth[m].miles+=t.miles;
-    byMonth[m].cost+=t.cost;
-    byMonth[m].profit+=t.profit;
-    byMonth[m].trips++;
-  });
-  var monthEl=document.getElementById("ops-monthly-miles-list");
-  if(monthEl){
-    var months=Object.keys(byMonth);
-    monthEl.innerHTML=!months.length?'<p style="color:var(--text-gray);font-size:14px;">No trips logged yet.</p>':
-      months.reverse().map(function(m){
-        var d=byMonth[m];
-        return '<div style="padding:12px 0;border-bottom:1px solid #2a2a2a;">'+
-          '<div style="font-size:15px;font-weight:800;margin-bottom:6px;">'+m+'</div>'+
-          '<div class="ot-row"><span class="ot-label">Miles</span><span class="ot-val">'+d.miles.toFixed(0)+'</span></div>'+
-          '<div class="ot-row"><span class="ot-label">Trips</span><span class="ot-val">'+d.trips+'</span></div>'+
-          '<div class="ot-row"><span class="ot-label">Cost</span><span class="ot-val" style="color:var(--red);">$'+d.cost.toFixed(2)+'</span></div>'+
-          '<div class="ot-row"><span class="ot-label">Profit</span><span class="ot-val" style="color:'+(d.profit>=0?"#4caf50":"var(--red)")+';">$'+d.profit.toFixed(2)+'</span></div>'+
-        '</div>';
-      }).join("");
-  }
-  var alltimeEl=document.getElementById("ops-miles-alltime");
-  if(alltimeEl) alltimeEl.innerHTML=
-    '<div class="ot-row"><span class="ot-label">Total Miles Ever</span><span class="ot-val">'+tMiles.toFixed(0)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Total Trips</span><span class="ot-val">'+S.trips.length+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Total Cost</span><span class="ot-val" style="color:var(--red);">$'+tCost.toFixed(2)+'</span></div>'+
-    '<div class="ot-row"><span class="ot-label">Total Profit</span><span class="ot-val" style="color:'+(tProfit>=0?"#4caf50":"var(--red)")+';">$'+tProfit.toFixed(2)+'</span></div>';
-}
-
-// ============================================================
-// GOOGLE SHEETS SYNC
-// ============================================================
-var SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwDwx0uES015d1QKO7wZzMVz3hDFLc2fQwdz1-GxV9fCjxIQYsGvEKS-q7nzbAZnElG/exec';
-
-function saveOrderToSheets(order) {
-  var itemsList = order.items.map(function(i) {
-    return i.qty + "x " + i.name + " ($" + (i.price * i.qty).toFixed(2) + ")";
-  }).join(", ");
-  
-  var payload = {
-    slot: order.slot,
-    name: order.name,
-    phone: order.phone,
-    items: itemsList,
-    total: "$" + order.total.toFixed(2),
-    status: order.status,
-    date: new Date(order.timestamp).toLocaleString("en-US"),
-    worker: order.claimedBy || ""
-  };
-  
-  fetch(SHEETS_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
-  }).catch(function(err) {
-    console.log("Sheets sync error:", err);
-  });
-}
-
-function syncAllOrdersToSheets() {
-  S.orders.forEach(function(order, i) {
-    setTimeout(function() { saveOrderToSheets(order); }, i * 300);
-  });
-  showToast("Syncing " + S.orders.length + " orders to Sheets!");
-}
-
-function deleteOrderFromSheets(order) {
-  fetch(SHEETS_URL, {
-    method: "POST", mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "delete", slot: order.slot, name: order.name })
-  }).catch(function(err) { console.log("Sheets delete error:", err); });
-}
-
-function updateOrderInSheets(order) {
-  var itemsList = order.items.map(function(i) {
-    return i.qty + "x " + i.name + " ($" + (i.price * i.qty).toFixed(2) + ")";
-  }).join(", ");
-  fetch(SHEETS_URL, {
-    method: "POST", mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      action: "update", slot: order.slot, name: order.name, phone: order.phone,
-      items: itemsList, total: "$" + order.total.toFixed(2),
-      status: order.status, worker: order.claimedBy || "",
-      date: new Date(order.timestamp).toLocaleString("en-US")
-    })
-  }).catch(function(err) { console.log("Sheets update error:", err); });
-}
-
-
-// Live timer refresh for orders
-setInterval(function(){
-  var ordersPage=document.getElementById("o-page-orders");
-  if(ordersPage&&ordersPage.classList.contains("active")){
-    renderOrdersTab();
-  }
-},60000);
-
-
-
-// ============================================================
-// DELIVERY GOOGLE SHEETS SYNC
-// ============================================================
-var DEL_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx5PHdTkevkXTUswiQJunniuofHUeO5HsCRNA9H5ZtgQOhxFv_l8yUpaZM8thrWFKDT/exec';
-
-function syncPickupToSheets(order, status) {
-  var itemsList = order.items.map(function(i){return i.qty+"x "+i.name;}).join(", ");
-  fetch(DEL_SHEETS_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      type:"Pickups",
-      date:new Date().toLocaleString("en-US"),
-      slot:order.slot,
-      name:order.name,
-      phone:order.phone,
-      items:itemsList,
-      total:"$"+order.total.toFixed(2),
-      status:status,
-      worker:currentWorkerName||""
-    })
-  }).catch(function(e){console.log("Del sheets err:",e);});
-}
-
-function syncTripToSheets(trip) {
-  fetch(DEL_SHEETS_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      type:"Trips",
-      date:trip.date,
-      dest:trip.dest,
-      miles:trip.miles,
-      gasCost:"$"+trip.gasCost.toFixed(2),
-      wearTear:"$"+trip.wearTear.toFixed(2),
-      cost:"$"+trip.cost.toFixed(2),
-      revenue:"$"+trip.revenue.toFixed(2),
-      profit:"$"+trip.profit.toFixed(2),
-      by:trip.by||"",
-      orders:trip.orders||0
-    })
-  }).catch(function(e){console.log("Del sheets err:",e);});
-}
-
-function updatePickupInSheets(order, status) {
-  fetch(DEL_SHEETS_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      type:"Pickups", action:"update",
-      slot:order.slot, name:order.name, status:status,
-      worker:currentWorkerName||""
-    })
-  }).catch(function(e){console.log("Del sheets update err:",e);});
-}
-
-function deleteTripFromSheets(trip) {
-  fetch(DEL_SHEETS_URL, {
-    method:"POST", mode:"no-cors",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      type:"Trips", action:"delete",
-      date:trip.date, dest:trip.dest
-    })
-  }).catch(function(e){console.log("Del sheets delete err:",e);});
-}
-
-// ============================================================
 // ADMIN CUSTOMERS & LOYALTY
+// ============================================================
+
 // ============================================================
 function renderAdminCustomers(){
   if(!S.customerLog)S.customerLog=[];
@@ -3218,12 +2948,14 @@ function adminAssignLoyalty(btn){
   S.loyaltyDiscounts[phone]={percent:5,assignedAt:new Date().toISOString(),used:false};
   phoneEl.value="";
   save();renderAdminCustomers();buttonFlash(btn,"✅ Assigned!");
+  api("POST", "/loyalty", {phone:phone});
 }
 
 function adminGiveLoyalty(phone,btn){
   if(!S.loyaltyDiscounts)S.loyaltyDiscounts={};
   S.loyaltyDiscounts[phone]={percent:5,assignedAt:new Date().toISOString(),used:false};
   save();renderAdminCustomers();if(btn)buttonFlash(btn,"✅ Done!");
+  api("POST", "/loyalty", {phone:phone});
 }
 
 // ============================================================
@@ -3341,6 +3073,8 @@ function assignLoyalty(phone){
 
 function removeLoyalty(phone){
   if(!S.loyaltyDiscounts)return;
+  var disc=S.loyaltyDiscounts[phone];
+  if(disc&&disc.dbId) api("DELETE", "/loyalty/"+disc.dbId);
   delete S.loyaltyDiscounts[phone];
   save();renderAdminCustomers();renderCustomers();showToast("Discount removed.");
 }
