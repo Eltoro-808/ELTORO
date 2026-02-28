@@ -609,19 +609,32 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
 
     <div class="card">
-      <h3>💰 Deposit Requirement</h3>
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-        <span style="font-size:14px;font-weight:800;">Require deposit before order confirms</span>
-        <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
-          <input type="checkbox" id="deposit-toggle" onchange="toggleDeposit()" style="opacity:0;width:0;height:0;"/>
-          <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;"></span>
-          <span class="deposit-knob" style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;"></span>
-        </label>
+      <h3>💰 Zelle Payments</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface);border-radius:10px;">
+          <span style="font-size:13px;font-weight:800;">🚚 Delivery Deposit</span>
+          <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
+            <input type="checkbox" id="deposit-toggle" onchange="toggleDeposit()" style="opacity:0;width:0;height:0;"/>
+            <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="deposit-toggle-track"></span>
+            <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="deposit-toggle-knob"></span>
+          </label>
+        </div>
+        <div id="deposit-amount-wrap" style="display:none;padding:0 4px;">
+          <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Deposit Amount ($)</label>
+          <input class="a-input" id="set-deposit-amount" type="number" step="0.01" placeholder="50" style="margin-top:4px;"/>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px;background:var(--surface);border-radius:10px;">
+          <span style="font-size:13px;font-weight:800;">🏘️ Local Full Payment</span>
+          <label style="position:relative;display:inline-block;width:50px;height:28px;cursor:pointer;">
+            <input type="checkbox" id="local-zelle-toggle" onchange="toggleLocalZelle()" style="opacity:0;width:0;height:0;"/>
+            <span style="position:absolute;inset:0;background:#444;border-radius:28px;transition:0.3s;" id="local-zelle-toggle-track"></span>
+            <span style="position:absolute;height:22px;width:22px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.3s;" id="local-zelle-toggle-knob"></span>
+          </label>
+        </div>
+        <p style="font-size:11px;color:var(--text-gray);font-weight:600;padding:0 4px;">Local customers Zelle the full order total (items + delivery fee)</p>
       </div>
       <div id="deposit-fields" style="display:none;">
-        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Deposit Amount ($)</label>
-        <input class="a-input" id="set-deposit-amount" type="number" step="0.01" placeholder="50" style="margin-top:4px;"/>
-        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Zelle Account Name</label>
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Zelle Account Name</label>
         <input class="a-input" id="set-deposit-name" type="text" placeholder="Full name" style="margin-top:4px;"/>
         <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Zelle Phone or Email</label>
         <input class="a-input" id="set-deposit-zelle" type="text" placeholder="Phone number or email" style="margin-top:4px;"/>
@@ -639,14 +652,19 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
         <button class="a-btn gray" id="zelle-qr-remove" style="display:none;font-size:12px;margin-bottom:10px;" onclick="removeZelleQR()">Remove QR Code</button>
         <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:8px;">Instructions (optional)</label>
         <input class="a-input" id="set-deposit-note" type="text" placeholder="e.g. Put your name in the Zelle memo" style="margin-top:4px;"/>
-        <button class="a-btn" onclick="saveDeposit(this)">Save Deposit Settings</button>
+        <button class="a-btn" onclick="saveDeposit(this)">Save Zelle Settings</button>
       </div>
     </div>
 
     <div class="card">
-      <h3>🔄 Reset Month</h3>
-      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Saves this cycle then clears all orders.</p>
-      <button class="a-btn gray" onclick="resetMonth()">Reset Cycle</button>
+      <h3>🔄 Smart Reset</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Clears completed orders only. Active orders stay. Operations data stays for taxes.</p>
+      <button class="a-btn" onclick="resetMonth()">🔄 Clear Completed Orders</button>
+    </div>
+    <div class="card">
+      <h3>🗑️ Clear Operations (Tax Cleanup)</h3>
+      <p style="font-size:13px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">⚠️ Only use after saving records for taxes. Deletes all financial history. Wait 3+ years.</p>
+      <button class="a-btn gray" onclick="clearOperations()">🗑️ Clear All Operations Data</button>
     </div>
   </div>
   <div class="d-page" id="a-page-workers">
@@ -1356,6 +1374,7 @@ var S = {
     {name:"Household",emoji:"🏠"},{name:"Pet",emoji:"🐾"}
   ],
   depositRequired: false, depositAmount: 50, depositZelle: "", depositNote: "", depositName: "", depositQR: "",
+  localZelleRequired: false,
   timesheets: [], activeClocks: {},
   customerLog: [], loyaltyDiscounts: {},
   lastResetDate: null,
@@ -2160,6 +2179,14 @@ function submitOrder(){
     }
 
     var total = result.total || items.reduce(function(s,i){return s+i.price*i.qty;},0);
+    // Add delivery fee to total for local delivery
+    if(orderType==="local" && deliveryFee>0 && result.total) {
+      // API might not include fee, check if it's already included
+      var itemsTotal=items.reduce(function(s,i){return s+i.price*i.qty;},0);
+      if(Math.abs(total - itemsTotal) < 0.01) total += deliveryFee;
+    } else if(orderType==="local" && deliveryFee>0 && !result.total) {
+      total += deliveryFee;
+    }
     var discount = result.discount || 0;
     var loyaltyMsg = result.loyaltyMsg || "";
     var slot = result.slot;
@@ -2168,7 +2195,7 @@ function submitOrder(){
     // Build local order for UI
     var order = {id:orderId,slot:slot,name:name,phone:phone,items:items,total:total,
       discount:discount,loyaltyMsg:loyaltyMsg,status:"new",timestamp:new Date().toISOString(),
-      depositRequired:!!S.depositRequired,depositAmount:S.depositAmount||0,depositSent:false,
+      depositRequired:!!((S.depositRequired && orderType==="delivery") || (S.localZelleRequired && orderType==="local")),depositAmount:orderType==="local"?total:(S.depositAmount||0),depositSent:false,
       orderType:orderType,address:address,deliveryFee:deliveryFee};
     S.orders.push(order);
     S.cart=[];save();
@@ -2191,17 +2218,22 @@ function submitOrder(){
   var confirmEl = document.getElementById("order-confirm-msg");
   if(confirmEl){
     confirmEl.style.display="block";
-    if(S.depositRequired){
-      var depAmt=(S.depositAmount||50).toFixed(2);
+    var showZelle = (S.depositRequired && order.orderType==="delivery") || (S.localZelleRequired && order.orderType==="local");
+    if(showZelle){
+      var isLocal = order.orderType==="local";
+      var zelleAmt = isLocal ? order.total.toFixed(2) : (S.depositAmount||50).toFixed(2);
+      var zelleLabel = isLocal ? "Send full payment via Zelle" : "Send deposit via Zelle";
+      var zelleWarning = isLocal ? "⚠️ Orders without full payment will not be delivered" : "⚠️ Orders without deposit will not be processed";
       var zelleInfo=S.depositZelle||"";
       var zelleName=S.depositName||"";
       var depNote=S.depositNote||"";
       var qrHtml=S.depositQR?'<div style="background:#fff;border-radius:12px;padding:10px;margin:10px auto;max-width:180px;"><img src="'+S.depositQR+'" style="width:100%;display:block;border-radius:8px;"/></div>':'';
       confirmEl.innerHTML =
-        '<div style="background:#1a1a0a;border:2px solid #FFC107;border-radius:14px;padding:20px;margin:12px;text-align:center;">'+
+        '<div style="background:#1a1a0a;border:2px solid '+(isLocal?"#FF9800":"#FFC107")+';border-radius:14px;padding:20px;margin:12px;text-align:center;">'+
         '<div style="font-size:36px;">💰</div>'+
-        '<div style="font-size:20px;font-weight:900;color:#FFC107;margin:8px 0;">Order #'+order.slot+' Received!</div>'+
-        '<div style="font-size:14px;font-weight:700;color:#fff;margin:10px 0;">Send <span style="color:#4caf50;font-size:20px;font-weight:900;">$'+depAmt+'</span> deposit via Zelle</div>'+
+        '<div style="font-size:20px;font-weight:900;color:'+(isLocal?"#FF9800":"#FFC107")+';margin:8px 0;">Order #'+order.slot+' Received!</div>'+
+        (isLocal&&order.deliveryFee?'<div style="font-size:12px;color:#FF9800;margin:4px 0;">Includes $'+order.deliveryFee.toFixed(2)+' delivery fee</div>':'')+
+        '<div style="font-size:14px;font-weight:700;color:#fff;margin:10px 0;">'+zelleLabel+': <span style="color:#4caf50;font-size:20px;font-weight:900;">$'+zelleAmt+'</span></div>'+
         qrHtml+
         '<div style="background:#222;border-radius:10px;padding:12px;margin:8px 0;">'+
         (zelleName?'<div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:4px;">'+zelleName+'</div>':'')+
@@ -2209,10 +2241,10 @@ function submitOrder(){
         '</div>'+
         '<div style="font-size:12px;font-weight:700;color:#FFD54F;margin:6px 0;">📝 Use your name as the payment reference</div>'+
         (depNote?'<div style="font-size:12px;font-weight:700;color:#FFD54F;margin:4px 0;">'+depNote+'</div>':'')+
-        '<div style="font-size:12px;font-weight:800;color:#ff6666;margin:10px 0;">⚠️ Orders without deposit will not be processed</div>'+
+        '<div style="font-size:12px;font-weight:800;color:#ff6666;margin:10px 0;">'+zelleWarning+'</div>'+
         '<label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0;cursor:pointer;">'+
         '<input type="checkbox" id="deposit-sent-check" onchange="toggleDepositSent('+order.id+')" style="width:24px;height:24px;accent-color:#4caf50;"/>'+
-        '<span style="font-size:14px;font-weight:800;color:#fff;">I\'ve sent the deposit</span>'+
+        '<span style="font-size:14px;font-weight:800;color:#fff;">I\'ve sent the payment</span>'+
         '</label>'+
         '<button class="submit-btn locked" disabled id="deposit-done-btn" onclick="confirmDepositSent('+order.id+')" style="margin-top:6px;">Confirm Payment Sent</button>'+
         '<div style="background:#111;border-radius:8px;padding:10px;margin-top:12px;">'+
@@ -2336,11 +2368,12 @@ function renderOrdersTab(){
     var statusLabel=isPendingDeposit?"💰 PENDING DEPOSIT":isPacking?"🟡 PACKING":"🆕 NEW";
     var statusClass=isPendingDeposit?"badge-packing":isPacking?"badge-packing":"badge-new";
     var depositBadge="";
-    if(S.depositRequired){
+    if((S.depositRequired && o.orderType==="delivery") || (S.localZelleRequired && o.orderType==="local")){
+      var payLabel=o.orderType==="local"?"Payment":"Deposit";
       if(o.depositSent){
-        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#1a3a1a;border:1px solid #4caf50;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">✅</span><span style="font-size:11px;font-weight:800;color:#4caf50;">Deposit Sent</span></div>';
+        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#1a3a1a;border:1px solid #4caf50;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">✅</span><span style="font-size:11px;font-weight:800;color:#4caf50;">'+payLabel+' Sent</span></div>';
       } else {
-        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #555;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">⬜</span><span style="font-size:11px;font-weight:800;color:#888;">No Deposit</span></div>';
+        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #555;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">⬜</span><span style="font-size:11px;font-weight:800;color:#888;">No '+payLabel+'</span></div>';
       }
     }
     var workerHtml=o.claimedBy?'<div class="oc-worker">👤 Being packed by: '+o.claimedBy+'</div>':"";
@@ -2860,8 +2893,31 @@ function saveAppUrl(btn){S.appUrl=document.getElementById("set-app-url").value.t
 
 function toggleDeposit(){
   var on=document.getElementById("deposit-toggle").checked;
-  document.getElementById("deposit-fields").style.display=on?"block":"none";
   S.depositRequired=on;save();
+  updateZelleUI();
+  api("PUT","/settings",{deposit_required:on});
+}
+function toggleLocalZelle(){
+  var on=document.getElementById("local-zelle-toggle").checked;
+  S.localZelleRequired=on;save();
+  updateZelleUI();
+  api("PUT","/settings",{local_zelle_required:on});
+}
+function updateZelleUI(){
+  var depOn=S.depositRequired;
+  var locOn=S.localZelleRequired;
+  // Toggle visuals - delivery deposit
+  var dt=document.getElementById("deposit-toggle");if(dt)dt.checked=!!depOn;
+  var dtrack=document.getElementById("deposit-toggle-track");if(dtrack)dtrack.style.background=depOn?"var(--primary)":"#444";
+  var dknob=document.getElementById("deposit-toggle-knob");if(dknob)dknob.style.left=depOn?"25px":"3px";
+  var daw=document.getElementById("deposit-amount-wrap");if(daw)daw.style.display=depOn?"block":"none";
+  // Toggle visuals - local zelle
+  var lt=document.getElementById("local-zelle-toggle");if(lt)lt.checked=!!locOn;
+  var ltrack=document.getElementById("local-zelle-toggle-track");if(ltrack)ltrack.style.background=locOn?"var(--primary)":"#444";
+  var lknob=document.getElementById("local-zelle-toggle-knob");if(lknob)lknob.style.left=locOn?"25px":"3px";
+  // Show Zelle fields if either is on
+  var fields=document.getElementById("deposit-fields");
+  if(fields) fields.style.display=(depOn||locOn)?"block":"none";
 }
 function toggleDepositCheck(){
   // legacy - no longer used on cart page
@@ -2962,9 +3018,7 @@ function removeZelleQR(){
   save();showToast("QR code removed!");
 }
 function loadDepositInputs(){
-  var tog=document.getElementById("deposit-toggle");
-  if(tog){tog.checked=!!S.depositRequired;}
-  document.getElementById("deposit-fields").style.display=S.depositRequired?"block":"none";
+  updateZelleUI();
   var amt=document.getElementById("set-deposit-amount");if(amt)amt.value=S.depositAmount||50;
   var name=document.getElementById("set-deposit-name");if(name)name.value=S.depositName||"";
   var zelle=document.getElementById("set-deposit-zelle");if(zelle)zelle.value=S.depositZelle||"";
@@ -2981,10 +3035,39 @@ function confirmDeposit(id){
 }
 function sendAdminBlast(){var count=S.orders.length;if(!count){showToast("No orders!");return;}showToast("Blast sent to "+count+" customers!");}
 function resetMonth(){
-  showConfirm("Reset Cycle?","Save this cycle and clear all orders for the next one?",function(){
-    S.monthHistory.push({month:new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"}),orders:S.orders.length,revenue:S.orders.reduce(function(s,o){return s+o.total;},0).toFixed(2)});
-  S.orders=[];S.nextOrderId=1;S.deadline=null;S.deliveryDt=null;S.deliveryAddress=null;S.arrivalText="Date & location coming soon!";
-  save();loadDeliveryInputs();renderShop();showToast("Cycle reset! Fresh start 🐂");
+  var completed=S.orders.filter(function(o){return o.status==="done"||o.status==="delivered"||o.status==="picked_up";});
+  var active=S.orders.filter(function(o){return o.status!=="done"&&o.status!=="delivered"&&o.status!=="picked_up";});
+  var totalRev=completed.reduce(function(s,o){return s+o.total;},0);
+  var deliveryCount=completed.filter(function(o){return o.orderType==="delivery"||!o.orderType;}).length;
+  var localCount=completed.filter(function(o){return o.orderType==="local";}).length;
+  var pickupCount=completed.filter(function(o){return o.orderType==="pickup";}).length;
+  var fees=completed.reduce(function(s,o){return s+(o.deliveryFee||0);},0);
+  
+  showConfirm("Smart Reset?","Clear "+completed.length+" completed orders?\n"+active.length+" active orders will stay.\nOperations data is NOT touched.",function(){
+    // Archive to monthHistory for reference
+    S.monthHistory.push({
+      month:new Date().toLocaleDateString("en-US",{month:"long",year:"numeric"}),
+      orders:completed.length,
+      revenue:totalRev.toFixed(2),
+      delivery:deliveryCount,
+      local:localCount,
+      pickup:pickupCount,
+      fees:fees.toFixed(2)
+    });
+    // Keep only active orders
+    S.orders=active;
+    // Don't reset nextOrderId — keep incrementing
+    save();renderShop();renderOrdersTab();
+    showToast("✅ Cleared "+completed.length+" completed orders. Operations untouched.");
+    api("POST", "/orders/archive", {archived:completed.length});
+  });
+}
+function clearOperations(){
+  showConfirm("Clear Operations Data?","⚠️ This deletes ALL financial records (expenses, trips, payroll, income history). Only do this after you've saved everything for taxes. This CANNOT be undone.",function(){
+    S.expenses=[];S.trips=[];S.monthHistory=[];
+    save();
+    showToast("Operations data cleared.");
+    api("DELETE", "/operations/all");
   });
 }
 function exportData(){var blob=new Blob([JSON.stringify(S,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="eltoro-backup.json";a.click();}
