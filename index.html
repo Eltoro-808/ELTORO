@@ -1464,47 +1464,75 @@ function doLogin() {
   var pw = document.getElementById("login-pw").value;
   var wname = document.getElementById("login-worker-name").value.trim();
   
-  // Admin doesn't need worker check
+  // Admin login — authenticate against API
   if(selRole==="admin") {
-    if(pw===S.adminPass) { currentWorkerName="Admin"; closeLogin(); launchApp("admin"); }
-    else { document.getElementById("login-err").style.display = "block"; }
+    api("POST", "/auth/admin", {password:pw}).then(function(result) {
+      if(!result || result.error) {
+        // Fallback to local check
+        if(pw===S.adminPass) { 
+          currentWorkerName="Admin"; authToken=""; closeLogin(); launchApp("admin"); 
+        } else {
+          document.getElementById("login-err").style.display = "block"; 
+        }
+        return;
+      }
+      authToken = result.token;
+      localStorage.setItem("eltoro_token", authToken);
+      currentWorkerName = "Admin";
+      closeLogin(); launchApp("admin");
+    });
     return;
   }
   
   // All other roles need a name
   if(!wname) { showToast("Enter your name!"); return; }
   
-  // Map role names to worker role values
-  var roleMap = {"orders":"Orders","inventory":"Inventory","operations":"Operations","delivery":"Delivery"};
-  var roleName = roleMap[selRole]||selRole;
-  
-  // Check if worker exists with matching role
-  if(!S.workers) S.workers=[];
-  var worker = S.workers.find(function(w){
-    if(w.name.toLowerCase()!==wname.toLowerCase()) return false;
-    // Support both old single role and new roles array
-    if(w.roles && Array.isArray(w.roles)){
-      return w.roles.indexOf(roleName)!==-1;
+  // Try API login first
+  api("POST", "/auth/login", {name:wname, password:pw, role:selRole}).then(function(result) {
+    if(result && result.token) {
+      authToken = result.token;
+      localStorage.setItem("eltoro_token", authToken);
+      currentWorkerName = result.worker.name;
+      
+      // Clock in worker if not boss
+      if(result.worker.type !== "boss") {
+        var localWorker = S.workers.find(function(w){return w.name.toLowerCase()===wname.toLowerCase();});
+        if(localWorker) clockIn(localWorker);
+      }
+      
+      closeLogin();
+      var appMap = {orders:"orders", inventory:"inv", operations:"ops", delivery:"delivery"};
+      launchApp(appMap[selRole] || selRole);
+      return;
     }
-    return w.role===roleName || w.role==="both";
+    
+    // Fallback to local auth if API fails
+    var roleMap = {"orders":"Orders","inventory":"Inventory","operations":"Operations","delivery":"Delivery"};
+    var roleName = roleMap[selRole]||selRole;
+    if(!S.workers) S.workers=[];
+    var worker = S.workers.find(function(w){
+      if(w.name.toLowerCase()!==wname.toLowerCase()) return false;
+      if(w.roles && Array.isArray(w.roles)) return w.roles.indexOf(roleName)!==-1;
+      return w.role===roleName || w.role==="both";
+    });
+    
+    if(!worker) {
+      document.getElementById("login-auth-err").style.display="block";
+      return;
+    }
+    
+    currentWorkerName = worker.name;
+    if(worker.type!=="boss") clockIn(worker);
+    
+    var passMap = {orders:S.ordersPass, inventory:S.invPass, operations:S.opsPass, delivery:S.deliveryPass};
+    if(pw === passMap[selRole]) {
+      closeLogin();
+      var appMap2 = {orders:"orders", inventory:"inv", operations:"ops", delivery:"delivery"};
+      launchApp(appMap2[selRole]);
+    } else {
+      document.getElementById("login-err").style.display = "block";
+    }
   });
-  
-  if(!worker) {
-    var authErr=document.getElementById("login-auth-err");
-    if(authErr){authErr.style.display="block";}
-    return;
-  }
-  
-  currentWorkerName = worker.name;
-  // Clock in worker (only if type is "worker", not "boss")
-  if(worker.type!=="boss"){
-    clockIn(worker);
-  }
-  if(selRole==="orders" && pw===S.ordersPass) { closeLogin(); launchApp("orders"); }
-  else if(selRole==="inventory" && pw===S.invPass) { closeLogin(); launchApp("inv"); }
-  else if(selRole==="operations" && pw===S.opsPass) { closeLogin(); launchApp("ops"); }
-  else if(selRole==="delivery" && pw===S.deliveryPass) { closeLogin(); launchApp("delivery"); }
-  else { document.getElementById("login-err").style.display = "block"; }
 }
 document.getElementById("login-pw").addEventListener("keydown", function(e){if(e.key==="Enter")doLogin();});
 
@@ -2321,6 +2349,16 @@ function addWorker(btn){
   ["wr-orders","wr-inventory","wr-operations","wr-delivery"].forEach(function(id){document.getElementById(id).checked=false;});
   setWorkerType("worker");
   save();renderWorkerList();renderPayroll();if(btn)buttonFlash(btn,"✅ Added!");
+  // Sync worker to API
+  var newW = S.workers[S.workers.length-1];
+  api("POST", "/auth/register", {
+    name:newW.name, password:S.ordersPass, worker_type:newW.type,
+    hourly_rate:newW.hourlyRate, trip_rate:newW.tripRate,
+    role_orders: roles.indexOf("Orders")!==-1 ? 1 : 0,
+    role_inventory: roles.indexOf("Inventory")!==-1 ? 1 : 0,
+    role_operations: roles.indexOf("Operations")!==-1 ? 1 : 0,
+    role_delivery: roles.indexOf("Delivery")!==-1 ? 1 : 0
+  });
 }
 function renderWorkerList(){
   if(!S.workers)S.workers=[];
