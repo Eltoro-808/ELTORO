@@ -59,6 +59,7 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 
 /* DATES */
 .dates-card{flex:1 1 45%;min-width:45%;background:var(--card-bg);border-radius:14px;padding:14px 16px;border-left:4px solid var(--primary);margin:0 0 10px;text-align:center;}
+@media(max-width:380px){.dates-card{flex:1 1 100%;min-width:100%;}}
 .dates-title{font-size:10px;font-weight:800;color:var(--primary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;white-space:nowrap;}
 .dates-row{display:flex;gap:12px;justify-content:center;}
 .date-item-label{font-size:10px;color:var(--text-gray);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
@@ -160,6 +161,23 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .login-go-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--primary),#1aa8b8);color:#000;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 2px 12px var(--primary-glow);}
 .login-err{color:#ff6666;font-size:13px;font-weight:700;margin-top:8px;display:none;}
 .worker-name-input{width:100%;padding:12px 14px;border:1.5px solid var(--primary);border-radius:10px;background:var(--surface);color:#fff;font-family:"Nunito",sans-serif;font-size:15px;font-weight:700;margin-bottom:10px;outline:none;}
+
+/* LOADING & SKELETON */
+.skeleton{background:linear-gradient(90deg,var(--surface) 25%,var(--gray) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:10px;}
+@keyframes shimmer{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.skeleton-card{height:120px;margin:12px;border-radius:14px;}
+.skeleton-product{height:200px;border-radius:14px;}
+.api-loading{position:fixed;top:var(--top-h);left:0;right:0;height:3px;background:var(--primary-dim);z-index:1001;overflow:hidden;}
+.api-loading::after{content:'';position:absolute;top:0;left:-50%;width:50%;height:100%;background:var(--primary);animation:apiload 1s infinite ease-in-out;}
+@keyframes apiload{0%{left:-50%;}100%{left:100%;}}
+.api-loading.hidden{display:none;}
+.toast-bar{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1a2a1a;border:1px solid #4caf50;color:#fff;padding:10px 20px;border-radius:12px;font-family:"Nunito",sans-serif;font-weight:800;font-size:13px;z-index:3000;opacity:0;transition:opacity 0.3s;pointer-events:none;max-width:90%;text-align:center;}
+.toast-bar.error{background:#2a1a1a;border-color:#ff6666;color:#ff6666;}
+.toast-bar.visible{opacity:1;}
+.new-order-pulse{animation:orderpulse 2s infinite;}
+@keyframes orderpulse{0%,100%{box-shadow:0 0 0 0 rgba(38,198,218,0.4);}50%{box-shadow:0 0 0 12px rgba(38,198,218,0);}}
+.input-error{border-color:#ff6666 !important;animation:shake 0.3s;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
 
 /* DASH SHARED */
 .dash-app{display:none;position:fixed;inset:0;background:var(--dark-bg);z-index:500;}
@@ -337,6 +355,8 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 </style>
 </head>
 <body>
+<div id="api-loading-bar" class="api-loading hidden"></div>
+<div id="toast-bar" class="toast-bar"></div>
 
 <!-- CUSTOMER APP -->
 <div id="customer-app">
@@ -431,15 +451,20 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   <div class="login-card">
     <button class="close-btn" onclick="closeLogin()">✕</button>
     <div id="login-gate-view">
-      <h2>Employee Access</h2>
-      <p>Enter master code to continue</p>
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:48px;margin-bottom:8px;">🐂</div>
+        <div style="font-family:'Black Ops One',cursive;font-size:24px;">EL <span style="color:var(--primary);">TORO</span></div>
+      </div>
+      <h2 style="text-align:center;font-family:'Nunito',sans-serif;font-size:16px;color:var(--text-gray);margin-bottom:16px;">Employee Access</h2>
       <input class="gate-input" id="gate-pw" type="password" placeholder="••••" maxlength="10"/>
       <button class="gate-btn" onclick="checkGate()">Continue →</button>
       <div class="login-err" id="gate-err">Wrong code. Try again.</div>
     </div>
     <div id="login-role-view" style="display:none;">
-      <h2>Choose Role</h2>
-      <p>Select your role then enter your password</p>
+      <div style="text-align:center;margin-bottom:12px;">
+        <div style="font-family:'Black Ops One',cursive;font-size:18px;">EL <span style="color:var(--primary);">TORO</span> 🐂</div>
+        <p style="color:var(--text-gray);font-size:12px;font-weight:700;margin-top:4px;">Select your dashboard</p>
+      </div>
       <div class="role-grid" style="grid-template-columns:1fr 1fr;">
         <button class="role-btn" id="role-orders" onclick="selectRole('orders')">📦<br>Orders</button>
         <button class="role-btn" id="role-admin" onclick="selectRole('admin')">👑<br>Admin</button>
@@ -465,27 +490,27 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   <div class="dash-topbar orders-topbar">
     <div class="dash-brand">
       <span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span>
-      <span class="dash-role">Orders</span>
+      <span class="dash-role" id="dr-orders">Orders</span>
       <span class="worker-name-badge" id="orders-worker-name"></span>
     </div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="o-page-orders">
     <div id="clock-timer-display"></div>
-    <div class="page-title">All Orders</div>
+    <div class="page-title" id="dt-all-orders">All Orders</div>
     <div class="stats-bar" id="o-stats"></div>
     <div class="search-wrap"><input class="search-input" id="o-search" placeholder="🔍 Search by name..." oninput="renderOrdersTab()"/></div>
     <div id="o-orders-list"></div>
   </div>
   <div class="d-page" id="o-page-done">
-    <div class="page-title">Completed Orders</div>
+    <div class="page-title" id="dt-completed-orders">Completed Orders</div>
     <div class="stats-bar" id="o-done-stats"></div>
     <div id="o-done-list"></div>
   </div>
 
   <div class="dash-nav orders-nav">
-    <button class="d-nav-item active" onclick="showDPage('o','orders',this)"><span class="nav-icon">📦</span><span class="nav-label">Orders</span><span class="nav-badge" id="o-badge" style="display:none">0</span></button>
-    <button class="d-nav-item" onclick="showDPage('o','done',this)"><span class="nav-icon">✅</span><span class="nav-label">Done</span></button>
+    <button class="d-nav-item active" onclick="showDPage('o','orders',this)"><span class="nav-icon">📦</span><span class="nav-label" id="dnav-o-orders">Orders</span><span class="nav-badge" id="o-badge" style="display:none">0</span></button>
+    <button class="d-nav-item" onclick="showDPage('o','done',this)"><span class="nav-icon">✅</span><span class="nav-label" id="dnav-o-done">Done</span></button>
 
   </div>
 </div>
@@ -493,11 +518,11 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 <!-- ADMIN APP -->
 <div class="dash-app" id="admin-app">
   <div class="dash-topbar admin-topbar">
-    <div class="dash-brand"><span class="logo-text">EL <em>TORO</em></span><span class="dash-role">Admin</span></div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="dash-brand"><span class="logo-text">EL <em>TORO</em></span><span class="dash-role" id="dr-admin">Admin</span></div>
+    <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="a-page-delivery">
-    <div class="page-title">Store Mode</div>
+    <div class="page-title" id="dt-store-mode">Store Mode</div>
     <div class="card">
       <h3>🏪 Store Mode</h3>
       <p style="font-size:12px;color:var(--text-gray);font-weight:600;margin-bottom:12px;">Turn on the modes you want customers to use</p>
@@ -670,7 +695,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
   </div>
   <div class="d-page" id="a-page-workers">
-    <div class="page-title">Workers</div>
+    <div class="page-title" id="dt-workers">Workers</div>
     <div class="card">
       <h3>➕ Add Worker</h3>
       <input class="a-input" id="new-worker-name" type="text" placeholder="Worker name"/>
@@ -720,7 +745,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
   </div>
   <div class="d-page" id="a-page-settings">
-    <div class="page-title">Settings</div>
+    <div class="page-title" id="dt-settings">Settings</div>
 
     <div class="card">
       <h3>🖼️ SHOP NOW BANNER EMOJI</h3>
@@ -791,7 +816,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
   </div>
   <div class="d-page" id="a-page-cats">
-    <div class="page-title">📂 Categories</div>
+    <div class="page-title" id="dt-categories">📂 Categories</div>
     <div class="card">
       <h3>➕ Add Category</h3>
       <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
@@ -803,7 +828,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>📂 All Categories</h3><div id="cat-list"></div></div>
   </div>
   <div class="d-page" id="a-page-customers">
-    <div class="page-title">Customers</div>
+    <div class="page-title" id="dt-a-customers">Customers</div>
     <div class="card">
       <h3>🎁 Give 5% Loyalty Discount</h3>
       <input class="a-input" id="loyalty-phone-input" type="tel" placeholder="Customer phone number"/>
@@ -814,11 +839,11 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>👥 All Customers</h3><div id="admin-customer-list"></div></div>
   </div>
   <div class="dash-nav admin-nav">
-    <button class="d-nav-item active" onclick="showDPage('a','delivery',this)"><span class="nav-icon">🚚</span><span class="nav-label">Delivery</span></button>
-    <button class="d-nav-item" onclick="showDPage('a','cats',this)"><span class="nav-icon">📂</span><span class="nav-label">Categories</span></button>
-    <button class="d-nav-item" onclick="showDPage('a','workers',this)"><span class="nav-icon">👷</span><span class="nav-label">Workers</span></button>
-    <button class="d-nav-item" onclick="showDPage('a','customers',this);renderAdminCustomers();"><span class="nav-icon">👥</span><span class="nav-label">Customers</span></button>
-    <button class="d-nav-item" onclick="showDPage('a','settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label">Settings</span></button>
+    <button class="d-nav-item active" onclick="showDPage('a','delivery',this)"><span class="nav-icon">🚚</span><span class="nav-label" id="dnav-a-delivery">Delivery</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','cats',this)"><span class="nav-icon">📂</span><span class="nav-label" id="dnav-a-cats">Categories</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','workers',this)"><span class="nav-icon">👷</span><span class="nav-label" id="dnav-a-workers">Workers</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','customers',this);renderAdminCustomers();"><span class="nav-icon">👥</span><span class="nav-label" id="dnav-a-customers">Customers</span></button>
+    <button class="d-nav-item" onclick="showDPage('a','settings',this)"><span class="nav-icon">⚙️</span><span class="nav-label" id="dnav-a-settings">Settings</span></button>
   </div>
 </div>
 
@@ -827,15 +852,15 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   <div class="dash-topbar inv-topbar">
     <div class="dash-brand">
       <span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span>
-      <span class="dash-role">Inventory</span>
+      <span class="dash-role" id="dr-inventory">Inventory</span>
       <span class="worker-name-badge" id="inv-worker-name"></span>
     </div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="i-page-products">
     <div id="clock-timer-display-inv"></div>
     <div id="low-stock-alerts"></div>
-    <div class="page-title">Products</div>
+    <div class="page-title" id="dt-products">Products</div>
     <div class="card">
       <h3>➕ Add Product</h3>
       <div class="photo-options">
@@ -875,11 +900,11 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>📦 All Products</h3><div id="inv-products-list"></div></div>
   </div>
   <div class="d-page" id="i-page-stock">
-    <div class="page-title">Stock</div>
+    <div class="page-title" id="dt-stock">Stock</div>
     <div id="stock-list"></div>
   </div>
   <div class="d-page" id="i-page-suppliers">
-    <div class="page-title">Suppliers</div>
+    <div class="page-title" id="dt-suppliers">Suppliers</div>
     <div class="card">
       <h3>➕ Add Supplier</h3>
       <input class="a-input" id="sup-name" type="text" placeholder="Supplier name (e.g. Costco)"/>
@@ -890,7 +915,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>🏪 Suppliers</h3><div id="supplier-list"></div></div>
   </div>
   <div class="d-page" id="i-page-purchases">
-    <div class="page-title">Purchase Log</div>
+    <div class="page-title" id="dt-purchase-log">Purchase Log</div>
     <div class="card">
       <h3>➕ Log Purchase</h3>
       <input class="a-input" id="pur-item" type="text" placeholder="What you bought"/>
@@ -902,21 +927,21 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>📋 Purchase History</h3><div id="purchase-list"></div></div>
   </div>
   <div class="dash-nav inv-nav">
-    <button class="d-nav-item active" onclick="showDPage('i','products',this)"><span class="nav-icon">🛒</span><span class="nav-label">Products</span></button>
-    <button class="d-nav-item" onclick="showDPage('i','stock',this)"><span class="nav-icon">📦</span><span class="nav-label">Stock</span></button>
-    <button class="d-nav-item" onclick="showDPage('i','suppliers',this)"><span class="nav-icon">🏪</span><span class="nav-label">Suppliers</span></button>
-    <button class="d-nav-item" onclick="showDPage('i','purchases',this)"><span class="nav-icon">🧾</span><span class="nav-label">Purchases</span></button>
+    <button class="d-nav-item active" onclick="showDPage('i','products',this)"><span class="nav-icon">🛒</span><span class="nav-label" id="dnav-i-products">Products</span></button>
+    <button class="d-nav-item" onclick="showDPage('i','stock',this)"><span class="nav-icon">📦</span><span class="nav-label" id="dnav-i-stock">Stock</span></button>
+    <button class="d-nav-item" onclick="showDPage('i','suppliers',this)"><span class="nav-icon">🏪</span><span class="nav-label" id="dnav-i-suppliers">Suppliers</span></button>
+    <button class="d-nav-item" onclick="showDPage('i','purchases',this)"><span class="nav-icon">🧾</span><span class="nav-label" id="dnav-i-purchases">Purchases</span></button>
   </div>
 </div>
 
 <!-- OPERATIONS APP -->
 <div class="dash-app" id="ops-app">
   <div class="dash-topbar ops-topbar">
-    <div class="dash-brand"><span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span><span class="dash-role">Operations</span></div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="dash-brand"><span class="logo-text">EL <em style="color:var(--primary);">TORO</em></span><span class="dash-role" id="dr-operations">Operations</span></div>
+    <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="ops-page-summary">
-    <div class="page-title">Summary</div>
+    <div class="page-title" id="dt-ops-summary">Summary</div>
     <div style="padding:0 12px 8px;"><button class="a-btn blue" style="width:100%;" onclick="syncSummaryToSheets();showToast('Summary synced to Sheets! 📊')">📊 Sync Summary to Sheets</button></div>
     <div class="summary-big" id="ops-net-profit">
       <div class="summary-profit profit-pos" id="ops-profit-val">$0</div>
@@ -926,13 +951,13 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>📅 Month History</h3><div id="ops-month-history"></div></div>
   </div>
   <div class="d-page" id="ops-page-income">
-    <div class="page-title">Income</div>
+    <div class="page-title" id="dt-ops-income">Income</div>
     <div class="stats-bar" id="ops-income-stats"></div>
     <div class="card"><h3>📈 This Cycle</h3><div id="ops-income-details"></div></div>
     <div class="card"><h3>🏆 Best Sellers</h3><div id="ops-bestsellers"></div></div>
   </div>
   <div class="d-page" id="ops-page-expenses">
-    <div class="page-title">Expenses</div>
+    <div class="page-title" id="dt-ops-expenses">Expenses</div>
     <div class="stats-bar" id="ops-exp-stats"></div>
     <div class="card">
       <h3>➕ Log Expense</h3>
@@ -948,13 +973,13 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div id="exp-list"></div>
   </div>
   <div class="d-page" id="ops-page-trips">
-    <div class="page-title">📊 Monthly Miles</div>
+    <div class="page-title" id="dt-ops-miles">📊 Monthly Miles</div>
     <div class="stats-bar" id="ops-miles-stats"></div>
     <div class="card"><h3>📅 Monthly Breakdown</h3><div id="ops-monthly-miles-list"></div></div>
     <div class="card"><h3>🏆 All-Time Totals</h3><div id="ops-miles-alltime"></div></div>
   </div>
   <div class="d-page" id="ops-page-payroll">
-    <div class="page-title">Payroll</div>
+    <div class="page-title" id="dt-ops-payroll">Payroll</div>
     <div class="stats-bar" id="ops-payroll-stats"></div>
     <div class="card"><h3>⏱ Timesheets</h3><div id="timesheets-list"></div></div>
     <div class="card">
@@ -968,18 +993,18 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card"><h3>📋 Payment History</h3><div id="payroll-history"></div></div>
   </div>
   <div class="d-page" id="ops-page-customers">
-    <div class="page-title">Customers</div>
+    <div class="page-title" id="dt-ops-customers">Customers</div>
     <div class="stats-bar" id="ops-customer-stats"></div>
     <div class="card"><h3>🏆 Top Customers</h3><div id="customer-list"></div></div>
     <div class="card"><h3>🎁 Active Loyalty Discounts</h3><div id="loyalty-list"></div></div>
   </div>
   <div class="dash-nav ops-nav">
-    <button class="d-nav-item active" onclick="showDPage('ops','summary',this)"><span class="nav-icon">📊</span><span class="nav-label">Summary</span></button>
-    <button class="d-nav-item" onclick="showDPage('ops','income',this)"><span class="nav-icon">💰</span><span class="nav-label">Income</span></button>
-    <button class="d-nav-item" onclick="showDPage('ops','expenses',this)"><span class="nav-icon">💸</span><span class="nav-label">Expenses</span></button>
-    <button class="d-nav-item" onclick="showDPage('ops','trips',this);renderOpsMonthlyMiles();"><span class="nav-icon">📊</span><span class="nav-label">Miles</span></button>
-    <button class="d-nav-item" onclick="showDPage('ops','payroll',this)"><span class="nav-icon">👷</span><span class="nav-label">Payroll</span></button>
-    <button class="d-nav-item" onclick="showDPage('ops','customers',this);renderCustomers();"><span class="nav-icon">👥</span><span class="nav-label">Customers</span></button>
+    <button class="d-nav-item active" onclick="showDPage('ops','summary',this)"><span class="nav-icon">📊</span><span class="nav-label" id="dnav-ops-summary">Summary</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','income',this)"><span class="nav-icon">💰</span><span class="nav-label" id="dnav-ops-income">Income</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','expenses',this)"><span class="nav-icon">💸</span><span class="nav-label" id="dnav-ops-expenses">Expenses</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','trips',this);renderOpsMonthlyMiles();"><span class="nav-icon">📊</span><span class="nav-label" id="dnav-ops-miles">Miles</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','payroll',this)"><span class="nav-icon">👷</span><span class="nav-label" id="dnav-ops-payroll">Payroll</span></button>
+    <button class="d-nav-item" onclick="showDPage('ops','customers',this);renderCustomers();"><span class="nav-icon">👥</span><span class="nav-label" id="dnav-ops-customers">Customers</span></button>
   </div>
 </div>
 
@@ -992,13 +1017,13 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <span class="dash-role" style="background:var(--primary);color:#000;">🚚 Delivery</span>
       <span class="worker-name-badge" id="delivery-worker-name"></span>
     </div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
 
   <!-- DROP OFF LIST -->
   <div class="d-page active" id="del-page-pickup">
     <div id="clock-timer-display-del"></div>
-    <div class="page-title">📋 Drop Off List</div>
+    <div class="page-title" id="dt-del-dropoff">📋 Drop Off List</div>
     <div id="del-countdown-wrap" style="text-align:center;padding:10px 12px 0;">
       <div id="del-countdown" style="font-family:'Black Ops One',cursive;font-size:64px;color:var(--primary);line-height:1;">0</div>
       <div style="font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Left to Drop Off</div>
@@ -1012,7 +1037,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 
   <!-- LOCATION -->
   <div class="d-page" id="del-page-location">
-    <div class="page-title">📍 Location</div>
+    <div class="page-title" id="dt-del-location">📍 Location</div>
     <div class="card">
       <h3>📍 Delivery Address</h3>
       <p style="font-size:16px;font-weight:800;" id="del-address">Not set yet</p>
@@ -1039,7 +1064,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 
   <!-- TRIPS -->
   <div class="d-page" id="del-page-trips">
-    <div class="page-title">🚗 Trips</div>
+    <div class="page-title" id="dt-del-trips">🚗 Trips</div>
     <div class="card">
       <h3>➕ Log Trip</h3>
       <input class="a-input" id="del-t-dest" type="text" placeholder="Destination"/>
@@ -1057,9 +1082,9 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   </div>
 
   <div class="dash-nav delivery-nav">
-    <button class="d-nav-item active" onclick="showDPage('del','pickup',this)"><span class="nav-icon">📋</span><span class="nav-label">Drop Off</span><span class="nav-badge" id="del-badge" style="display:none">0</span></button>
-    <button class="d-nav-item" onclick="showDPage('del','location',this)"><span class="nav-icon">📍</span><span class="nav-label">Location</span></button>
-    <button class="d-nav-item" onclick="showDPage('del','trips',this)"><span class="nav-icon">🚗</span><span class="nav-label">Trips</span></button>
+    <button class="d-nav-item active" onclick="showDPage('del','pickup',this)"><span class="nav-icon">📋</span><span class="nav-label" id="dnav-del-dropoff">Drop Off</span><span class="nav-badge" id="del-badge" style="display:none">0</span></button>
+    <button class="d-nav-item" onclick="showDPage('del','location',this)"><span class="nav-icon">📍</span><span class="nav-label" id="dnav-del-location">Location</span></button>
+    <button class="d-nav-item" onclick="showDPage('del','trips',this)"><span class="nav-icon">🚗</span><span class="nav-label" id="dnav-del-trips">Trips</span></button>
   </div>
 </div>
 
@@ -1073,11 +1098,11 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <span class="dash-role" style="background:#4caf50;color:#fff;">📍 Pickups</span>
       <span class="worker-name-badge" id="pickups-worker-name"></span>
     </div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="pu-page-orders">
     <div id="clock-timer-display-pu"></div>
-    <div class="page-title">📍 Pickup Orders</div>
+    <div class="page-title" id="dt-pu-orders">📍 Pickup Orders</div>
     <div style="text-align:center;padding:10px;">
       <div style="font-family:'Black Ops One',cursive;font-size:48px;color:var(--primary);line-height:1;" id="pu-count">0</div>
       <div style="font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Pickup Orders</div>
@@ -1085,17 +1110,17 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div id="pu-orders-list"></div>
   </div>
   <div class="d-page" id="pu-page-ready">
-    <div class="page-title">✅ Ready for Pickup</div>
+    <div class="page-title" id="dt-pu-ready">✅ Ready for Pickup</div>
     <div id="pu-ready-list"></div>
   </div>
   <div class="d-page" id="pu-page-done">
-    <div class="page-title">📦 Picked Up</div>
+    <div class="page-title" id="dt-pu-done">📦 Picked Up</div>
     <div id="pu-done-list"></div>
   </div>
   <div class="dash-nav">
-    <button class="d-nav-item active" onclick="showDPage('pu','orders',this)"><span class="nav-icon">📍</span><span class="nav-label">Orders</span><span class="nav-badge" id="pu-badge" style="display:none">0</span></button>
-    <button class="d-nav-item" onclick="showDPage('pu','ready',this)"><span class="nav-icon">✅</span><span class="nav-label">Ready</span></button>
-    <button class="d-nav-item" onclick="showDPage('pu','done',this)"><span class="nav-icon">📦</span><span class="nav-label">Done</span></button>
+    <button class="d-nav-item active" onclick="showDPage('pu','orders',this)"><span class="nav-icon">📍</span><span class="nav-label" id="dnav-pu-orders">Orders</span><span class="nav-badge" id="pu-badge" style="display:none">0</span></button>
+    <button class="d-nav-item" onclick="showDPage('pu','ready',this)"><span class="nav-icon">✅</span><span class="nav-label" id="dnav-pu-ready">Ready</span></button>
+    <button class="d-nav-item" onclick="showDPage('pu','done',this)"><span class="nav-icon">📦</span><span class="nav-label" id="dnav-pu-done">Done</span></button>
   </div>
 </div>
 
@@ -1107,11 +1132,11 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <span class="dash-role" style="background:#FF9800;color:#000;">🏘️ Local</span>
       <span class="worker-name-badge" id="local-worker-name"></span>
     </div>
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
   <div class="d-page active" id="loc-page-orders">
     <div id="clock-timer-display-loc"></div>
-    <div class="page-title">🏘️ Local Deliveries</div>
+    <div class="page-title" id="dt-loc-orders">🏘️ Local Deliveries</div>
     <div style="text-align:center;padding:10px;">
       <div style="font-family:'Black Ops One',cursive;font-size:48px;color:#FF9800;line-height:1;" id="loc-count">0</div>
       <div style="font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Pending Deliveries</div>
@@ -1119,17 +1144,17 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div id="loc-orders-list"></div>
   </div>
   <div class="d-page" id="loc-page-enroute">
-    <div class="page-title">🚗 En Route</div>
+    <div class="page-title" id="dt-loc-enroute">🚗 En Route</div>
     <div id="loc-enroute-list"></div>
   </div>
   <div class="d-page" id="loc-page-done">
-    <div class="page-title">✅ Delivered</div>
+    <div class="page-title" id="dt-loc-done">✅ Delivered</div>
     <div id="loc-done-list"></div>
   </div>
   <div class="dash-nav">
-    <button class="d-nav-item active" onclick="showDPage('loc','orders',this)"><span class="nav-icon">🏘️</span><span class="nav-label">Orders</span><span class="nav-badge" id="loc-badge" style="display:none">0</span></button>
-    <button class="d-nav-item" onclick="showDPage('loc','enroute',this)"><span class="nav-icon">🚗</span><span class="nav-label">En Route</span></button>
-    <button class="d-nav-item" onclick="showDPage('loc','done',this)"><span class="nav-icon">✅</span><span class="nav-label">Done</span></button>
+    <button class="d-nav-item active" onclick="showDPage('loc','orders',this)"><span class="nav-icon">🏘️</span><span class="nav-label" id="dnav-loc-orders">Orders</span><span class="nav-badge" id="loc-badge" style="display:none">0</span></button>
+    <button class="d-nav-item" onclick="showDPage('loc','enroute',this)"><span class="nav-icon">🚗</span><span class="nav-label" id="dnav-loc-enroute">En Route</span></button>
+    <button class="d-nav-item" onclick="showDPage('loc','done',this)"><span class="nav-icon">✅</span><span class="nav-label" id="dnav-loc-done">Done</span></button>
   </div>
 </div>
 
@@ -1233,7 +1258,48 @@ var LANGS = {
     sendDeposit:"Send ${amt} deposit via Zelle",
     depositWarning:"⚠️ Orders without deposit will not be processed",
     sentDeposit:"I've sent the deposit", confirmPayment:"Confirm Payment Sent",
-    shareReceipt:"📤 Share Receipt", disappearsIn:"Disappears in {n}s"
+    shareReceipt:"📤 Share Receipt", disappearsIn:"Disappears in {n}s",
+    enterNamePhone:"Please enter your name and phone number",
+    enterAddress:"Enter your address", connectionFailed:"Connection failed",
+    newOrder:"New order from {name}!",
+    dAllOrders:"All Orders", dCompletedOrders:"Completed Orders", dSearchName:"🔍 Search by name...",
+    dOrders:"Orders", dDone:"Done", dPacking:"PACKING", dNew:"NEW", dPendingDeposit:"PENDING DEPOSIT",
+    dClaimedBy:"Claimed by", dCompletedBy:"Completed by", dTotal:"Total", dDelete:"Delete",
+    dClaim:"Claim", dItems:"items", dReady:"READY", dEnRoute:"EN ROUTE", dDelivered:"DELIVERED",
+    dPickedUp:"PICKED UP", dNoShow:"NO SHOW", dReadyForPickup:"Ready for Pickup",
+    dMarkReady:"Mark Ready", dMarkPickedUp:"Picked Up", dMarkNoShow:"No Show",
+    dMarkDelivered:"Delivered", dMarkEnRoute:"Out for Delivery",
+    dInventory:"Inventory", dLowStock:"Low Stock Alerts", dOperations:"Operations",
+    dSummary:"Summary", dExpenses:"Expenses", dPayroll:"Payroll",
+    dDeliveryDash:"Delivery", dPickupsDash:"Pickups", dLocalDash:"Local Delivery",
+    dReadyTab:"Ready", dDoneTab:"Done", dOrdersTab:"Orders",
+    dLogout:"Logout", dEmployees:"Employees",
+    dDepositSent:"Deposit Sent", dPaymentSent:"Payment Sent", dNoDeposit:"No Deposit", dNoPayment:"No Payment",
+    dNoOrders:"No orders yet",
+    rOrders:"Orders", rAdmin:"Admin", rInventory:"Inventory", rOperations:"Operations",
+    rDelivery:"Delivery", rPickups:"Pickups", rLocal:"Local Delivery",
+    // Zelle receipt
+    zSendFull:"Send full payment via Zelle", zSendDeposit:"Send deposit via Zelle",
+    zIncludesFee:"Includes ${amt} delivery fee", zSentPayment:"I've sent the payment",
+    zConfirmSent:"Confirm Payment Sent",
+    // Wait time
+    wWaiting:"Waiting", wMin:"min", wMins:"mins", wUrgent:"URGENT", wGettingLong:"getting long",
+    // Inventory
+    iProducts:"Products", iStock:"Stock", iSuppliers:"Suppliers", iPurchaseLog:"Purchase Log",
+    iAddProduct:"Add Product", iLowStock:"Low Stock Alerts", iAllProducts:"All Products",
+    // Operations
+    opSummary:"Summary", opIncome:"Income", opExpenses:"Expenses", opPayroll:"Payroll",
+    opRevenue:"Revenue", opProfit:"Profit", opMiles:"Monthly Miles",
+    // Admin
+    aStoreMode:"Store Mode", aWorkers:"Workers", aSettings:"Settings",
+    aCategories:"Categories", aCustomers:"Customers", aProducts:"Products",
+    // Delivery dash
+    delDropOff:"Drop Off List", delLocation:"Location", delTrips:"Trips",
+    // Extra stat labels
+    opAvg:"Avg", opEntries:"Entries", opTotalOut:"Total Out", opTripCosts:"Trip Costs",
+    opPurchases:"Purchases",
+    opAfterExp:"After Exp", opWorkers:"Workers", opRepeat:"Repeat",
+    puOrders:"Pickup Orders", locOrders:"Local Deliveries"
   },
   es: {
     all:"Todo", dairy:"Lácteos", meat:"Carne", breadgrains:"Pan y Granos",
@@ -1279,10 +1345,52 @@ var LANGS = {
     sendDeposit:"Envía ${amt} de depósito por Zelle",
     depositWarning:"⚠️ Los pedidos sin depósito no serán procesados",
     sentDeposit:"Ya envié el depósito", confirmPayment:"Confirmar Pago Enviado",
-    shareReceipt:"📤 Compartir Recibo", disappearsIn:"Desaparece en {n}s"
+    shareReceipt:"📤 Compartir Recibo", disappearsIn:"Desaparece en {n}s",
+    enterNamePhone:"Por favor ingresa tu nombre y teléfono",
+    enterAddress:"Ingresa tu dirección", connectionFailed:"Conexión fallida",
+    newOrder:"¡Nuevo pedido de {name}!",
+    dAllOrders:"Todos los Pedidos", dCompletedOrders:"Pedidos Completados", dSearchName:"🔍 Buscar por nombre...",
+    dOrders:"Pedidos", dDone:"Hecho", dPacking:"EMPACANDO", dNew:"NUEVO", dPendingDeposit:"DEPÓSITO PENDIENTE",
+    dClaimedBy:"Reclamado por", dCompletedBy:"Completado por", dTotal:"Total", dDelete:"Eliminar",
+    dClaim:"Reclamar", dItems:"artículos", dReady:"LISTO", dEnRoute:"EN CAMINO", dDelivered:"ENTREGADO",
+    dPickedUp:"RECOGIDO", dNoShow:"NO LLEGÓ", dReadyForPickup:"Listo para Recoger",
+    dMarkReady:"Marcar Listo", dMarkPickedUp:"Recogido", dMarkNoShow:"No Llegó",
+    dMarkDelivered:"Entregado", dMarkEnRoute:"Salió a Entregar",
+    dInventory:"Inventario", dLowStock:"Alertas de Stock Bajo", dOperations:"Operaciones",
+    dSummary:"Resumen", dExpenses:"Gastos", dPayroll:"Nómina",
+    dDeliveryDash:"Entregas", dPickupsDash:"Recoger", dLocalDash:"Entrega Local",
+    dReadyTab:"Listos", dDoneTab:"Hecho", dOrdersTab:"Pedidos",
+    dLogout:"Salir", dEmployees:"Empleados",
+    dDepositSent:"Depósito Enviado", dPaymentSent:"Pago Enviado", dNoDeposit:"Sin Depósito", dNoPayment:"Sin Pago",
+    dNoOrders:"Sin pedidos aún",
+    rOrders:"Pedidos", rAdmin:"Admin", rInventory:"Inventario", rOperations:"Operaciones",
+    rDelivery:"Entregas", rPickups:"Recoger", rLocal:"Entrega Local",
+    // Zelle receipt
+    zSendFull:"Envía el pago completo por Zelle", zSendDeposit:"Envía depósito por Zelle",
+    zIncludesFee:"Incluye ${amt} de envío", zSentPayment:"Ya envié el pago",
+    zConfirmSent:"Confirmar Pago Enviado",
+    // Wait time
+    wWaiting:"Esperando", wMin:"min", wMins:"mins", wUrgent:"URGENTE", wGettingLong:"mucho tiempo",
+    // Inventory
+    iProducts:"Productos", iStock:"Inventario", iSuppliers:"Proveedores", iPurchaseLog:"Registro de Compras",
+    iAddProduct:"Agregar Producto", iLowStock:"Alertas de Stock Bajo", iAllProducts:"Todos los Productos",
+    // Operations
+    opSummary:"Resumen", opIncome:"Ingresos", opExpenses:"Gastos", opPayroll:"Nómina",
+    opRevenue:"Ingresos", opProfit:"Ganancia", opMiles:"Millas del Mes",
+    // Admin
+    aStoreMode:"Modo de Tienda", aWorkers:"Trabajadores", aSettings:"Ajustes",
+    aCategories:"Categorías", aCustomers:"Clientes", aProducts:"Productos",
+    // Delivery dash
+    delDropOff:"Lista de Entregas", delLocation:"Ubicación", delTrips:"Viajes",
+    // Extra stat labels
+    opAvg:"Prom", opEntries:"Registros", opTotalOut:"Total Salida", opTripCosts:"Costos Viaje",
+    opPurchases:"Compras",
+    opAfterExp:"Después Gastos", opWorkers:"Trabajadores", opRepeat:"Repetidos",
+    puOrders:"Pedidos para Recoger", locOrders:"Entregas Locales"
   }
 }
 var currentLang = "en";
+var autoRefreshInterval = null;
 
 function t(key, vars) {
   if(!key) return "";
@@ -1327,6 +1435,60 @@ function setLang(lang) {
   var nm={navShop:"nav-shop",navCart:"nav-cart",navBoard:"nav-board",navQr:"nav-qr"};Object.keys(nm).forEach(function(k){var el=document.getElementById(nm[k]);if(el)el.textContent=t(k);});var bt=document.getElementById("board-title");if(bt)bt.textContent=t("orderBoardTitle");var ail=document.getElementById("available-items-label");if(ail)ail.textContent=t("availableItems");var sdl=document.getElementById("shop-deadline-label");if(sdl)sdl.textContent=t("orderDeadline");var svl=document.getElementById("shop-delivery-label");if(svl)svl.textContent=t("deliveryDate");var oml=document.getElementById("orders-month-label");if(oml)oml.textContent=t("ordersThisMonthLabel");var csl=document.getElementById("customer-slots-label");if(csl)csl.textContent=t("customerSlotsLabel");var dl=document.getElementById("deadline-label");if(dl)dl.textContent=t("orderDeadline");var dvl=document.getElementById("delivery-label");if(dvl)dvl.textContent=t("deliveryDate");var hs=document.getElementById("hero-sub");if(hs)hs.textContent=currentLang==="es"?t("heroSub"):(S.heroSub||t("heroSub"));
   // Update new date card labels
   renderDatesCard();
+  // Update employee button
+  var empLabel=document.getElementById("emp-btn-label");if(empLabel)empLabel.textContent=t("dEmployees");
+  // Update dashboard titles
+  var dao=document.getElementById("dt-all-orders");if(dao)dao.textContent=t("dAllOrders");
+  var dco=document.getElementById("dt-completed-orders");if(dco)dco.textContent=t("dCompletedOrders");
+  var oSearch=document.getElementById("o-search");if(oSearch)oSearch.placeholder=t("dSearchName");
+  // Dashboard nav labels
+  var navMap={"dnav-o-orders":"dOrders","dnav-o-done":"dDone",
+    "dnav-pu-orders":"dOrders","dnav-pu-ready":"dReadyTab","dnav-pu-done":"dDoneTab",
+    "dnav-loc-orders":"dOrders","dnav-loc-enroute":"dEnRoute","dnav-loc-done":"dDoneTab"};
+  Object.keys(navMap).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(navMap[id]);});
+  // Dashboard page titles
+  var dtPuReady=document.getElementById("dt-pu-ready");if(dtPuReady)dtPuReady.textContent="✅ "+t("dReadyForPickup");
+  var dtPuDone=document.getElementById("dt-pu-done");if(dtPuDone)dtPuDone.textContent="📦 "+t("dPickedUp");
+  var dtLocEnroute=document.getElementById("dt-loc-enroute");if(dtLocEnroute)dtLocEnroute.textContent="🚗 "+t("dEnRoute");
+  var dtLocDone=document.getElementById("dt-loc-done");if(dtLocDone)dtLocDone.textContent="✅ "+t("dDelivered");
+  // Logout buttons
+  document.querySelectorAll(".dt-logout").forEach(function(btn){btn.textContent=t("dLogout");});
+  // Role buttons in login
+  var roleMap={"role-orders":"rOrders","role-admin":"rAdmin","role-inventory":"rInventory","role-operations":"rOperations","role-delivery":"rDelivery","role-pickups":"rPickups","role-local":"rLocal"};
+  Object.keys(roleMap).forEach(function(id){var el=document.getElementById(id);if(el){var emoji=el.textContent.split("\n")[0];el.innerHTML=emoji+"<br>"+t(roleMap[id]);}});
+  // Dashboard role badges
+  var drMap={"dr-orders":"rOrders","dr-admin":"rAdmin","dr-inventory":"rInventory","dr-operations":"rOperations"};
+  Object.keys(drMap).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(drMap[id]);});
+  // Admin nav labels
+  var adminNav={"dnav-a-delivery":"rDelivery","dnav-a-cats":"aCategories","dnav-a-workers":"aWorkers","dnav-a-customers":"aCustomers","dnav-a-settings":"aSettings"};
+  Object.keys(adminNav).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(adminNav[id]);});
+  // Ops nav labels
+  var opsNav={"dnav-ops-summary":"opSummary","dnav-ops-income":"opIncome","dnav-ops-expenses":"opExpenses","dnav-ops-miles":"opMiles","dnav-ops-payroll":"opPayroll","dnav-ops-customers":"aCustomers"};
+  Object.keys(opsNav).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(opsNav[id]);});
+  // Inventory nav labels
+  var invNav={"dnav-i-products":"iProducts","dnav-i-stock":"iStock","dnav-i-suppliers":"iSuppliers","dnav-i-purchases":"iPurchaseLog"};
+  Object.keys(invNav).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(invNav[id]);});
+  // Page titles
+  var titles={"dt-store-mode":"aStoreMode","dt-workers":"aWorkers","dt-settings":"aSettings","dt-categories":"aCategories","dt-a-customers":"aCustomers",
+    "dt-products":"iProducts","dt-stock":"iStock","dt-suppliers":"iSuppliers","dt-purchase-log":"iPurchaseLog",
+    "dt-ops-summary":"opSummary","dt-ops-income":"opIncome","dt-ops-expenses":"opExpenses","dt-ops-miles":"opMiles"};
+  Object.keys(titles).forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    var prefix=el.textContent.match(/^[📂📊🛒]/)?el.textContent.charAt(0)+" ":"";
+    el.textContent=prefix+t(titles[id]);
+  });
+  // More page titles
+  var titles2={"dt-ops-payroll":"opPayroll","dt-ops-customers":"aCustomers",
+    "dt-del-dropoff":"delDropOff","dt-del-location":"delLocation","dt-del-trips":"delTrips",
+    "dt-pu-orders":"puOrders","dt-loc-orders":"locOrders"};
+  Object.keys(titles2).forEach(function(id){
+    var el=document.getElementById(id);if(!el)return;
+    var emoji=el.textContent.match(/^[\u{1F300}-\u{1FAFF}]/u);
+    el.textContent=(emoji?emoji[0]+" ":"")+t(titles2[id]);
+  });
+  // Delivery nav
+  var delNav={"dnav-del-dropoff":"delDropOff","dnav-del-location":"delLocation","dnav-del-trips":"delTrips"};
+  Object.keys(delNav).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(delNav[id]);});
 }
 
 
@@ -1407,10 +1569,34 @@ function apiHeaders() {
   return h;
 }
 
+var apiCallsActive = 0;
+// Simple hash for local password fallback
+function simpleHash(str){var h=0;for(var i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return h.toString(36);}
+function apiLoadShow(){apiCallsActive++;var el=document.getElementById("api-loading-bar");if(el)el.classList.remove("hidden");}
+function apiLoadHide(){apiCallsActive--;if(apiCallsActive<=0){apiCallsActive=0;var el=document.getElementById("api-loading-bar");if(el)el.classList.add("hidden");}}
 function api(method, path, body) {
+  apiLoadShow();
   var opts = { method: method, headers: apiHeaders() };
   if (body && (method === "POST" || method === "PUT")) opts.body = JSON.stringify(body);
-  return fetch(API_BASE + path, opts).then(function(r) { return r.json(); }).catch(function(e) { console.log("API err:", e); return null; });
+  return fetch(API_BASE + path, opts).then(function(r) { 
+    apiLoadHide();
+    if(!r.ok) { showToast("Server error — try again","error"); return null; }
+    return r.json(); 
+  }).catch(function(e) { 
+    apiLoadHide();
+    showToast("Connection failed — check your internet","error");
+    console.log("API err:", e); 
+    return null; 
+  });
+}
+
+function showToast(msg, type) {
+  var el=document.getElementById("toast-bar");
+  if(!el)return;
+  el.textContent=msg;
+  el.className="toast-bar"+(type==="error"?" error":"")+" visible";
+  clearTimeout(el._tid);
+  el._tid=setTimeout(function(){el.classList.remove("visible");},3000);
 }
 
 // Save to both localStorage (offline fallback) and API
@@ -1452,6 +1638,20 @@ function syncFromAPI() {
     S.depositNote = data.deposit_note || S.depositNote;
     S.depositQR = data.deposit_qr || S.depositQR;
     S.appUrl = data.app_url || S.appUrl;
+    // Mode settings
+    if(data.delivery_enabled!==undefined) S.deliveryEnabled=!!data.delivery_enabled;
+    if(data.local_enabled!==undefined) S.localEnabled=!!data.local_enabled;
+    if(data.pickup_enabled!==undefined) S.pickupEnabled=!!data.pickup_enabled;
+    S.deliveryName=data.delivery_name||S.deliveryName;
+    S.localName=data.local_name||S.localName;
+    S.pickupName=data.pickup_name||S.pickupName;
+    S.pickupLocation=data.pickup_location||S.pickupLocation;
+    S.storeHours=data.store_hours||S.storeHours;
+    S.localMinItems=data.local_min_items||S.localMinItems;
+    S.localDeliveryFee=data.local_delivery_fee||S.localDeliveryFee;
+    S.adminPhone=data.admin_phone||S.adminPhone;
+    if(data.show_admin_phone!==undefined) S.showAdminPhone=!!data.show_admin_phone;
+    if(data.local_zelle_required!==undefined) S.localZelleRequired=!!data.local_zelle_required;
     save(); renderShop(); applyBizName();
   });
 
@@ -1488,7 +1688,7 @@ function syncFromAPI() {
         }),
         total: o.total, discount: o.discount, loyaltyMsg: o.loyalty_msg,
         status: o.status, claimedBy: o.claimed_by, completedBy: o.completed_by,
-        timestamp: o.created_at,
+        timestamp: o.created_at, orderType: o.order_type, address: o.address, deliveryFee: o.delivery_fee,
         depositRequired: !!o.deposit_required, depositAmount: o.deposit_amount, depositSent: !!o.deposit_sent
       };
     });
@@ -1812,6 +2012,31 @@ function launchApp(which) {
       startClockTimer(worker);
     }
   }
+  // Auto-refresh orders every 30 seconds for workers
+  if(autoRefreshInterval) clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(function(){
+    api("GET", "/orders").then(function(data){
+      if(!data||data.error) return;
+      var oldCount=S.orders.length;
+      S.orders=data.map(function(o){
+        return {
+          id:o.id,slot:o.slot,name:o.customer_name,phone:o.customer_phone,
+          items:(o.items||[]).map(function(i){return {id:i.product_id,name:i.name,emoji:i.emoji,photo:i.photo,price:i.price,cost:i.cost,unit:i.unit,qty:i.qty,color:i.color,size:i.size};}),
+          total:o.total,discount:o.discount,loyaltyMsg:o.loyalty_msg,
+          status:o.status,claimedBy:o.claimed_by,completedBy:o.completed_by,
+          timestamp:o.created_at,orderType:o.order_type,address:o.address,deliveryFee:o.delivery_fee,
+          depositRequired:!!o.deposit_required,depositAmount:o.deposit_amount,depositSent:!!o.deposit_sent
+        };
+      });
+      save();
+      if(S.orders.length>oldCount) showToast("🔔 New order! "+S.orders[S.orders.length-1].name);
+      // Re-render active dashboard
+      if(which==="orders") renderOrdersTab();
+      if(which==="pickups"){renderPickupsOrders();renderPickupsReady();}
+      if(which==="local"){renderLocalOrders();renderLocalEnroute();}
+      if(which==="delivery") renderPickupList();
+    });
+  }, 30000);
 }
 
 function logout() {
@@ -1820,6 +2045,7 @@ function logout() {
     clockOut(currentWorkerName);
   }
   if(clockTimerInterval){clearInterval(clockTimerInterval);clockTimerInterval=null;}
+  if(autoRefreshInterval){clearInterval(autoRefreshInterval);autoRefreshInterval=null;}
   document.getElementById("customer-app").style.display = "block";
   document.querySelectorAll(".dash-app").forEach(function(a){a.classList.remove("active");});
   currentWorkerName = "";
@@ -1963,7 +2189,14 @@ function renderShop() {
   var locked = isLocked();
   var filtered = S.products.filter(function(p){return p.visible&&(activeCat==="All"||p.cat===activeCat);});
   var grid = document.getElementById("product-grid");
-  if(!filtered.length){grid.innerHTML='<div style="grid-column:span 2;text-align:center;padding:30px;color:var(--text-gray);font-weight:700;">No items here</div>';return;}
+  if(!filtered.length){
+    // Show skeleton if products haven't loaded yet from API
+    if(!S.products.length){
+      grid.innerHTML='<div class="skeleton skeleton-product"></div><div class="skeleton skeleton-product"></div><div class="skeleton skeleton-product"></div><div class="skeleton skeleton-product"></div>';
+      return;
+    }
+    grid.innerHTML='<div style="grid-column:span 2;text-align:center;padding:30px;color:var(--text-gray);font-weight:700;">No items here</div>';return;
+  }
   grid.innerHTML = filtered.map(function(p){
     var photoHtml = p.photo
       ? '<div class="product-photo"><img src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>'
@@ -2127,7 +2360,11 @@ function submitOrder(){
   var nameEl=document.getElementById("c-name");var phoneEl=document.getElementById("c-phone");
   if(!nameEl||!phoneEl)return;
   var name=nameEl.value.trim();var phone=phoneEl.value.trim();
-  if(!name||!phone){showToast("Enter your name and phone!");return;}
+  // Validate with visual feedback
+  var valid=true;
+  if(!name){nameEl.classList.add("input-error");setTimeout(function(){nameEl.classList.remove("input-error");},600);valid=false;}
+  if(!phone){phoneEl.classList.add("input-error");setTimeout(function(){phoneEl.classList.remove("input-error");},600);valid=false;}
+  if(!valid){showToast(t("enterNamePhone"),"error");return;}
   var totalQty=S.cart.reduce(function(s,i){return s+i.qty;},0);
 
   // Determine order type
@@ -2145,7 +2382,10 @@ function submitOrder(){
   if(orderType==="local"){
     var addrEl=document.getElementById("c-address");
     address=addrEl?addrEl.value.trim():"";
-    if(!address){showToast("Please enter your delivery address!");return;}
+    if(!address){
+      if(addrEl){addrEl.classList.add("input-error");setTimeout(function(){addrEl.classList.remove("input-error");},600);}
+      showToast(t("enterAddress"),"error");return;
+    }
   }
 
   // Delivery fee for local
@@ -2224,7 +2464,7 @@ function submitOrder(){
     if(showZelle){
       var isLocal = order.orderType==="local";
       var zelleAmt = isLocal ? order.total.toFixed(2) : (S.depositAmount||50).toFixed(2);
-      var zelleLabel = isLocal ? "Send full payment via Zelle" : "Send deposit via Zelle";
+      var zelleLabel = isLocal ? t("zSendFull") : t("zSendDeposit");
       var zelleWarning = isLocal ? "⚠️ Orders without full payment will not be delivered" : "⚠️ Orders without deposit will not be processed";
       var zelleInfo=S.depositZelle||"";
       var zelleName=S.depositName||"";
@@ -2234,7 +2474,7 @@ function submitOrder(){
         '<div style="background:#1a1a0a;border:2px solid '+(isLocal?"#FF9800":"#FFC107")+';border-radius:14px;padding:20px;margin:12px;text-align:center;">'+
         '<div style="font-size:36px;">💰</div>'+
         '<div style="font-size:20px;font-weight:900;color:'+(isLocal?"#FF9800":"#FFC107")+';margin:8px 0;">Order #'+order.slot+' Received!</div>'+
-        (isLocal&&order.deliveryFee?'<div style="font-size:12px;color:#FF9800;margin:4px 0;">Includes $'+order.deliveryFee.toFixed(2)+' delivery fee</div>':'')+
+        (isLocal&&order.deliveryFee?'<div style="font-size:12px;color:#FF9800;margin:4px 0;">'+t("zIncludesFee",{amt:order.deliveryFee.toFixed(2)})+'</div>':'')+
         '<div style="font-size:14px;font-weight:700;color:#fff;margin:10px 0;">'+zelleLabel+': <span style="color:#4caf50;font-size:20px;font-weight:900;">$'+zelleAmt+'</span></div>'+
         qrHtml+
         '<div style="background:#222;border-radius:10px;padding:12px;margin:8px 0;">'+
@@ -2246,9 +2486,9 @@ function submitOrder(){
         '<div style="font-size:12px;font-weight:800;color:#ff6666;margin:10px 0;">'+zelleWarning+'</div>'+
         '<label style="display:flex;align-items:center;justify-content:center;gap:10px;margin:14px 0;cursor:pointer;">'+
         '<input type="checkbox" id="deposit-sent-check" onchange="toggleDepositSent('+order.id+')" style="width:24px;height:24px;accent-color:#4caf50;"/>'+
-        '<span style="font-size:14px;font-weight:800;color:#fff;">I\'ve sent the payment</span>'+
+        '<span style="font-size:14px;font-weight:800;color:#fff;">'+t("zSentPayment")+'</span>'+
         '</label>'+
-        '<button class="submit-btn locked" disabled id="deposit-done-btn" onclick="confirmDepositSent('+order.id+')" style="margin-top:6px;">Confirm Payment Sent</button>'+
+        '<button class="submit-btn locked" disabled id="deposit-done-btn" onclick="confirmDepositSent('+order.id+')" style="margin-top:6px;">'+t("zConfirmSent")+'</button>'+
         '<div style="background:#111;border-radius:8px;padding:10px;margin-top:12px;">'+
         '<div style="font-size:11px;font-weight:700;color:#888;">📱 If you\'re paying with this phone, use a different phone to place your order, then scan the QR code with the phone you\'re paying with.</div>'+
         '</div>'+
@@ -2308,7 +2548,8 @@ function submitOrder(){
 // BOARD
 // ============================================================
 function renderBoard(){
-  var total=S.orders.length;var min=S.minOrders;var pct=Math.min((total/min)*100,100);
+  var deliveryOrders=S.orders.filter(function(o){return o.orderType==="delivery"||!o.orderType;});
+  var total=deliveryOrders.length;var min=S.minOrders;var pct=Math.min((total/min)*100,100);
   document.getElementById("order-count").textContent=total;
   document.getElementById("min-count").textContent=min;
   document.getElementById("pc-fill").style.width=pct+"%";
@@ -2318,8 +2559,8 @@ function renderBoard(){
   document.getElementById("arrival-text").textContent=S.arrivalText||t("comingSoon");
   var oml=document.getElementById("orders-month-label");if(oml)oml.textContent=t("ordersThisMonthLabel");var csl=document.getElementById("customer-slots-label");if(csl)csl.textContent=t("customerSlotsLabel");
   var slots=document.getElementById("board-slots");
-  if(!S.orders.length){slots.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>'+t('noOrdersBoard')+'</p></div>';return;}
-  slots.innerHTML=S.orders.map(function(o){return '<div class="slot-item"><div class="slot-num">#'+o.slot+'</div><div style="font-size:15px;font-weight:800;">'+o.name+'</div></div>';}).join("");
+  if(!deliveryOrders.length){slots.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>'+t('noOrdersBoard')+'</p></div>';return;}
+  slots.innerHTML=deliveryOrders.map(function(o){return '<div class="slot-item"><div class="slot-num">#'+o.slot+'</div><div style="font-size:15px;font-weight:800;">'+o.name+'</div></div>';}).join("");
 }
 
 // ============================================================
@@ -2365,24 +2606,25 @@ function renderOrdersTab(){
   var badge=document.getElementById("o-badge");
   badge.textContent=pending;badge.style.display=pending>0?"block":"none";
   document.getElementById("o-stats").innerHTML="";
-  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="ei">📦</div><p>No orders yet!</p></div>';return;}
+  if(!filtered.length){list.innerHTML='<div class="empty-state"><div class="ei">📦</div><p>'+t("dNoOrders")+'</p></div>';return;}
   var now=Date.now();
   list.innerHTML=filtered.map(function(o){
     var waitMins=Math.floor((now-new Date(o.timestamp).getTime())/60000);
     var tColor=waitMins>=30?"#ff4444":waitMins>=15?"#FFC107":"#66bb6a";
-    var tText="⏱️ Waiting "+waitMins+" min"+(waitMins!==1?"s":"")+(waitMins>=30?" ⚠️ URGENT":waitMins>=15?" — getting long":"");
+    var tText="⏱️ "+t("wWaiting")+" "+waitMins+" "+(waitMins!==1?t("wMins"):t("wMin"))+(waitMins>=30?" ⚠️ "+t("wUrgent"):waitMins>=15?" — "+t("wGettingLong"):"");
     var isPacking=o.status==="packing";
     var isPendingDeposit=o.status==="pending_deposit";
     var borderStyle=isPendingDeposit?"border:2px solid #FFC107;background:#1a1a0a;":isPacking?"border:2px solid #FFC107;":"border:1px solid #333;";
-    var statusLabel=isPendingDeposit?"💰 PENDING DEPOSIT":isPacking?"🟡 PACKING":"🆕 NEW";
+    var statusLabel=isPendingDeposit?"💰 "+t("dPendingDeposit"):isPacking?"🟡 "+t("dPacking"):"🆕 "+t("dNew");
     var statusClass=isPendingDeposit?"badge-packing":isPacking?"badge-packing":"badge-new";
     var depositBadge="";
     if((S.depositRequired && o.orderType==="delivery") || (S.localZelleRequired && o.orderType==="local")){
-      var payLabel=o.orderType==="local"?"Payment":"Deposit";
+      var payLabel=o.orderType==="local"?t("dPaymentSent"):t("dDepositSent");
+      var noPayLabel=o.orderType==="local"?t("dNoPayment"):t("dNoDeposit");
       if(o.depositSent){
-        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#1a3a1a;border:1px solid #4caf50;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">✅</span><span style="font-size:11px;font-weight:800;color:#4caf50;">'+payLabel+' Sent</span></div>';
+        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#1a3a1a;border:1px solid #4caf50;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">✅</span><span style="font-size:11px;font-weight:800;color:#4caf50;">'+payLabel+'</span></div>';
       } else {
-        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #555;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">⬜</span><span style="font-size:11px;font-weight:800;color:#888;">No '+payLabel+'</span></div>';
+        depositBadge='<div style="display:inline-flex;align-items:center;gap:4px;background:#2a2a2a;border:1px solid #555;border-radius:6px;padding:3px 8px;margin-top:4px;"><span style="font-size:12px;">⬜</span><span style="font-size:11px;font-weight:800;color:#888;">'+noPayLabel+'</span></div>';
       }
     }
     var workerHtml=o.claimedBy?'<div class="oc-worker">👤 Being packed by: '+o.claimedBy+'</div>':"";
@@ -2405,9 +2647,9 @@ function renderOrdersTab(){
     }).join("");
     var btn;
     if(isPacking){
-      btn='<button class="pack-btn" onclick="completeOrder('+o.id+')">✅ Done — Move to Completed</button>';
+      btn='<button class="pack-btn" onclick="completeOrder('+o.id+')">✅ '+t("dDone")+'</button>';
     } else {
-      btn='<button class="take-btn" onclick="takeOrder('+o.id+')">📦 Claim This Order</button>';
+      btn='<button class="take-btn" onclick="takeOrder('+o.id+')">📦 '+t("dClaim")+'</button>';
     }
     return '<div class="order-card" style="'+borderStyle+'">'+
       '<div class="oc-header">'+
@@ -2423,11 +2665,11 @@ function renderOrdersTab(){
         '<div style="text-align:right;">'+
           '<span class="status-badge '+statusClass+'">'+statusLabel+'</span>'+
           depositBadge+
-          '<br><button class="pr-btn pr-del" style="margin-top:6px;" onclick="deleteOrder('+o.id+')">Delete</button>'+
+          '<br><button class="pr-btn pr-del" style="margin-top:6px;" onclick="deleteOrder('+o.id+')">'+t("dDelete")+'</button>'+
         '</div>'+
       '</div>'+
       '<div class="oc-items">'+itemsHtml+'</div>'+
-      '<div class="oc-total">Total: $'+o.total.toFixed(2)+'</div>'+
+      '<div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div>'+
       btn+
     '</div>';
   }).join("");
@@ -2507,14 +2749,14 @@ function renderOrdersDone(){
   var rev=S.orders.reduce(function(s,o){return s+o.total;},0);
   var avg=S.orders.length?rev/S.orders.length:0;
   document.getElementById("o-done-stats").innerHTML=
-    '<div class="stat-card"><div class="stat-val">'+S.orders.length+'</div><div class="stat-label">Orders</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+rev.toFixed(0)+'</div><div class="stat-label">Revenue</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+avg.toFixed(0)+'</div><div class="stat-label">Avg</div></div>';
+    '<div class="stat-card"><div class="stat-val">'+S.orders.length+'</div><div class="stat-label">'+t('dOrders')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+rev.toFixed(0)+'</div><div class="stat-label">'+t('opRevenue')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+avg.toFixed(0)+'</div><div class="stat-label">'+t('opAvg')+'</div></div>';
   if(!done.length){list.innerHTML='<div class="empty-state"><div class="ei">✅</div><p>No completed orders yet</p></div>';return;}
   list.innerHTML=done.map(function(o){
     var itemsHtml=o.items.map(function(i){return '<div class="oc-item-row"><span class="oci-name">'+i.emoji+" "+i.name+'</span><span class="oci-qty">x'+i.qty+' · $'+(i.price*i.qty).toFixed(2)+'</span></div>';}).join("");
-    var stamps=(o.claimedBy?'<div class="oc-worker">📦 Claimed by: '+o.claimedBy+'</div>':'')+(o.completedBy?'<div class="oc-worker">✅ Completed by: '+o.completedBy+'</div>':"");
-    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div><div class="oc-time">'+fmtTime(o.timestamp)+'</div>'+stamps+'</div><div><span class="status-badge badge-done">DONE ✅</span><br><button class="pr-btn pr-del" style="margin-top:4px;" onclick="deleteDoneOrder('+o.id+')">Delete</button></div></div><div class="oc-items">'+itemsHtml+'</div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div></div>';
+    var stamps=(o.claimedBy?'<div class="oc-worker">📦 '+t("dClaimedBy")+': '+o.claimedBy+'</div>':'')+(o.completedBy?'<div class="oc-worker">✅ '+t("dCompletedBy")+': '+o.completedBy+'</div>':"");
+    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div><div class="oc-time">'+fmtTime(o.timestamp)+'</div>'+stamps+'</div><div><span class="status-badge badge-done">'+t("dDone")+' ✅</span><br><button class="pr-btn pr-del" style="margin-top:4px;" onclick="deleteDoneOrder('+o.id+')">'+t("dDelete")+'</button></div></div><div class="oc-items">'+itemsHtml+'</div><div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div></div>';
   }).join("");
 }
 function deleteDoneOrder(id){
@@ -2724,17 +2966,17 @@ function renderPickupsOrders(){
     var isPacking=o.status==="packing";
     var isReady=o.status==="ready";
     var borderColor=isReady?"#4caf50":isPacking?"#FFC107":"#333";
-    var statusLabel=isReady?"✅ READY":isPacking?"🟡 PACKING":"🆕 NEW";
+    var statusLabel=isReady?"✅ "+t("dReady"):isPacking?"🟡 "+t("dPacking"):"🆕 "+t("dNew");
     var btn='';
-    if(o.status==="new") btn='<button class="a-btn" onclick="claimPickup(\''+o.id+'\')">📦 Pack Order</button>';
-    else if(o.status==="packing") btn='<button class="a-btn green" onclick="readyPickup(\''+o.id+'\')">✅ Ready for Pickup</button>';
-    else if(o.status==="ready") btn='<button class="a-btn green" onclick="completePickup(\''+o.id+'\')">📍 Customer Picked Up</button>';
+    if(o.status==="new") btn='<button class="a-btn" onclick="claimPickup(\''+o.id+'\')">📦 '+t("dClaim")+'</button>';
+    else if(o.status==="packing") btn='<button class="a-btn green" onclick="readyPickup(\''+o.id+'\')">✅ '+t("dMarkReady")+'</button>';
+    else if(o.status==="ready") btn='<button class="a-btn green" onclick="completePickup(\''+o.id+'\')">📍 '+t("dMarkPickedUp")+'</button>';
     var itemsHtml=o.items.map(function(item){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#ccc;padding:2px 0;"><span>'+item.qty+'x '+item.name+'</span><span>$'+(item.price*item.qty).toFixed(2)+'</span></div>';}).join("");
     return '<div class="order-card" style="border:1px solid '+borderColor+';">'+
       '<div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div>'+
       '<div><span class="status-badge">'+statusLabel+'</span></div></div>'+
       '<div class="oc-items">'+itemsHtml+'</div>'+
-      '<div class="oc-total">Total: $'+o.total.toFixed(2)+'</div>'+btn+'</div>';
+      '<div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div>'+btn+'</div>';
   }).join("");
 }
 function renderPickupsReady(){
@@ -2742,7 +2984,7 @@ function renderPickupsReady(){
   var list=document.getElementById("pu-ready-list");
   if(!ready.length){list.innerHTML='<div class="empty-state"><div class="ei">✅</div><p>No orders ready</p></div>';return;}
   list.innerHTML=ready.map(function(o){
-    return '<div class="order-card" style="border:1px solid #4caf50;"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">✅ READY</span></div></div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div><button class="a-btn green" onclick="completePickup(\''+o.id+'\')">📍 Customer Picked Up</button></div>';
+    return '<div class="order-card" style="border:1px solid #4caf50;"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">✅ '+t("dReady")+'</span></div></div><div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div><button class="a-btn green" onclick="completePickup(\''+o.id+'\')">📍 '+t("dMarkPickedUp")+'</button></div>';
   }).join("");
 }
 function renderPickupsDone(){
@@ -2750,7 +2992,7 @@ function renderPickupsDone(){
   var list=document.getElementById("pu-done-list");
   if(!done.length){list.innerHTML='<div class="empty-state"><div class="ei">📦</div><p>No pickups completed yet</p></div>';return;}
   list.innerHTML=done.map(function(o){
-    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">PICKED UP ✅</span></div></div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div></div>';
+    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">'+t('dPickedUp')+' ✅</span></div></div><div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div></div>';
   }).join("");
 }
 function claimPickup(id){
@@ -2780,29 +3022,29 @@ function renderLocalOrders(){
     var isEnroute=o.status==="en_route";
     var isPacking=o.status==="packing";
     var borderColor=isEnroute?"#FF9800":isPacking?"#FFC107":"#333";
-    var statusLabel=isEnroute?"🚗 EN ROUTE":isPacking?"🟡 PACKING":"🆕 NEW";
+    var statusLabel=isEnroute?"🚗 "+t("dEnRoute"):isPacking?"🟡 "+t("dPacking"):"🆕 "+t("dNew");
     var feeHtml=o.deliveryFee?'<div style="font-size:12px;font-weight:700;color:#FF9800;margin-top:2px;">🚚 Delivery Fee: $'+o.deliveryFee.toFixed(2)+'</div>':"";
     var addrHtml=o.address?'<div style="font-size:13px;font-weight:800;color:var(--primary);margin-top:4px;padding:8px;background:rgba(38,198,218,0.1);border-radius:8px;">📍 '+o.address+'</div>':"";
     var btn='';
-    if(o.status==="new") btn='<button class="a-btn" onclick="claimLocal(\''+o.id+'\')">📦 Pack Order</button>';
-    else if(o.status==="packing") btn='<button class="a-btn" style="background:#FF9800;color:#000;" onclick="enrouteLocal(\''+o.id+'\')">🚗 Out for Delivery</button>';
-    else if(o.status==="en_route") btn='<button class="a-btn green" onclick="deliverLocal(\''+o.id+'\')">✅ Delivered</button>';
+    if(o.status==="new") btn='<button class="a-btn" onclick="claimLocal(\''+o.id+'\')">📦 '+t("dClaim")+'</button>';
+    else if(o.status==="packing") btn='<button class="a-btn" style="background:#FF9800;color:#000;" onclick="enrouteLocal(\''+o.id+'\')">🚗 '+t("dMarkEnRoute")+'</button>';
+    else if(o.status==="en_route") btn='<button class="a-btn green" onclick="deliverLocal(\''+o.id+'\')">✅ '+t("dMarkDelivered")+'</button>';
     var itemsHtml=o.items.map(function(item){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#ccc;padding:2px 0;"><span>'+item.qty+'x '+item.name+'</span><span>$'+(item.price*item.qty).toFixed(2)+'</span></div>';}).join("");
     return '<div class="order-card" style="border:1px solid '+borderColor+';">'+
       '<div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div>'+
       '<div><span class="status-badge">'+statusLabel+'</span></div></div>'+
       addrHtml+feeHtml+
       '<div class="oc-items">'+itemsHtml+'</div>'+
-      '<div class="oc-total">Total: $'+o.total.toFixed(2)+(o.deliveryFee?' <span style="color:#FF9800;">(+$'+o.deliveryFee.toFixed(2)+' fee)</span>':'')+'</div>'+btn+'</div>';
+      '<div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+(o.deliveryFee?' <span style="color:#FF9800;">(+$'+o.deliveryFee.toFixed(2)+' fee)</span>':'')+'</div>'+btn+'</div>';
   }).join("");
 }
 function renderLocalEnroute(){
   var enroute=S.orders.filter(function(o){return o.orderType==="local"&&o.status==="en_route";});
   var list=document.getElementById("loc-enroute-list");
-  if(!enroute.length){list.innerHTML='<div class="empty-state"><div class="ei">🚗</div><p>No deliveries en route</p></div>';return;}
+  if(!enroute.length){list.innerHTML='<div class="empty-state"><div class="ei">🚗</div><p>'+t("dNoOrders")+'</p></div>';return;}
   list.innerHTML=enroute.map(function(o){
     var addrHtml=o.address?'<div style="font-size:13px;font-weight:800;color:var(--primary);margin:6px 0;padding:8px;background:rgba(38,198,218,0.1);border-radius:8px;">📍 '+o.address+'</div>':"";
-    return '<div class="order-card" style="border:1px solid #FF9800;"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div><div><span class="status-badge" style="background:#2a1a00;color:#FF9800;">🚗 EN ROUTE</span></div></div>'+addrHtml+'<div class="oc-total">Total: $'+o.total.toFixed(2)+'</div><button class="a-btn green" onclick="deliverLocal(\''+o.id+'\')">✅ Delivered</button></div>';
+    return '<div class="order-card" style="border:1px solid #FF9800;"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div><div><span class="status-badge" style="background:#2a1a00;color:#FF9800;">🚗 '+t("dEnRoute")+'</span></div></div>'+addrHtml+'<div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div><button class="a-btn green" onclick="deliverLocal(\''+o.id+'\')">✅ '+t("dMarkDelivered")+'</button></div>';
   }).join("");
 }
 function renderLocalDone(){
@@ -2810,7 +3052,7 @@ function renderLocalDone(){
   var list=document.getElementById("loc-done-list");
   if(!done.length){list.innerHTML='<div class="empty-state"><div class="ei">✅</div><p>No deliveries completed yet</p></div>';return;}
   list.innerHTML=done.map(function(o){
-    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">DELIVERED ✅</span></div></div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div></div>';
+    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">'+t('dDelivered')+' ✅</span></div></div><div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div></div>';
   }).join("");
 }
 function claimLocal(id){
@@ -3515,12 +3757,12 @@ function renderOpsSummary(){
   profitEl.textContent="$"+Math.abs(netProfit).toFixed(0);
   profitEl.className="summary-profit "+(netProfit>=0?"profit-pos":"profit-neg");
   document.getElementById("ops-summary-grid").innerHTML=
-    '<div class="summary-tile"><div class="summary-tile-val" style="color:#4caf50;">$'+revenue.toFixed(0)+'</div><div class="summary-tile-label">Revenue</div></div>'+
-    '<div class="summary-tile"><div class="summary-tile-val" style="color:var(--red);">$'+totalOut.toFixed(0)+'</div><div class="summary-tile-label">Total Out</div></div>'+
-    '<div class="summary-tile"><div class="summary-tile-val" style="color:var(--gold);">$'+expenses.toFixed(0)+'</div><div class="summary-tile-label">Expenses</div></div>'+
-    '<div class="summary-tile"><div class="summary-tile-val" style="color:#4fc3f7;">$'+tripCosts.toFixed(0)+'</div><div class="summary-tile-label">Trip Costs</div></div>'+
-    '<div class="summary-tile"><div class="summary-tile-val" style="color:#ce93d8;">$'+payroll.toFixed(0)+'</div><div class="summary-tile-label">Payroll</div></div>'+
-    '<div class="summary-tile"><div class="summary-tile-val" style="color:#ffb74d;">$'+purchases.toFixed(0)+'</div><div class="summary-tile-label">Purchases</div></div>';
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#4caf50;">$'+revenue.toFixed(0)+'</div><div class="summary-tile-label">'+t('opRevenue')+'</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:var(--red);">$'+totalOut.toFixed(0)+'</div><div class="summary-tile-label">'+t('opTotalOut')+'</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:var(--gold);">$'+expenses.toFixed(0)+'</div><div class="summary-tile-label">'+t('opExpenses')+'</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#4fc3f7;">$'+tripCosts.toFixed(0)+'</div><div class="summary-tile-label">'+t('opTripCosts')+'</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#ce93d8;">$'+payroll.toFixed(0)+'</div><div class="summary-tile-label">'+t('opPayroll')+'</div></div>'+
+    '<div class="summary-tile"><div class="summary-tile-val" style="color:#ffb74d;">$'+purchases.toFixed(0)+'</div><div class="summary-tile-label">'+t('opPurchases')+'</div></div>';
   var hist=document.getElementById("ops-month-history");
   hist.innerHTML=(!S.monthHistory||!S.monthHistory.length)?'<p style="color:var(--text-gray);font-size:14px;">No history yet.</p>':
     S.monthHistory.slice().reverse().map(function(m){return '<div class="ot-row"><span class="ot-label">'+m.month+'</span><span class="ot-val">'+m.orders+' orders · $'+m.revenue+'</span></div>';}).join("");
@@ -3530,9 +3772,9 @@ function renderOpsIncome(){
   var revenue=S.orders.reduce(function(s,o){return s+o.total;},0);
   var avg=S.orders.length?revenue/S.orders.length:0;
   document.getElementById("ops-income-stats").innerHTML=
-    '<div class="stat-card"><div class="stat-val">'+S.orders.length+'</div><div class="stat-label">Orders</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+revenue.toFixed(0)+'</div><div class="stat-label">Revenue</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+avg.toFixed(0)+'</div><div class="stat-label">Avg</div></div>';
+    '<div class="stat-card"><div class="stat-val">'+S.orders.length+'</div><div class="stat-label">'+t('dOrders')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+revenue.toFixed(0)+'</div><div class="stat-label">'+t('opRevenue')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+avg.toFixed(0)+'</div><div class="stat-label">'+t('opAvg')+'</div></div>';
   var counts={};
   S.orders.forEach(function(o){o.items.forEach(function(i){counts[i.name]=(counts[i.name]||0)+i.qty;});});
   var sorted=Object.entries(counts).sort(function(a,b){return b[1]-a[1];});
@@ -3561,9 +3803,9 @@ function renderExpenses(){
   if(!S.expenses)S.expenses=[];
   var total=S.expenses.reduce(function(s,e){return s+e.amount;},0);
   document.getElementById("ops-exp-stats").innerHTML=
-    '<div class="stat-card"><div class="stat-val">'+S.expenses.length+'</div><div class="stat-label">Entries</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+total.toFixed(0)+'</div><div class="stat-label">Total Out</div></div>'+
-    '<div class="stat-card"><div class="stat-val stat-val" style="color:#4caf50;">$'+(S.orders.reduce(function(s,o){return s+o.total;},0)-total).toFixed(0)+'</div><div class="stat-label">After Exp</div></div>';
+    '<div class="stat-card"><div class="stat-val">'+S.expenses.length+'</div><div class="stat-label">'+t('opEntries')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+total.toFixed(0)+'</div><div class="stat-label">'+t('opTotalOut')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val stat-val" style="color:#4caf50;">$'+(S.orders.reduce(function(s,o){return s+o.total;},0)-total).toFixed(0)+'</div><div class="stat-label">'+t('opAfterExp')+'</div></div>';
   var list=document.getElementById("exp-list");
   if(!S.expenses.length){list.innerHTML='<div class="empty-state"><div class="ei">💸</div><p>No expenses logged yet</p></div>';return;}
   list.innerHTML=S.expenses.slice().reverse().map(function(e){
@@ -3623,7 +3865,7 @@ function renderPayroll(){
   var totalHours=S.timesheets.reduce(function(s,t){return s+t.hours;},0);
   var totalEarned=S.timesheets.reduce(function(s,t){return s+t.earned;},0);
   document.getElementById("ops-payroll-stats").innerHTML=
-    '<div class="stat-card"><div class="stat-val">'+S.workers.length+'</div><div class="stat-label">Workers</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+S.workers.length+'</div><div class="stat-label">'+t('opWorkers')+'</div></div>'+
     '<div class="stat-card"><div class="stat-val">'+totalHours.toFixed(1)+'</div><div class="stat-label">Hours</div></div>'+
     '<div class="stat-card"><div class="stat-val">$'+totalPaid.toFixed(0)+'</div><div class="stat-label">Paid</div></div>';
   // Timesheets
@@ -3690,7 +3932,7 @@ function logPayment(btn){
 // ============================================================
 function fmtDT(dt){if(!dt)return "Not set";try{return new Date(dt).toLocaleString("en-US",{month:"short",day:"numeric",year:"numeric",hour:"numeric",minute:"2-digit"});}catch(e){return dt;}}
 function fmtTime(ts){if(!ts)return "";try{return new Date(ts).toLocaleString("en-US",{month:"short",day:"numeric",hour:"numeric",minute:"2-digit"});}catch(e){return "";}}
-function showToast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(function(){t.classList.remove("show");},2500);}
+// showToast defined above with API functions
 
 function buttonFlash(btn,msg){
   var orig=btn.textContent;
@@ -3867,9 +4109,9 @@ function renderCustomers(){
   var totalRevenue=sorted.reduce(function(s,c){return s+c.totalSpent;},0);
   var statsEl=document.getElementById("ops-customer-stats");
   if(statsEl) statsEl.innerHTML=
-    '<div class="stat-card"><div class="stat-val">'+totalCustomers+'</div><div class="stat-label">Customers</div></div>'+
-    '<div class="stat-card"><div class="stat-val">'+repeatCustomers+'</div><div class="stat-label">Repeat</div></div>'+
-    '<div class="stat-card"><div class="stat-val">$'+totalRevenue.toFixed(0)+'</div><div class="stat-label">Revenue</div></div>';
+    '<div class="stat-card"><div class="stat-val">'+totalCustomers+'</div><div class="stat-label">'+t('aCustomers')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val">'+repeatCustomers+'</div><div class="stat-label">'+t('opRepeat')+'</div></div>'+
+    '<div class="stat-card"><div class="stat-val">$'+totalRevenue.toFixed(0)+'</div><div class="stat-label">'+t('opRevenue')+'</div></div>';
   var listEl=document.getElementById("customer-list");
   if(!sorted.length){listEl.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No customers yet. They appear after orders are placed.</p>';} 
   else {
