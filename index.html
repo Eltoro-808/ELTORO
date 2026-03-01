@@ -1454,8 +1454,9 @@ function setLang(lang) {
   // Logout buttons
   document.querySelectorAll(".dt-logout").forEach(function(btn){btn.textContent=t("dLogout");});
   // Role buttons in login
+  var roleBtnEmoji={"role-orders":"📦","role-admin":"👑","role-inventory":"🗄️","role-operations":"⚙️","role-delivery":"🚚","role-pickups":"📍","role-local":"🏘️"};
   var roleMap={"role-orders":"rOrders","role-admin":"rAdmin","role-inventory":"rInventory","role-operations":"rOperations","role-delivery":"rDelivery","role-pickups":"rPickups","role-local":"rLocal"};
-  Object.keys(roleMap).forEach(function(id){var el=document.getElementById(id);if(el){var emoji=el.textContent.split("\n")[0];el.innerHTML=emoji+"<br>"+t(roleMap[id]);}});
+  Object.keys(roleMap).forEach(function(id){var el=document.getElementById(id);if(el){el.innerHTML=roleBtnEmoji[id]+"<br>"+t(roleMap[id]);}});
   // Dashboard role badges
   var drMap={"dr-orders":"rOrders","dr-admin":"rAdmin","dr-inventory":"rInventory","dr-operations":"rOperations"};
   Object.keys(drMap).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(drMap[id]);});
@@ -1611,6 +1612,8 @@ function load() {
     if(d) { var p = JSON.parse(d); S = Object.assign({}, S, p); } 
   } catch(e) {} 
   S.cart = []; 
+  // Ensure products aren't empty — fall back to defaults
+  if(!S.products || !S.products.length) S.products = JSON.parse(JSON.stringify(DEFAULTS));
   save(); 
 }
 
@@ -1657,7 +1660,7 @@ function syncFromAPI() {
 
   // Load products
   api("GET", "/products?visible=1").then(function(data) {
-    if (!data || data.error) return;
+    if (!data || data.error || !data.length) return;
     S.products = data.map(function(p) {
       return {
         id: p.id, name: p.name, emoji: p.emoji, price: p.price, cost: p.cost,
@@ -2190,11 +2193,6 @@ function renderShop() {
   var filtered = S.products.filter(function(p){return p.visible&&(activeCat==="All"||p.cat===activeCat);});
   var grid = document.getElementById("product-grid");
   if(!filtered.length){
-    // Show skeleton if products haven't loaded yet from API
-    if(!S.products.length){
-      grid.innerHTML='<div class="skeleton skeleton-product"></div><div class="skeleton skeleton-product"></div><div class="skeleton skeleton-product"></div><div class="skeleton skeleton-product"></div>';
-      return;
-    }
     grid.innerHTML='<div style="grid-column:span 2;text-align:center;padding:30px;color:var(--text-gray);font-weight:700;">No items here</div>';return;
   }
   grid.innerHTML = filtered.map(function(p){
