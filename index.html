@@ -1575,21 +1575,20 @@ var apiCallsActive = 0;
 function simpleHash(str){var h=0;for(var i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return h.toString(36);}
 function apiLoadShow(){apiCallsActive++;var el=document.getElementById("api-loading-bar");if(el)el.classList.remove("hidden");}
 function apiLoadHide(){apiCallsActive--;if(apiCallsActive<=0){apiCallsActive=0;var el=document.getElementById("api-loading-bar");if(el)el.classList.add("hidden");}}
-function api(method, path, body, silent) {
+function api(method, path, body, showErrors) {
   apiLoadShow();
-  var isGet = method === "GET";
   var opts = { method: method, headers: apiHeaders() };
   if (body && (method === "POST" || method === "PUT")) opts.body = JSON.stringify(body);
   return fetch(API_BASE + path, opts).then(function(r) { 
     apiLoadHide();
     if(!r.ok) { 
-      if(!silent && !isGet) showToast("Server error — try again","error"); 
+      if(showErrors) showToast("Server error — try again","error"); 
       return null; 
     }
     return r.json().catch(function(){ return null; }); 
   }).catch(function(e) { 
     apiLoadHide();
-    if(!silent && !isGet) showToast("Connection failed — check your internet","error");
+    if(showErrors) showToast("Connection failed — check your internet","error");
     console.log("API err:", e); 
     return null; 
   });
@@ -1785,8 +1784,7 @@ function syncFromAPI() {
 }
 
 load();
-// Sync from API after initial localStorage load
-syncFromAPI();
+// syncFromAPI runs at end of init after dashboard restore
 
 var currentWorkerName = "";
 
@@ -1985,6 +1983,9 @@ document.getElementById("login-pw").addEventListener("keydown", function(e){if(e
 
 function launchApp(which) {
   document.getElementById("customer-app").style.display = "none";
+  // Remember active dashboard for refresh persistence
+  sessionStorage.setItem("eltoro_dash", which);
+  sessionStorage.setItem("eltoro_worker", currentWorkerName);
   if(which==="orders") {
     document.getElementById("orders-app").classList.add("active");
     document.getElementById("orders-worker-name").textContent = currentWorkerName;
@@ -2019,31 +2020,35 @@ function launchApp(which) {
       startClockTimer(worker);
     }
   }
-  // Auto-refresh orders every 30 seconds for workers
+  // Auto-refresh orders every 30 seconds for workers (not admin)
   if(autoRefreshInterval) clearInterval(autoRefreshInterval);
-  autoRefreshInterval = setInterval(function(){
-    api("GET", "/orders").then(function(data){
-      if(!data||data.error) return;
-      var oldCount=S.orders.length;
-      S.orders=data.map(function(o){
-        return {
-          id:o.id,slot:o.slot,name:o.customer_name,phone:o.customer_phone,
-          items:(o.items||[]).map(function(i){return {id:i.product_id,name:i.name,emoji:i.emoji,photo:i.photo,price:i.price,cost:i.cost,unit:i.unit,qty:i.qty,color:i.color,size:i.size};}),
-          total:o.total,discount:o.discount,loyaltyMsg:o.loyalty_msg,
-          status:o.status,claimedBy:o.claimed_by,completedBy:o.completed_by,
-          timestamp:o.created_at,orderType:o.order_type,address:o.address,deliveryFee:o.delivery_fee,
-          depositRequired:!!o.deposit_required,depositAmount:o.deposit_amount,depositSent:!!o.deposit_sent
-        };
-      });
-      save();
-      if(S.orders.length>oldCount) showToast("🔔 New order! "+S.orders[S.orders.length-1].name);
-      // Re-render active dashboard
-      if(which==="orders") renderOrdersTab();
-      if(which==="pickups"){renderPickupsOrders();renderPickupsReady();}
-      if(which==="local"){renderLocalOrders();renderLocalEnroute();}
-      if(which==="delivery") renderPickupList();
-    });
-  }, 30000);
+  if(which!=="admin") {
+    autoRefreshInterval = setInterval(function(){
+      try {
+        api("GET", "/orders").then(function(data){
+          if(!data||data.error||!Array.isArray(data)||!data.length) return;
+          var oldCount=S.orders.length;
+          S.orders=data.map(function(o){
+            return {
+              id:o.id,slot:o.slot,name:o.customer_name,phone:o.customer_phone,
+              items:(o.items||[]).map(function(i){return {id:i.product_id,name:i.name,emoji:i.emoji,photo:i.photo,price:i.price,cost:i.cost,unit:i.unit,qty:i.qty,color:i.color,size:i.size};}),
+              total:o.total,discount:o.discount,loyaltyMsg:o.loyalty_msg,
+              status:o.status,claimedBy:o.claimed_by,completedBy:o.completed_by,
+              timestamp:o.created_at,orderType:o.order_type,address:o.address,deliveryFee:o.delivery_fee,
+              depositRequired:!!o.deposit_required,depositAmount:o.deposit_amount,depositSent:!!o.deposit_sent
+            };
+          });
+          save();
+          if(S.orders.length>oldCount) showToast("🔔 "+t("newOrder",{name:S.orders[S.orders.length-1].name}));
+          // Re-render active dashboard
+          if(which==="orders") renderOrdersTab();
+          if(which==="pickups"){renderPickupsOrders();renderPickupsReady();}
+          if(which==="local"){renderLocalOrders();renderLocalEnroute();}
+          if(which==="delivery") renderPickupList();
+        });
+      } catch(e){ console.log("Auto-refresh error:",e); }
+    }, 30000);
+  }
 }
 
 function logout() {
@@ -2053,6 +2058,8 @@ function logout() {
   }
   if(clockTimerInterval){clearInterval(clockTimerInterval);clockTimerInterval=null;}
   if(autoRefreshInterval){clearInterval(autoRefreshInterval);autoRefreshInterval=null;}
+  sessionStorage.removeItem("eltoro_dash");
+  sessionStorage.removeItem("eltoro_worker");
   document.getElementById("customer-app").style.display = "block";
   document.querySelectorAll(".dash-app").forEach(function(a){a.classList.remove("active");});
   currentWorkerName = "";
@@ -2415,7 +2422,7 @@ function submitOrder(){
     order_type: orderType,
     address: address,
     delivery_fee: deliveryFee
-  }).then(function(result) {
+  }, true).then(function(result) {
     if(!result || result.error) {
       showToast(result ? result.error : "Failed to place order. Please try again.");
       if(btn){btn.disabled=false;btn.textContent=t("placeOrder");}
@@ -4204,6 +4211,17 @@ renderShop();
 if(S.primaryColor&&S.primaryColor!=="#26C6DA"){document.documentElement.style.setProperty("--primary",S.primaryColor);}
 if(S.backdropColor&&S.backdropColor!=="#0b0f11"){document.documentElement.style.setProperty("--dark-bg",S.backdropColor);document.body.style.background=S.backdropColor;}
 applyBizName();
+
+// Restore active dashboard after refresh
+(function(){
+  var savedDash = sessionStorage.getItem("eltoro_dash");
+  var savedWorker = sessionStorage.getItem("eltoro_worker");
+  if(savedDash) {
+    currentWorkerName = savedWorker || "Admin";
+    launchApp(savedDash);
+  }
+})();
+syncFromAPI();
 </script>
 </body>
 </html>
