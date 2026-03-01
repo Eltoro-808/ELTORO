@@ -48,7 +48,7 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
   padding:14px 0 20px;
   box-sizing:border-box;
 }
-.page.active{display:block;}
+.page.active{display:block;animation:fadeIn 0.15s ease;}
 
 /* HERO */
 .hero{margin:8px 12px 12px;border-radius:18px;overflow:hidden;background:linear-gradient(135deg,#0a1a20,#0d2a32,#0a2028);border:1px solid var(--card-border);padding:20px;display:flex;align-items:center;justify-content:space-between;position:relative;}
@@ -178,10 +178,11 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 @keyframes orderpulse{0%,100%{box-shadow:0 0 0 0 rgba(38,198,218,0.4);}50%{box-shadow:0 0 0 12px rgba(38,198,218,0);}}
 .input-error{border-color:#ff6666 !important;animation:shake 0.3s;}
 @keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
 
 /* DASH SHARED */
-.dash-app{display:none;position:fixed;inset:0;background:var(--dark-bg);z-index:500;}
-.dash-app.active{display:block;}
+.dash-app{display:none;position:fixed;inset:0;background:var(--dark-bg);z-index:500;opacity:0;transition:opacity 0.2s ease;}
+.dash-app.active{display:block;opacity:1;}
 .dash-topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
 .orders-topbar{background:linear-gradient(180deg,#0e191d,#0b0f11);border-bottom:2px solid var(--primary);}
 .admin-topbar{background:linear-gradient(180deg,#0e191d,#0b0f11);border-bottom:2px solid var(--primary);}
@@ -422,6 +423,11 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
     <div class="sec-title" id="customer-slots-label">Customer Slots</div>
     <div id="board-slots"></div>
+    <div style="margin-top:20px;padding:0 12px;">
+      <div class="sec-title" id="my-orders-title">📦 My Orders</div>
+      <div style="margin-bottom:8px;"><input class="form-input" id="track-phone" type="tel" placeholder="Enter your phone to track orders" oninput="renderMyOrders()" style="font-size:14px;"/></div>
+      <div id="my-orders-list"></div>
+    </div>
   </div>
   <div class="page" id="page-qr">
     <div class="qr-inner">
@@ -1299,7 +1305,8 @@ var LANGS = {
     opAvg:"Avg", opEntries:"Entries", opTotalOut:"Total Out", opTripCosts:"Trip Costs",
     opPurchases:"Purchases",
     opAfterExp:"After Exp", opWorkers:"Workers", opRepeat:"Repeat",
-    puOrders:"Pickup Orders", locOrders:"Local Deliveries"
+    puOrders:"Pickup Orders", locOrders:"Local Deliveries",
+    trackPhone:"Enter your phone to track orders", myOrders:"📦 My Orders"
   },
   es: {
     all:"Todo", dairy:"Lácteos", meat:"Carne", breadgrains:"Pan y Granos",
@@ -1386,7 +1393,8 @@ var LANGS = {
     opAvg:"Prom", opEntries:"Registros", opTotalOut:"Total Salida", opTripCosts:"Costos Viaje",
     opPurchases:"Compras",
     opAfterExp:"Después Gastos", opWorkers:"Trabajadores", opRepeat:"Repetidos",
-    puOrders:"Pedidos para Recoger", locOrders:"Entregas Locales"
+    puOrders:"Pedidos para Recoger", locOrders:"Entregas Locales",
+    trackPhone:"Ingresa tu teléfono para rastrear pedidos", myOrders:"📦 Mis Pedidos"
   }
 }
 var currentLang = "en";
@@ -1490,6 +1498,9 @@ function setLang(lang) {
   // Delivery nav
   var delNav={"dnav-del-dropoff":"delDropOff","dnav-del-location":"delLocation","dnav-del-trips":"delTrips"};
   Object.keys(delNav).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=t(delNav[id]);});
+  // Track page
+  var mot=document.getElementById("my-orders-title");if(mot)mot.textContent=t("myOrders");
+  var tp=document.getElementById("track-phone");if(tp)tp.placeholder=t("trackPhone");
 }
 
 
@@ -1571,6 +1582,20 @@ function apiHeaders() {
 }
 
 var apiCallsActive = 0;
+// Sanitize user input to prevent XSS
+function sanitize(str){if(!str)return "";return str.replace(/[<>"'&]/g,function(c){return{"<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;","&":"&amp;"}[c]||c;});}
+// Login rate limiting
+var loginAttempts=0;var loginLockUntil=0;
+// Session timeout - auto logout after 30 min inactivity
+var sessionTimer=null;
+function resetSessionTimer(){
+  if(sessionTimer)clearTimeout(sessionTimer);
+  sessionTimer=setTimeout(function(){
+    if(sessionStorage.getItem("eltoro_dash")){logout();showToast("Session expired — logged out for security");}
+  },1800000);
+}
+document.addEventListener("click",resetSessionTimer);
+document.addEventListener("touchstart",resetSessionTimer);
 // Simple hash for local password fallback
 function simpleHash(str){var h=0;for(var i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return h.toString(36);}
 function apiLoadShow(){apiCallsActive++;var el=document.getElementById("api-loading-bar");if(el)el.classList.remove("hidden");}
@@ -1904,10 +1929,12 @@ function selectRole(r) {
 
 function doLogin() {
   if(!selRole) { showToast("Choose a role!"); return; }
+  // Rate limiting
+  if(Date.now()<loginLockUntil){showToast("Too many attempts. Wait 30 seconds.","error");return;}
   document.getElementById("login-err").style.display="none";
   document.getElementById("login-auth-err").style.display="none";
   var pw = document.getElementById("login-pw").value;
-  var wname = document.getElementById("login-worker-name").value.trim();
+  var wname = sanitize(document.getElementById("login-worker-name").value.trim());
   
   // Admin login — authenticate against API
   if(selRole==="admin") {
@@ -1915,12 +1942,16 @@ function doLogin() {
       if(!result || result.error) {
         // Fallback to local check
         if(pw===S.adminPass) { 
+          loginAttempts=0;
           currentWorkerName="Admin"; authToken=""; closeLogin(); launchApp("admin"); 
         } else {
+          loginAttempts++;
+          if(loginAttempts>=5){loginLockUntil=Date.now()+30000;loginAttempts=0;}
           document.getElementById("login-err").style.display = "block"; 
         }
         return;
       }
+      loginAttempts=0;
       authToken = result.token;
       localStorage.setItem("eltoro_token", authToken);
       currentWorkerName = "Admin";
@@ -2208,7 +2239,7 @@ function renderShop() {
   }
   grid.innerHTML = filtered.map(function(p){
     var photoHtml = p.photo
-      ? '<div class="product-photo"><img src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>'
+      ? '<div class="product-photo"><img loading="lazy" src="'+p.photo+' alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>'
       : '<div class="product-photo">'+p.emoji+'</div>';
     var cartQty = getCartQty(p.id);
     var variantHtml="";
@@ -2312,7 +2343,7 @@ function renderCart(){
   var grandTotal=totalPrice+deliveryFee;
 
   var itemsHtml=S.cart.map(function(item){
-    var imgHtml = item.photo ? '<img class="ci-photo" src="'+item.photo+'" onerror="this.style.display=\'none\'" />' : '<span class="ci-emoji">'+item.emoji+'</span>';
+    var imgHtml = item.photo ? '<img class="ci-photo" loading="lazy" src="'+item.photo+'" onerror="this.style.display=\'none\'" />' : '<span class="ci-emoji">'+item.emoji+'</span>';
     var variantLabel=(item.color||item.size)?'<div style="font-size:11px;color:var(--primary);font-weight:700;">'+[item.color,item.size].filter(Boolean).join(", ")+'</div>':"";
     return '<div class="cart-item">'+imgHtml+'<div style="flex:1;"><div class="ci-name">'+item.name+'</div>'+variantLabel+'<div class="ci-price">$'+(item.price*item.qty).toFixed(2)+'</div></div><div class="ci-controls"><button class="ci-qty-btn" onclick="cartQty('+(item.vKey?"\'"+item.vKey+"\'":item.id)+',-1)">−</button><span class="ci-qty">'+item.qty+'</span><button class="ci-qty-btn" onclick="cartQty('+(item.vKey?"\'"+item.vKey+"\'":item.id)+',1)">+</button></div></div>';
   }).join("");
@@ -2368,7 +2399,7 @@ function cartQty(key,delta){
 function submitOrder(){
   var nameEl=document.getElementById("c-name");var phoneEl=document.getElementById("c-phone");
   if(!nameEl||!phoneEl)return;
-  var name=nameEl.value.trim();var phone=phoneEl.value.trim();
+  var name=sanitize(nameEl.value.trim());var phone=sanitize(phoneEl.value.trim());
   // Validate with visual feedback
   var valid=true;
   if(!name){nameEl.classList.add("input-error");setTimeout(function(){nameEl.classList.remove("input-error");},600);valid=false;}
@@ -2390,7 +2421,7 @@ function submitOrder(){
   var address="";
   if(orderType==="local"){
     var addrEl=document.getElementById("c-address");
-    address=addrEl?addrEl.value.trim():"";
+    address=addrEl?sanitize(addrEl.value.trim()):"";
     if(!address){
       if(addrEl){addrEl.classList.add("input-error");setTimeout(function(){addrEl.classList.remove("input-error");},600);}
       showToast(t("enterAddress"),"error");return;
@@ -2543,6 +2574,8 @@ function submitOrder(){
     }
   }
   showToast("Order placed! You are #"+order.slot);
+  // Save customer phone for tracking
+  localStorage.setItem("eltoro_customer_phone",order.phone);
   activeCat="All";renderShop();updateCartFloat();
   // Delivery goes to board, local/pickup stay on cart to show receipt then go to shop
   if(order.orderType==="delivery"){
@@ -2557,6 +2590,12 @@ function submitOrder(){
 // BOARD
 // ============================================================
 function renderBoard(){
+  // Auto-fill tracking phone
+  var trackPhoneEl=document.getElementById("track-phone");
+  if(trackPhoneEl&&!trackPhoneEl.value){
+    var savedPhone=localStorage.getItem("eltoro_customer_phone");
+    if(savedPhone){trackPhoneEl.value=savedPhone;renderMyOrders();}
+  }
   var deliveryOrders=S.orders.filter(function(o){return o.orderType==="delivery"||!o.orderType;});
   var total=deliveryOrders.length;var min=S.minOrders;var pct=Math.min((total/min)*100,100);
   document.getElementById("order-count").textContent=total;
@@ -2606,6 +2645,27 @@ function fallbackCopy(text){
 // ============================================================
 // ORDERS APP
 // ============================================================
+function renderMyOrders(){
+  var el=document.getElementById("my-orders-list");if(!el)return;
+  var phoneEl=document.getElementById("track-phone");
+  var phone=phoneEl?phoneEl.value.replace(/\D/g,""):"";
+  if(phone.length<7){el.innerHTML="";return;}
+  var myOrders=S.orders.filter(function(o){return o.phone&&o.phone.replace(/\D/g,"").includes(phone);});
+  if(!myOrders.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-gray);font-weight:700;">'+t("dNoOrders")+'</div>';return;}
+  var statusMap={new:["🟡","Received"],pending_deposit:["🟠","Waiting for Deposit"],packing:["📦","Packing"],ready:["✅","Ready"],en_route:["🚗","On the Way"],delivered:["✅","Delivered"],picked_up:["✅","Picked Up"],done:["✅","Complete"]};
+  el.innerHTML=myOrders.map(function(o){
+    var s=statusMap[o.status]||["⏳",o.status];
+    var itemsList=o.items.map(function(i){return i.qty+"x "+i.name;}).join(", ");
+    return '<div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:14px;margin-bottom:10px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+        '<div style="font-weight:800;color:#fff;font-size:15px;">#'+o.slot+' · '+o.name+'</div>'+
+        '<div style="font-size:13px;font-weight:800;color:var(--primary);">'+s[0]+' '+s[1]+'</div>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--text-gray);margin-top:4px;">'+itemsList+'</div>'+
+      '<div style="font-size:14px;font-weight:800;color:var(--primary);margin-top:6px;">$'+o.total.toFixed(2)+'</div>'+
+    '</div>';
+  }).join("");
+}
 function renderOrdersTab(){
   var list=document.getElementById("o-orders-list");
   var q=document.getElementById("o-search");
@@ -3537,7 +3597,7 @@ function renderInvProducts(){
   var list=document.getElementById("inv-products-list");
   if(!S.products.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No products yet.</p>';return;}
   list.innerHTML=S.products.map(function(p){
-    var photoHtml=p.photo?'<div class="prod-row-photo"><img src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>':'<div class="prod-row-photo">'+p.emoji+'</div>';
+    var photoHtml=p.photo?'<div class="prod-row-photo"><img loading="lazy" src="'+p.photo+' alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>':'<div class="prod-row-photo">'+p.emoji+'</div>';
     var margin=p.cost?((p.price-p.cost)/p.price*100).toFixed(0)+"% margin":"";
     return '<div class="prod-row">'+photoHtml+'<div class="prod-row-info"><div class="prod-row-name">'+p.name+(p.soldOut?" 🔴":"")+(!p.visible?" 👁️":"")+'</div><div class="prod-row-sub">Sell $'+parseFloat(p.price).toFixed(2)+' · Cost $'+parseFloat(p.cost||0).toFixed(2)+(margin?" · "+margin:"")+'</div></div><div class="pr-actions"><button class="pr-btn pr-edit" onclick="openEditModal('+p.id+')">Edit</button><button class="pr-btn pr-hide" onclick="toggleVisible('+p.id+')">'+(p.visible?"Hide":"Show")+'</button><button class="pr-btn pr-sold" onclick="toggleSoldOut('+p.id+')">'+(p.soldOut?"Restock":"SoldOut")+'</button><button class="pr-btn pr-del" onclick="deleteProduct('+p.id+')">Del</button></div></div>';
   }).join("");
