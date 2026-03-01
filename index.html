@@ -1252,7 +1252,7 @@ var LANGS = {
     deliveryFee:"Delivery Fee", minItems:"Min Items",
     pickupOrder:"📍 Pickup Order", localDelivery:"🏘️ Local Delivery",
     pickupLocationLabel:"📍 Pickup Location", deliveringTo:"🏘️ Delivering To",
-    enterAddress:"Enter your address", deliveryAddress:"📍 Delivery Address",
+    enterAddress:"Enter your address", addressPlaceholder:"Your home address", deliveryAddress:"📍 Delivery Address",
     howReceive:"How would you like to receive your order?",
     orderReceived:"Order #{n} Received!",
     sendDeposit:"Send ${amt} deposit via Zelle",
@@ -1260,7 +1260,7 @@ var LANGS = {
     sentDeposit:"I've sent the deposit", confirmPayment:"Confirm Payment Sent",
     shareReceipt:"📤 Share Receipt", disappearsIn:"Disappears in {n}s",
     enterNamePhone:"Please enter your name and phone number",
-    enterAddress:"Enter your address", connectionFailed:"Connection failed",
+    connectionFailed:"Connection failed",
     newOrder:"New order from {name}!",
     dAllOrders:"All Orders", dCompletedOrders:"Completed Orders", dSearchName:"🔍 Search by name...",
     dOrders:"Orders", dDone:"Done", dPacking:"PACKING", dNew:"NEW", dPendingDeposit:"PENDING DEPOSIT",
@@ -1339,7 +1339,7 @@ var LANGS = {
     deliveryFee:"Costo de Envío", minItems:"Mínimo",
     pickupOrder:"📍 Pedido para Recoger", localDelivery:"🏘️ Entrega Local",
     pickupLocationLabel:"📍 Lugar de Recogida", deliveringTo:"🏘️ Entregando a",
-    enterAddress:"Ingresa tu dirección", deliveryAddress:"📍 Dirección de Entrega",
+    enterAddress:"Ingresa tu dirección", addressPlaceholder:"Tu dirección de casa", deliveryAddress:"📍 Dirección de Entrega",
     howReceive:"¿Cómo quieres recibir tu pedido?",
     orderReceived:"¡Pedido #{n} Recibido!",
     sendDeposit:"Envía ${amt} de depósito por Zelle",
@@ -1347,7 +1347,7 @@ var LANGS = {
     sentDeposit:"Ya envié el depósito", confirmPayment:"Confirmar Pago Enviado",
     shareReceipt:"📤 Compartir Recibo", disappearsIn:"Desaparece en {n}s",
     enterNamePhone:"Por favor ingresa tu nombre y teléfono",
-    enterAddress:"Ingresa tu dirección", connectionFailed:"Conexión fallida",
+    connectionFailed:"Conexión fallida",
     newOrder:"¡Nuevo pedido de {name}!",
     dAllOrders:"Todos los Pedidos", dCompletedOrders:"Pedidos Completados", dSearchName:"🔍 Buscar por nombre...",
     dOrders:"Pedidos", dDone:"Hecho", dPacking:"EMPACANDO", dNew:"NUEVO", dPendingDeposit:"DEPÓSITO PENDIENTE",
@@ -2336,7 +2336,7 @@ function renderCart(){
   var addressHtml="";
   if(selectedType==="local"){
     var addrVal=S.cartAddress||"";
-    addressHtml='<div style="margin:8px 0;"><label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">'+t("deliveryAddress")+'</label><input class="form-input" id="c-address" type="text" placeholder="'+t("enterAddress")+'" value="'+addrVal+'" oninput="S.cartAddress=this.value" style="margin-top:4px;"/></div>';
+    addressHtml='<input class="form-input" id="c-address" type="text" placeholder="'+t("addressPlaceholder")+'" value="'+addrVal+'" oninput="S.cartAddress=this.value" style="margin-top:6px;"/>';
   }
 
   // Pickup location info
@@ -2351,9 +2351,9 @@ function renderCart(){
   var feeRow=deliveryFee>0?'<div class="ot-row"><span class="ot-label">🚚 Delivery Fee</span><span class="ot-val" style="color:#FF9800;">$'+deliveryFee.toFixed(2)+'</span></div>':'';
   var totalLabel=deliveryFee>0?'$'+grandTotal.toFixed(2):'$'+totalPrice.toFixed(2);
 
-  body.innerHTML=typeSelectorHtml+pickupInfoHtml+itemsHtml+minWarn+addressHtml+
+  body.innerHTML=typeSelectorHtml+pickupInfoHtml+itemsHtml+minWarn+
     '<div class="order-total-card"><div class="ot-row"><span class="ot-label">Items</span><span class="ot-val">'+totalQty+'</span></div>'+feeRow+'<div class="ot-row"><span class="ot-label">Total</span><span class="ot-total">'+totalLabel+'</span></div><div id="loyalty-discount-msg"></div></div>'+
-    '<div class="customer-form"><h3>'+t("yourInfo")+'</h3><input class="form-input" id="c-name" type="text" placeholder="'+t("namePlaceholder")+'"/><input class="form-input" id="c-phone" type="tel" placeholder="'+t("phonePlaceholder")+'" oninput="checkLoyaltyDiscount()"/></div>'+
+    '<div class="customer-form"><h3>'+t("yourInfo")+'</h3><input class="form-input" id="c-name" type="text" placeholder="'+t("namePlaceholder")+'"/><input class="form-input" id="c-phone" type="tel" placeholder="'+t("phonePlaceholder")+'" oninput="checkLoyaltyDiscount()"/>'+addressHtml+'</div>'+
     '<button class="submit-btn '+(meetsMin?"ready":"locked")+'" '+(meetsMin?"":"disabled")+' id="place-order-btn" onclick="submitOrder()">'+(meetsMin?t("placeOrder"):t("addMore",{n:effectiveMin-totalQty,min:effectiveMin}))+'</button><div style="height:20px;"></div>';
 }
 function setCartOrderType(type){
