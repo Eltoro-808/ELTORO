@@ -1575,17 +1575,20 @@ var apiCallsActive = 0;
 function simpleHash(str){var h=0;for(var i=0;i<str.length;i++){h=((h<<5)-h)+str.charCodeAt(i);h|=0;}return h.toString(36);}
 function apiLoadShow(){apiCallsActive++;var el=document.getElementById("api-loading-bar");if(el)el.classList.remove("hidden");}
 function apiLoadHide(){apiCallsActive--;if(apiCallsActive<=0){apiCallsActive=0;var el=document.getElementById("api-loading-bar");if(el)el.classList.add("hidden");}}
-function api(method, path, body) {
+function api(method, path, body, silent) {
   apiLoadShow();
   var opts = { method: method, headers: apiHeaders() };
   if (body && (method === "POST" || method === "PUT")) opts.body = JSON.stringify(body);
   return fetch(API_BASE + path, opts).then(function(r) { 
     apiLoadHide();
-    if(!r.ok) { showToast("Server error — try again","error"); return null; }
+    if(!r.ok) { 
+      if(!silent && method !== "GET") showToast("Server error — try again","error"); 
+      return null; 
+    }
     return r.json(); 
   }).catch(function(e) { 
     apiLoadHide();
-    showToast("Connection failed — check your internet","error");
+    if(!silent && method !== "GET") showToast("Connection failed — check your internet","error");
     console.log("API err:", e); 
     return null; 
   });
