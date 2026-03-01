@@ -1577,18 +1577,19 @@ function apiLoadShow(){apiCallsActive++;var el=document.getElementById("api-load
 function apiLoadHide(){apiCallsActive--;if(apiCallsActive<=0){apiCallsActive=0;var el=document.getElementById("api-loading-bar");if(el)el.classList.add("hidden");}}
 function api(method, path, body, silent) {
   apiLoadShow();
+  var isGet = method === "GET";
   var opts = { method: method, headers: apiHeaders() };
   if (body && (method === "POST" || method === "PUT")) opts.body = JSON.stringify(body);
   return fetch(API_BASE + path, opts).then(function(r) { 
     apiLoadHide();
     if(!r.ok) { 
-      if(!silent && method !== "GET") showToast("Server error — try again","error"); 
+      if(!silent && !isGet) showToast("Server error — try again","error"); 
       return null; 
     }
-    return r.json(); 
+    return r.json().catch(function(){ return null; }); 
   }).catch(function(e) { 
     apiLoadHide();
-    if(!silent && method !== "GET") showToast("Connection failed — check your internet","error");
+    if(!silent && !isGet) showToast("Connection failed — check your internet","error");
     console.log("API err:", e); 
     return null; 
   });
