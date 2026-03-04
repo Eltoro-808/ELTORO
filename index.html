@@ -417,19 +417,42 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div style="padding:0 12px;">
       <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center;">
         <div style="font-size:40px;margin-bottom:8px;">📱</div>
-        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;">Check Your Order Status</div>
-        <div style="font-size:13px;color:var(--text-gray);font-weight:600;">Enter your phone number below to see real-time updates on your order</div>
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;" id="track-check-title">Check Your Order Status</div>
+        <div style="font-size:13px;color:var(--text-gray);font-weight:600;" id="track-check-sub">Enter your phone number below to see real-time updates on your order</div>
       </div>
       <div style="margin-bottom:8px;"><input class="form-input" id="track-phone" type="tel" placeholder="Enter your phone to track orders" oninput="renderMyOrders()" style="font-size:14px;"/></div>
       <div id="my-orders-list"></div>
       <div id="track-status-legend" style="margin-top:20px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:14px;">
-        <div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Order Status Guide</div>
-        <div style="font-size:13px;color:#ccc;line-height:2;">
+        <div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;" id="track-guide-title">Order Status Guide</div>
+        <div style="font-size:13px;color:#ccc;line-height:2;" id="track-guide-body">
           🟡 <span style="font-weight:700;">Received</span> — We got your order<br>
           📦 <span style="font-weight:700;">Packing</span> — Being prepared<br>
           ✅ <span style="font-weight:700;">Ready</span> — Ready for pickup<br>
           🚗 <span style="font-weight:700;">On the Way</span> — Out for delivery<br>
           ✅ <span style="font-weight:700;">Complete</span> — Delivered or picked up
+        </div>
+      </div>
+      <div id="delivery-progress-section" style="display:none;margin-top:20px;">
+        <div class="progress-card">
+          <div style="font-size:16px;font-weight:900;color:var(--primary);margin-bottom:12px;text-align:center;" id="bulk-title">🐂 Bulk Items</div>
+          <div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;" id="orders-month-label">Orders This Month</div>
+          <div class="pc-count"><span id="order-count">0</span><span style="font-size:20px;color:var(--text-gray);"> / <span id="min-count">50</span></span></div>
+          <div class="pc-bar-wrap"><div class="pc-bar-fill" id="pc-fill" style="width:0%"></div></div>
+          <div class="pc-status" id="pc-status">Need 50 orders to make the trip!</div>
+          <div id="bulk-location-info" style="margin-top:14px;padding-top:14px;border-top:1px solid #333;">
+            <div style="text-align:center;margin-bottom:10px;">
+              <div style="font-size:10px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;" id="bulk-heading-label">Heading To</div>
+              <div style="font-size:18px;font-weight:900;color:var(--primary);margin-top:4px;" id="bulk-city-name">Not set</div>
+            </div>
+            <div style="text-align:center;margin-bottom:10px;">
+              <div style="font-size:10px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;" id="bulk-dropoff-label">Drop-off Location</div>
+              <div style="font-size:14px;font-weight:800;color:#fff;margin-top:4px;" id="bulk-destination">Not set</div>
+            </div>
+            <div style="text-align:center;">
+              <div style="font-size:10px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;" id="bulk-arrival-label">Arrival Date</div>
+              <div style="font-size:14px;font-weight:800;color:#fff;margin-top:4px;" id="bulk-arrival-date">Not set</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -599,7 +622,10 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <input class="a-input" id="set-deadline" type="datetime-local" style="margin-top:4px;"/>
       <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Delivery Date & Time</label>
       <input class="a-input" id="set-delivery-dt" type="datetime-local" style="margin-top:4px;"/>
-      <input class="a-input" id="set-address" type="text" placeholder="Delivery address"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">City Name (e.g. Houston, Dallas)</label>
+      <input class="a-input" id="set-delivery-city" type="text" placeholder="e.g. Houston, Dallas, San Antonio" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Drop-off Location / Address</label>
+      <input class="a-input" id="set-address" type="text" placeholder="Full address or location name"/>
       <input class="a-input" id="set-notes" type="text" placeholder="Notes (optional)"/>
       <button class="a-btn" onclick="saveDelivery(this)">Save Delivery Info</button>
     </div>
@@ -731,7 +757,10 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       </div>
       <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Trip Rate ($)</label>
       <input class="a-input" id="new-worker-trip" type="number" step="0.01" placeholder="Pay per delivery trip ($)" style="margin-top:4px;"/>
-      <button class="a-btn blue" onclick="addWorker(this)">Add Worker</button>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:12px;">🔑 Personal Password</label>
+      <input class="a-input" id="new-worker-password" type="text" placeholder="Set a login password for this worker" style="margin-top:4px;"/>
+      <div style="font-size:11px;color:var(--text-gray);margin-top:2px;">Worker logs in with their name + this password. Delete worker = can't log in.</div>
+      <button class="a-btn blue" onclick="addWorker(this)" style="margin-top:12px;">Add Worker</button>
     </div>
     <div class="card"><h3>👷 Worker List</h3><div id="worker-list"></div></div>
     <div class="card">
@@ -1052,10 +1081,18 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="card">
       <h3>📍 Delivery Address</h3>
       <p style="font-size:16px;font-weight:800;" id="del-address">Not set yet</p>
+      <p style="font-size:14px;font-weight:700;color:var(--primary);margin-top:4px;" id="del-city-display"></p>
     </div>
     <div class="card">
       <h3>📅 Date & Time</h3>
       <p style="font-size:16px;font-weight:800;" id="del-datetime">Not set yet</p>
+    </div>
+    <div class="card">
+      <h3>🕐 Set Your Arrival Time</h3>
+      <p style="font-size:12px;color:var(--text-gray);font-weight:600;margin-bottom:8px;">Let customers know when you'll arrive at the drop-off location</p>
+      <input class="a-input" id="set-driver-eta" type="datetime-local" style="margin-top:4px;"/>
+      <button class="a-btn" onclick="saveDriverETA(this)" style="margin-top:8px;">🚚 Set Arrival Time</button>
+      <div id="driver-eta-display" style="font-size:14px;font-weight:800;color:#4caf50;margin-top:8px;"></div>
     </div>
     <div class="card">
       <h3>🚗 Delivery Status</h3>
@@ -1311,7 +1348,35 @@ var LANGS = {
     opPurchases:"Purchases",
     opAfterExp:"After Exp", opWorkers:"Workers", opRepeat:"Repeat",
     puOrders:"Pickup Orders", locOrders:"Local Deliveries",
-    trackPhone:"Enter your phone to track orders", myOrders:"📦 My Orders"
+    trackPhone:"Enter your phone to track orders", myOrders:"📦 My Orders",
+    // Track page
+    trackTitle:"📦 Track Your Order",
+    checkOrderStatus:"Check Your Order Status",
+    checkOrderSub:"Enter your phone number below to see real-time updates on your order",
+    statusGuide:"Order Status Guide",
+    statusReceived:"Received", statusReceivedDesc:"We got your order",
+    statusPacking:"Packing", statusPackingDesc:"Being prepared",
+    statusReady:"Ready", statusReadyDesc:"Ready for pickup",
+    statusOnWay:"On the Way", statusOnWayDesc:"Out for delivery",
+    statusComplete:"Complete", statusCompleteDesc:"Delivered or picked up",
+    // Bulk items
+    bulkItems:"Bulk Items",
+    headingTo:"Heading To",
+    dropOffLocation:"Drop-off Location",
+    arrivalDate:"Arrival Date",
+    orderPackedWaiting:"Your order is packed & ready!",
+    waitingForMore:"Waiting for {n} more orders before we make the trip",
+    ordersSoFar:"{n} / {min} orders so far",
+    tripConfirmed:"Trip confirmed!",
+    minOrdersMet:"Minimum orders met!",
+    tripHappening:"Trip is happening! Driver arrival time coming soon.",
+    driverArriving:"Driver arriving:",
+    // Driver
+    setArrivalTime:"Set Your Arrival Time",
+    arrivalTimeSub:"Let customers know when you'll arrive at the drop-off location",
+    setArrivalBtn:"🚚 Set Arrival Time",
+    customersWillSee:"Customers will see:",
+    cityName:"City Name"
   },
   es: {
     all:"Todo", dairy:"Lácteos", meat:"Carne", breadgrains:"Pan y Granos",
@@ -1399,7 +1464,35 @@ var LANGS = {
     opPurchases:"Compras",
     opAfterExp:"Después Gastos", opWorkers:"Trabajadores", opRepeat:"Repetidos",
     puOrders:"Pedidos para Recoger", locOrders:"Entregas Locales",
-    trackPhone:"Ingresa tu teléfono para rastrear pedidos", myOrders:"📦 Mis Pedidos"
+    trackPhone:"Ingresa tu teléfono para rastrear pedidos", myOrders:"📦 Mis Pedidos",
+    // Track page
+    trackTitle:"📦 Rastrear Tu Pedido",
+    checkOrderStatus:"Verifica el Estado de Tu Pedido",
+    checkOrderSub:"Ingresa tu número de teléfono para ver actualizaciones en tiempo real de tu pedido",
+    statusGuide:"Guía de Estado del Pedido",
+    statusReceived:"Recibido", statusReceivedDesc:"Recibimos tu pedido",
+    statusPacking:"Empacando", statusPackingDesc:"Siendo preparado",
+    statusReady:"Listo", statusReadyDesc:"Listo para recoger",
+    statusOnWay:"En Camino", statusOnWayDesc:"En ruta de entrega",
+    statusComplete:"Completado", statusCompleteDesc:"Entregado o recogido",
+    // Bulk items
+    bulkItems:"Artículos al Por Mayor",
+    headingTo:"Rumbo A",
+    dropOffLocation:"Punto de Entrega",
+    arrivalDate:"Fecha de Llegada",
+    orderPackedWaiting:"¡Tu pedido está empacado y listo!",
+    waitingForMore:"Esperando {n} pedidos más para hacer el viaje",
+    ordersSoFar:"{n} / {min} pedidos hasta ahora",
+    tripConfirmed:"¡Viaje confirmado!",
+    minOrdersMet:"¡Pedidos mínimos alcanzados!",
+    tripHappening:"¡El viaje se hará! Hora de llegada del conductor pronto.",
+    driverArriving:"Conductor llega:",
+    // Driver
+    setArrivalTime:"Establecer Hora de Llegada",
+    arrivalTimeSub:"Deja que los clientes sepan cuándo llegarás al punto de entrega",
+    setArrivalBtn:"🚚 Establecer Hora de Llegada",
+    customersWillSee:"Los clientes verán:",
+    cityName:"Nombre de la Ciudad"
   }
 }
 var currentLang = "en";
@@ -1506,6 +1599,18 @@ function setLang(lang) {
   // Track page
   var mot=document.getElementById("my-orders-title");if(mot)mot.textContent=t("myOrders");
   var tp=document.getElementById("track-phone");if(tp)tp.placeholder=t("trackPhone");
+  // Track page translations
+  var bt2=document.getElementById("board-title");if(bt2)bt2.textContent=t("trackTitle");
+  var tct=document.getElementById("track-check-title");if(tct)tct.textContent=t("checkOrderStatus");
+  var tcs=document.getElementById("track-check-sub");if(tcs)tcs.textContent=t("checkOrderSub");
+  var tgt=document.getElementById("track-guide-title");if(tgt)tgt.textContent=t("statusGuide");
+  var tgb=document.getElementById("track-guide-body");
+  if(tgb)tgb.innerHTML='🟡 <span style="font-weight:700;">'+t("statusReceived")+'</span> — '+t("statusReceivedDesc")+'<br>📦 <span style="font-weight:700;">'+t("statusPacking")+'</span> — '+t("statusPackingDesc")+'<br>✅ <span style="font-weight:700;">'+t("statusReady")+'</span> — '+t("statusReadyDesc")+'<br>🚗 <span style="font-weight:700;">'+t("statusOnWay")+'</span> — '+t("statusOnWayDesc")+'<br>✅ <span style="font-weight:700;">'+t("statusComplete")+'</span> — '+t("statusCompleteDesc");
+  var btt=document.getElementById("bulk-title");if(btt)btt.textContent="🐂 "+t("bulkItems");
+  var bhl=document.getElementById("bulk-heading-label");if(bhl)bhl.textContent=t("headingTo");
+  var bdl=document.getElementById("bulk-dropoff-label");if(bdl)bdl.textContent=t("dropOffLocation");
+  var bal=document.getElementById("bulk-arrival-label");if(bal)bal.textContent=t("arrivalDate");
+  renderMyOrders();
 }
 
 
@@ -1539,7 +1644,7 @@ var S = {
   products: JSON.parse(JSON.stringify(DEFAULTS)),
   orders: [], cart: [], trips: [], expenses: [], payments: [],
   suppliers: [], purchases: [], workers: [], monthHistory: [],
-  deadline: null, deliveryDt: null, deliveryAddress: null, deliveryNotes: null,
+  deadline: null, deliveryDt: null, deliveryAddress: null, deliveryNotes: null, deliveryCity: null, driverETA: null,
   minOrders: 50, minItems: 8, cycleMode: "monthly",
   gatePass: "1991", ordersPass: "1994", adminPass: "1990",
   invPass: "1993", opsPass: "1992", deliveryPass: "1995",
@@ -1672,6 +1777,8 @@ function syncFromAPI() {
     S.deadline = data.deadline || S.deadline;
     S.deliveryDt = data.delivery_date || S.deliveryDt;
     S.deliveryAddress = data.delivery_location || S.deliveryAddress;
+    S.deliveryCity = data.delivery_city || S.deliveryCity;
+    S.driverETA = data.driver_eta || S.driverETA;
     S.minItems = data.min_items || S.minItems;
     S.minOrders = data.min_orders || S.minOrders;
     S.primaryColor = data.primary_color || S.primaryColor;
@@ -2014,8 +2121,12 @@ function doLogin() {
     currentWorkerName = worker.name;
     if(worker.type!=="boss") clockIn(worker);
     
+    // Check personal password first, then master role password as backup
+    var personalMatch = worker.password && pw === worker.password;
     var passMap = {orders:S.ordersPass, inventory:S.invPass, operations:S.opsPass, delivery:S.deliveryPass, pickups:S.pickupsPass, local:S.localDeliveryPass};
-    if(pw === passMap[selRole]) {
+    var masterMatch = pw === passMap[selRole];
+    
+    if(personalMatch || masterMatch) {
       closeLogin();
       var appMap2 = {orders:"orders", inventory:"inv", operations:"ops", delivery:"delivery", pickups:"pickups", local:"local"};
       launchApp(appMap2[selRole]);
@@ -2610,6 +2721,32 @@ function renderBoard(){
     var savedPhone=localStorage.getItem("eltoro_customer_phone");
     if(savedPhone){trackPhoneEl.value=savedPhone;renderMyOrders();}
   }
+  // Show delivery progress counter only when delivery mode is on
+  var dpSection=document.getElementById("delivery-progress-section");
+  if(dpSection){
+    if(S.deliveryEnabled){
+      dpSection.style.display="block";
+      var deliveryOrders=S.orders.filter(function(o){return o.orderType==="delivery"||!o.orderType;});
+      var total=deliveryOrders.length;var min=S.minOrders;var pct=Math.min((total/min)*100,100);
+      var oc=document.getElementById("order-count");if(oc)oc.textContent=total;
+      var mc=document.getElementById("min-count");if(mc)mc.textContent=min;
+      var pf=document.getElementById("pc-fill");if(pf)pf.style.width=pct+"%";
+      var status=document.getElementById("pc-status");
+      if(status){
+        if(total>=min){status.textContent=t("weAreGoing",{n:total});status.className="pc-status ready";}
+        else{status.textContent=t((min-total)===1?"needMoreTrip":"needMoreTripPlural",{n:min-total});status.className="pc-status";}
+      }
+      // Bulk location and arrival date
+      var bulkCity=document.getElementById("bulk-city-name");
+      if(bulkCity) bulkCity.textContent=S.deliveryCity||"Not set";
+      var bulkDest=document.getElementById("bulk-destination");
+      if(bulkDest) bulkDest.textContent=S.deliveryAddress||"Not set";
+      var bulkDate=document.getElementById("bulk-arrival-date");
+      if(bulkDate) bulkDate.textContent=S.deliveryDt?fmtDT(S.deliveryDt):"Not set";
+    } else {
+      dpSection.style.display="none";
+    }
+  }
 }
 
 // ============================================================
@@ -2654,9 +2791,39 @@ function renderMyOrders(){
   var myOrders=S.orders.filter(function(o){return o.phone&&o.phone.replace(/\D/g,"").includes(phone);});
   if(!myOrders.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-gray);font-weight:700;">'+t("dNoOrders")+'</div>';return;}
   var statusMap={new:["🟡","Received"],pending_deposit:["🟠","Waiting for Deposit"],packing:["📦","Packing"],ready:["✅","Ready"],en_route:["🚗","On the Way"],delivered:["✅","Delivered"],picked_up:["✅","Picked Up"],done:["✅","Complete"]};
+  // For bulk delivery: check if minimum orders met
+  var deliveryOrders=S.orders.filter(function(o){return o.orderType==="delivery"||!o.orderType;});
+  var bulkTotal=deliveryOrders.length;
+  var bulkMin=S.minOrders||50;
+  var bulkMet=bulkTotal>=bulkMin;
   el.innerHTML=myOrders.map(function(o){
     var s=statusMap[o.status]||["⏳",o.status];
     var itemsList=o.items.map(function(i){return i.qty+"x "+i.name;}).join(", ");
+    // Bulk delivery message
+    var bulkMsg="";
+    if((o.orderType==="delivery"||!o.orderType)&&S.deliveryEnabled){
+      if(o.status==="done"&&!bulkMet){
+        bulkMsg='<div style="background:#1a1a0a;border:1px solid #FFC107;border-radius:8px;padding:10px;margin-top:8px;text-align:center;">'+
+          '<div style="font-size:13px;font-weight:800;color:#FFC107;">⏳ '+t("orderPackedWaiting")+'</div>'+
+          '<div style="font-size:12px;color:#ccc;margin-top:4px;">'+t("waitingForMore",{n:bulkMin-bulkTotal})+(S.deliveryCity?" "+t("headingTo").toLowerCase()+" "+S.deliveryCity:"")+'</div>'+
+          '<div style="font-size:11px;color:var(--text-gray);margin-top:4px;">'+t("ordersSoFar",{n:bulkTotal,min:bulkMin})+'</div>'+
+        '</div>';
+      } else if(o.status==="done"&&bulkMet){
+        if(S.driverETA){
+          bulkMsg='<div style="background:#1a2a1a;border:1px solid #4caf50;border-radius:8px;padding:10px;margin-top:8px;text-align:center;">'+
+            '<div style="font-size:13px;font-weight:800;color:#4caf50;">🚚 '+t("tripConfirmed")+'</div>'+
+            (S.deliveryCity?'<div style="font-size:14px;font-weight:900;color:var(--primary);margin-top:4px;">'+t("headingTo")+' '+S.deliveryCity+'</div>':'')+
+            (S.deliveryAddress?'<div style="font-size:12px;color:#ccc;margin-top:2px;">📍 '+S.deliveryAddress+'</div>':'')+
+            '<div style="font-size:13px;font-weight:800;color:#fff;margin-top:6px;">🕐 '+t("driverArriving")+' '+fmtDT(S.driverETA)+'</div>'+
+          '</div>';
+        } else {
+          bulkMsg='<div style="background:#1a2a1a;border:1px solid #4caf50;border-radius:8px;padding:10px;margin-top:8px;text-align:center;">'+
+            '<div style="font-size:13px;font-weight:800;color:#4caf50;">✅ '+t("minOrdersMet")+'</div>'+
+            '<div style="font-size:12px;color:#ccc;margin-top:4px;">'+t("tripHappening")+(S.deliveryCity?' '+t("headingTo").toLowerCase()+' '+S.deliveryCity+'!':'')+'</div>'+
+          '</div>';
+        }
+      }
+    }
     return '<div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:14px;margin-bottom:10px;">'+
       '<div style="display:flex;justify-content:space-between;align-items:center;">'+
         '<div style="font-weight:800;color:#fff;font-size:15px;">#'+o.slot+' · '+o.name+'</div>'+
@@ -2664,6 +2831,7 @@ function renderMyOrders(){
       '</div>'+
       '<div style="font-size:12px;color:var(--text-gray);margin-top:4px;">'+itemsList+'</div>'+
       '<div style="font-size:14px;font-weight:800;color:var(--primary);margin-top:6px;">$'+o.total.toFixed(2)+'</div>'+
+      bulkMsg+
     '</div>';
   }).join("");
 }
@@ -2843,6 +3011,7 @@ function loadDeliveryInputs(){
   if(S.deadline)document.getElementById("set-deadline").value=S.deadline;
   if(S.deliveryDt)document.getElementById("set-delivery-dt").value=S.deliveryDt;
   if(S.deliveryAddress)document.getElementById("set-address").value=S.deliveryAddress;
+  var cityEl=document.getElementById("set-delivery-city");if(cityEl&&S.deliveryCity)cityEl.value=S.deliveryCity;
   if(S.deliveryNotes)document.getElementById("set-notes").value=S.deliveryNotes;
   document.getElementById("set-min-orders").value=S.minOrders;
   document.getElementById("set-min-items").value=S.minItems;
@@ -2857,8 +3026,11 @@ function saveDelivery(btn){
   S.deliveryDt=document.getElementById("set-delivery-dt").value||null;
   S.deliveryAddress=document.getElementById("set-address").value.trim()||null;
   S.deliveryNotes=document.getElementById("set-notes").value.trim()||null;
+  var cityEl=document.getElementById("set-delivery-city");
+  S.deliveryCity=cityEl?cityEl.value.trim()||null:null;
   if(S.deliveryDt&&S.deliveryAddress)S.arrivalText="Arriving "+fmtDT(S.deliveryDt)+" at "+S.deliveryAddress;
-  save();renderShop();if(btn)buttonFlash(btn,"✅ Saved!");
+  save();renderShop();renderBoard();if(btn)buttonFlash(btn,"✅ Saved!");
+  api("PUT","/settings",{deadline:S.deadline,delivery_date:S.deliveryDt,delivery_location:S.deliveryAddress,delivery_city:S.deliveryCity});
 }
 function saveHero(btn){
   S.heroTitle=document.getElementById("set-hero-title").value.trim()||"SHOP NOW!";
@@ -3016,6 +3188,52 @@ function loadPickupInputs(){
 // ============================================================
 // PICKUPS DASHBOARD
 // ============================================================
+// ============================================================
+// DELIVERY WORKER DASHBOARD
+// ============================================================
+function renderPickupList(){
+  // Shows orders ready for delivery pickup
+  var list=document.getElementById("del-orders-list");if(!list)return;
+  var orders=S.orders.filter(function(o){return (o.orderType==="delivery"||!o.orderType)&&o.status==="done";});
+  if(!orders.length){list.innerHTML='<div class="empty-state"><div class="ei">🚚</div><p>No orders ready for delivery</p></div>';return;}
+  list.innerHTML=orders.map(function(o){
+    var itemsHtml=o.items.map(function(i){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#ccc;padding:2px 0;"><span>'+i.qty+'x '+i.name+'</span><span>$'+(i.price*i.qty).toFixed(2)+'</span></div>';}).join("");
+    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">✅ Packed</span></div></div><div class="oc-items">'+itemsHtml+'</div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div></div>';
+  }).join("");
+}
+function renderDeliveryLocation(){
+  var addrEl=document.getElementById("del-address");
+  if(addrEl) addrEl.textContent=S.deliveryAddress||"Not set yet";
+  var cityEl=document.getElementById("del-city-display");
+  if(cityEl) cityEl.textContent=S.deliveryCity?"🏙️ "+S.deliveryCity:"";
+  var dtEl=document.getElementById("del-datetime");
+  if(dtEl) dtEl.textContent=S.deliveryDt?fmtDT(S.deliveryDt):"Not set yet";
+  // Show current driver ETA
+  var etaInput=document.getElementById("set-driver-eta");
+  if(etaInput&&S.driverETA) etaInput.value=S.driverETA;
+  var etaDisplay=document.getElementById("driver-eta-display");
+  if(etaDisplay){
+    if(S.driverETA) etaDisplay.textContent="🕐 Customers will see: "+fmtDT(S.driverETA);
+    else etaDisplay.textContent="";
+  }
+}
+function renderDeliveryTrips(){
+  // Handled by renderTrips
+}
+function saveDriverETA(btn){
+  var etaEl=document.getElementById("set-driver-eta");
+  if(!etaEl) return;
+  S.driverETA=etaEl.value||null;
+  save();
+  var etaDisplay=document.getElementById("driver-eta-display");
+  if(etaDisplay){
+    if(S.driverETA) etaDisplay.textContent="🕐 Customers will see: "+fmtDT(S.driverETA);
+    else etaDisplay.textContent="";
+  }
+  api("PUT","/settings",{driver_eta:S.driverETA||""});
+  if(btn)buttonFlash(btn,"✅ Arrival Time Set!");
+}
+
 function renderPickupsOrders(){
   var orders=S.orders.filter(function(o){return o.orderType==="pickup"&&o.status!=="picked_up";});
   var pending=orders.filter(function(o){return o.status==="new";}).length;
@@ -3430,25 +3648,30 @@ function addWorker(btn){
   if(wType==="boss") roles=["Orders","Inventory","Operations","Delivery","Pickups","Local Delivery"];
   var hourly=parseFloat(document.getElementById("new-worker-hourly").value)||0;
   var tripPay=parseFloat(document.getElementById("new-worker-trip").value)||0;
+  var personalPass=document.getElementById("new-worker-password").value.trim();
   if(!name){showToast("Enter worker name!");return;}
   if(wType!=="boss"&&!roles.length){showToast("Pick at least one role!");return;}
+  if(wType!=="boss"&&!personalPass){showToast("Set a password for this worker!");return;}
   if(!S.workers)S.workers=[];
-  S.workers.push({id:Date.now(),name:name,role:roles.join(", "),roles:roles,type:wType,hourlyRate:hourly,tripRate:tripPay,payPerTrip:tripPay,active:true});
+  S.workers.push({id:Date.now(),name:name,role:roles.join(", "),roles:roles,type:wType,hourlyRate:hourly,tripRate:tripPay,payPerTrip:tripPay,active:true,password:personalPass});
   document.getElementById("new-worker-name").value="";
   document.getElementById("new-worker-hourly").value="";
   document.getElementById("new-worker-trip").value="";
+  document.getElementById("new-worker-password").value="";
   ["wr-orders","wr-inventory","wr-operations","wr-delivery","wr-pickups","wr-local"].forEach(function(id){document.getElementById(id).checked=false;});
   setWorkerType("worker");
   save();renderWorkerList();renderPayroll();if(btn)buttonFlash(btn,"✅ Added!");
   // Sync worker to API
   var newW = S.workers[S.workers.length-1];
   api("POST", "/auth/register", {
-    name:newW.name, password:S.ordersPass, worker_type:newW.type,
+    name:newW.name, password:personalPass, worker_type:newW.type,
     hourly_rate:newW.hourlyRate, trip_rate:newW.tripRate,
     role_orders: roles.indexOf("Orders")!==-1 ? 1 : 0,
     role_inventory: roles.indexOf("Inventory")!==-1 ? 1 : 0,
     role_operations: roles.indexOf("Operations")!==-1 ? 1 : 0,
-    role_delivery: roles.indexOf("Delivery")!==-1 ? 1 : 0
+    role_delivery: roles.indexOf("Delivery")!==-1 ? 1 : 0,
+    role_pickups: roles.indexOf("Pickups")!==-1 ? 1 : 0,
+    role_local: roles.indexOf("Local Delivery")!==-1 ? 1 : 0
   });
 }
 function renderWorkerList(){
@@ -3465,7 +3688,8 @@ function renderWorkerList(){
       payInfo+='$'+tr.toFixed(2)+'/trip';
     }
     if(!payInfo)payInfo='No pay set';
-    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+' '+typeBadge+'</div><div class="worker-role-label">'+w.role+'</div><div class="worker-pay-label">'+payInfo+'</div></div><div style="display:flex;gap:6px;"><button class="pr-btn pr-edit" onclick="editWorkerPay(\''+w.id+'\')">Edit</button><button class="pr-btn pr-del" onclick="deleteWorker(\''+w.id+'\')">Del</button></div></div>';
+    var passIndicator=w.password?'<span style="color:#4caf50;font-size:11px;font-weight:800;"> · 🔑 Password set</span>':'<span style="color:#ff6666;font-size:11px;font-weight:800;"> · ⚠️ No password</span>';
+    return '<div class="worker-row"><div class="worker-info"><div class="worker-name-label">'+w.name+' '+typeBadge+'</div><div class="worker-role-label">'+w.role+'</div><div class="worker-pay-label">'+payInfo+(w.type!=="boss"?passIndicator:"")+'</div></div><div style="display:flex;gap:6px;"><button class="pr-btn pr-edit" onclick="editWorkerPay(\''+w.id+'\')">Edit</button><button class="pr-btn pr-del" onclick="deleteWorker(\''+w.id+'\')">Del</button></div></div>';
   }).join("");
 }
 function editWorkerPay(id){
@@ -3486,6 +3710,9 @@ function editWorkerPay(id){
     '</div>'+
     '<label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Trip Rate ($)</label>'+
     '<input class="a-input" id="edit-worker-trip" type="number" step="0.01" value="'+(w.tripRate||w.payPerTrip||0)+'" style="margin-top:4px;"/>'+
+    '<label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:12px;">🔑 Change Password</label>'+
+    '<input class="a-input" id="edit-worker-password" type="text" placeholder="Leave blank to keep current" style="margin-top:4px;"/>'+
+    '<div style="font-size:11px;color:var(--text-gray);margin-top:2px;">Current: '+(w.password||"not set")+'</div>'+
     '<button class="a-btn" style="margin-top:12px;" onclick="saveWorkerEdit(\''+w.id+'\',this)">Save Changes</button>';
   document.querySelector(".modal-card").innerHTML=html;
   document.querySelector(".modal-overlay").classList.add("active");
@@ -3506,6 +3733,8 @@ function saveWorkerEdit(id,btn){
   w.hourlyRate=parseFloat(document.getElementById("edit-worker-hourly").value)||0;
   w.tripRate=parseFloat(document.getElementById("edit-worker-trip").value)||0;
   w.payPerTrip=w.tripRate;
+  var newPass=document.getElementById("edit-worker-password").value.trim();
+  if(newPass) w.password=newPass;
   save();renderWorkerList();renderPayroll();
   if(btn)buttonFlash(btn,"✅ Saved!");
   setTimeout(closeModal,600);
@@ -4133,6 +4362,11 @@ function shareReceipt(orderId){
   var locationInfo="";
   if(order.orderType==="pickup"&&S.pickupLocation) locationInfo="Pickup at: "+S.pickupLocation+"\n"+(S.storeHours?"Hours: "+S.storeHours+"\n":"");
   if(order.orderType==="local"&&order.address) locationInfo="Deliver to: "+order.address+"\n";
+  if(order.orderType==="delivery"||!order.orderType) {
+    if(S.deliveryCity) locationInfo+="Heading to: "+S.deliveryCity+"\n";
+    if(S.deliveryAddress) locationInfo+="Location: "+S.deliveryAddress+"\n";
+    if(S.deliveryDt) locationInfo+="Arrival: "+fmtDT(S.deliveryDt)+"\n";
+  }
   var feeInfo=(order.deliveryFee&&order.deliveryFee>0)?"Delivery Fee: $"+order.deliveryFee.toFixed(2)+"\n":"";
   var receipt="🐂 EL TORO - Order Receipt\n"+
     "========================\n"+
