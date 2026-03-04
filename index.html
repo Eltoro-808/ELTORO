@@ -1657,6 +1657,7 @@ function syncFromAPI() {
   // Load settings
   api("GET", "/settings").then(function(data) {
     if (!data || data.error) return;
+    function toBool(v){return v==="1"||v===1||v===true||v==="true";}
     S.bizName = data.biz_name || S.bizName;
     S.bizEmoji = data.biz_emoji || S.bizEmoji;
     S.bannerEmoji = data.banner_emoji || S.bannerEmoji;
@@ -1676,8 +1677,7 @@ function syncFromAPI() {
     S.depositNote = data.deposit_note || S.depositNote;
     S.depositQR = data.deposit_qr || S.depositQR;
     S.appUrl = data.app_url || S.appUrl;
-    // Mode settings - D1 returns strings, so "0" must be treated as false
-    function toBool(v){return v==="1"||v===1||v===true;}
+    // Mode settings - D1 returns strings, so handle "0","1","true","false" etc
     if(data.delivery_enabled!==undefined) S.deliveryEnabled=toBool(data.delivery_enabled);
     if(data.local_enabled!==undefined) S.localEnabled=toBool(data.local_enabled);
     if(data.pickup_enabled!==undefined) S.pickupEnabled=toBool(data.pickup_enabled);
