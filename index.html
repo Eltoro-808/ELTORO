@@ -1629,8 +1629,15 @@ function showToast(msg, type) {
 }
 
 // Save to both localStorage (offline fallback) and API
+// SECURITY: Strip passwords before saving to localStorage
 function save() { 
-  try { localStorage.setItem("eltoro_v6", JSON.stringify(S)); } catch(e) {} 
+  try { 
+    var toSave = JSON.stringify(S, function(key, val) {
+      if (key === "gatePass" || key === "ordersPass" || key === "adminPass" || key === "invPass" || key === "opsPass" || key === "deliveryPass" || key === "pickupsPass" || key === "localDeliveryPass") return undefined;
+      return val;
+    });
+    localStorage.setItem("eltoro_v6", toSave); 
+  } catch(e) {} 
 }
 
 // Load from API first, fall back to localStorage
@@ -1662,17 +1669,18 @@ function syncFromAPI() {
     S.minOrders = data.min_orders || S.minOrders;
     S.primaryColor = data.primary_color || S.primaryColor;
     S.backdropColor = data.backdrop_color || S.backdropColor;
-    S.depositRequired = !!data.deposit_required;
+    S.depositRequired = toBool(data.deposit_required);
     S.depositAmount = data.deposit_amount || S.depositAmount;
     S.depositZelle = data.deposit_zelle || S.depositZelle;
     S.depositName = data.deposit_name || S.depositName;
     S.depositNote = data.deposit_note || S.depositNote;
     S.depositQR = data.deposit_qr || S.depositQR;
     S.appUrl = data.app_url || S.appUrl;
-    // Mode settings
-    if(data.delivery_enabled!==undefined) S.deliveryEnabled=!!data.delivery_enabled;
-    if(data.local_enabled!==undefined) S.localEnabled=!!data.local_enabled;
-    if(data.pickup_enabled!==undefined) S.pickupEnabled=!!data.pickup_enabled;
+    // Mode settings - D1 returns strings, so "0" must be treated as false
+    function toBool(v){return v==="1"||v===1||v===true;}
+    if(data.delivery_enabled!==undefined) S.deliveryEnabled=toBool(data.delivery_enabled);
+    if(data.local_enabled!==undefined) S.localEnabled=toBool(data.local_enabled);
+    if(data.pickup_enabled!==undefined) S.pickupEnabled=toBool(data.pickup_enabled);
     S.deliveryName=data.delivery_name||S.deliveryName;
     S.localName=data.local_name||S.localName;
     S.pickupName=data.pickup_name||S.pickupName;
@@ -1681,9 +1689,9 @@ function syncFromAPI() {
     S.localMinItems=data.local_min_items||S.localMinItems;
     S.localDeliveryFee=data.local_delivery_fee||S.localDeliveryFee;
     S.adminPhone=data.admin_phone||S.adminPhone;
-    if(data.show_admin_phone!==undefined) S.showAdminPhone=!!data.show_admin_phone;
-    if(data.local_zelle_required!==undefined) S.localZelleRequired=!!data.local_zelle_required;
-    save(); renderShop(); applyBizName();
+    if(data.show_admin_phone!==undefined) S.showAdminPhone=toBool(data.show_admin_phone);
+    if(data.local_zelle_required!==undefined) S.localZelleRequired=toBool(data.local_zelle_required);
+    save(); renderShop(); applyBizName(); updateStoreModeUI(); renderDatesCard();
   });
 
   // Load products
@@ -2239,7 +2247,7 @@ function renderShop() {
   }
   grid.innerHTML = filtered.map(function(p){
     var photoHtml = p.photo
-      ? '<div class="product-photo"><img loading="lazy" src="'+p.photo+' alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>'
+      ? '<div class="product-photo"><img loading="lazy" src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>'
       : '<div class="product-photo">'+p.emoji+'</div>';
     var cartQty = getCartQty(p.id);
     var variantHtml="";
@@ -2744,15 +2752,6 @@ function renderOrdersTab(){
   }).join("");
 }
 
-function toggleCheck(orderId,itemIdx,el){
-  var o=S.orders.find(function(x){return x.id===orderId;});
-  if(!o)return;
-  if(!o.checked)o.checked={};
-  o.checked[itemIdx]=el.checked;
-  var span=el.parentElement.querySelector(".oci-name");
-  if(span)span.style.cssText=el.checked?"text-decoration:line-through;color:#555;":"";
-  save();
-}
 
 function toggleCheck(orderId, itemIdx, el) {
   var o=S.orders.find(function(x){return x.id===orderId;});
@@ -2898,7 +2897,7 @@ function toggleStoreMode(mode){
   updateStoreModeUI();
   renderDatesCard();
   renderShop();
-  api("PUT","/settings",{delivery_enabled:S.deliveryEnabled,local_enabled:S.localEnabled,pickup_enabled:S.pickupEnabled});
+  api("PUT","/settings",{delivery_enabled:S.deliveryEnabled?1:0,local_enabled:S.localEnabled?1:0,pickup_enabled:S.pickupEnabled?1:0});
   showToast(mode.charAt(0).toUpperCase()+mode.slice(1)+(mode==="delivery"?S.deliveryEnabled:mode==="local"?S.localEnabled:S.pickupEnabled?" ON":" OFF"));
 }
 function saveModeNames(btn){
@@ -2948,7 +2947,7 @@ function updateStoreModeUI(){
 function toggleAdminPhone(){
   S.showAdminPhone=document.getElementById("toggle-admin-phone").checked;
   save();updateStoreModeUI();
-  api("PUT","/settings",{show_admin_phone:S.showAdminPhone});
+  api("PUT","/settings",{show_admin_phone:S.showAdminPhone?1:0});
 }
 function saveAdminPhone(btn){
   S.adminPhone=document.getElementById("set-admin-phone").value.trim();
@@ -3213,13 +3212,13 @@ function toggleDeposit(){
   var on=document.getElementById("deposit-toggle").checked;
   S.depositRequired=on;save();
   updateZelleUI();
-  api("PUT","/settings",{deposit_required:on});
+  api("PUT","/settings",{deposit_required:on?1:0});
 }
 function toggleLocalZelle(){
   var on=document.getElementById("local-zelle-toggle").checked;
   S.localZelleRequired=on;save();
   updateZelleUI();
-  api("PUT","/settings",{local_zelle_required:on});
+  api("PUT","/settings",{local_zelle_required:on?1:0});
 }
 function updateZelleUI(){
   var depOn=S.depositRequired;
@@ -3597,7 +3596,7 @@ function renderInvProducts(){
   var list=document.getElementById("inv-products-list");
   if(!S.products.length){list.innerHTML='<p style="color:var(--text-gray);font-size:14px;">No products yet.</p>';return;}
   list.innerHTML=S.products.map(function(p){
-    var photoHtml=p.photo?'<div class="prod-row-photo"><img loading="lazy" src="'+p.photo+' alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>':'<div class="prod-row-photo">'+p.emoji+'</div>';
+    var photoHtml=p.photo?'<div class="prod-row-photo"><img loading="lazy" src="'+p.photo+'" alt="'+p.name+'" onerror="this.style.display=\'none\'" /></div>':'<div class="prod-row-photo">'+p.emoji+'</div>';
     var margin=p.cost?((p.price-p.cost)/p.price*100).toFixed(0)+"% margin":"";
     return '<div class="prod-row">'+photoHtml+'<div class="prod-row-info"><div class="prod-row-name">'+p.name+(p.soldOut?" 🔴":"")+(!p.visible?" 👁️":"")+'</div><div class="prod-row-sub">Sell $'+parseFloat(p.price).toFixed(2)+' · Cost $'+parseFloat(p.cost||0).toFixed(2)+(margin?" · "+margin:"")+'</div></div><div class="pr-actions"><button class="pr-btn pr-edit" onclick="openEditModal('+p.id+')">Edit</button><button class="pr-btn pr-hide" onclick="toggleVisible('+p.id+')">'+(p.visible?"Hide":"Show")+'</button><button class="pr-btn pr-sold" onclick="toggleSoldOut('+p.id+')">'+(p.soldOut?"Restock":"SoldOut")+'</button><button class="pr-btn pr-del" onclick="deleteProduct('+p.id+')">Del</button></div></div>';
   }).join("");
@@ -3666,6 +3665,7 @@ function openEditModal(id){
   document.getElementById("edit-modal").classList.add("active");
 }
 function closeEditModal(){document.getElementById("edit-modal").classList.remove("active");editProductPhoto="";}
+function closeModal(){document.getElementById("edit-modal").classList.remove("active");}
 function saveEditProduct(){
   var id=parseInt(document.getElementById("edit-prod-id").value);
   var p=S.products.find(function(x){return x.id===id;});if(!p)return;
