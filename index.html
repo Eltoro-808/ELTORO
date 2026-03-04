@@ -376,7 +376,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
       <div class="hero-text"><h1 id="hero-title">SHOP NOW!</h1><p id="hero-sub">Order before the deadline and we'll deliver to you!</p></div>
       <div class="hero-bull">🐂</div>
     </div>
-    <div id="dates-section" style="display:flex;gap:10px;padding:0 12px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;">
+    <div id="dates-section" style="display:none;gap:10px;padding:0 12px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;">
       <div class="dates-card" id="dates-card-delivery" style="display:none;">
         <div class="dates-title" id="dt-delivery-title">🚚 Delivery</div>
         <div class="dates-row">
@@ -1556,7 +1556,8 @@ var S = {
   lastResetDate: null,
   // Store mode: "delivery" | "pickup" | "both" | "local"
   // Store mode toggles (independent on/off)
-  deliveryEnabled: true, pickupEnabled: false, localEnabled: false,
+  // Store mode toggles - null means "not loaded yet, wait for API"
+  deliveryEnabled: null, pickupEnabled: null, localEnabled: null,
   // Mode names (admin sets these)
   deliveryName: "", localName: "", pickupName: "",
   // Pickup settings
@@ -1681,6 +1682,10 @@ function syncFromAPI() {
     if(data.delivery_enabled!==undefined) S.deliveryEnabled=toBool(data.delivery_enabled);
     if(data.local_enabled!==undefined) S.localEnabled=toBool(data.local_enabled);
     if(data.pickup_enabled!==undefined) S.pickupEnabled=toBool(data.pickup_enabled);
+    // If API didn't have these keys at all, fall back to safe defaults
+    if(S.deliveryEnabled===null) S.deliveryEnabled=true;
+    if(S.localEnabled===null) S.localEnabled=false;
+    if(S.pickupEnabled===null) S.pickupEnabled=false;
     S.deliveryName=data.delivery_name||S.deliveryName;
     S.localName=data.local_name||S.localName;
     S.pickupName=data.pickup_name||S.pickupName;
@@ -1692,6 +1697,8 @@ function syncFromAPI() {
     if(data.show_admin_phone!==undefined) S.showAdminPhone=toBool(data.show_admin_phone);
     if(data.local_zelle_required!==undefined) S.localZelleRequired=toBool(data.local_zelle_required);
     save(); renderShop(); applyBizName(); updateStoreModeUI(); renderDatesCard();
+    // Show dates section now that we have real data from D1
+    var ds=document.getElementById("dates-section");if(ds)ds.style.display="flex";
   });
 
   // Load products
@@ -2884,6 +2891,8 @@ function saveTripSettings(btn){
 // ============================================================
 function getActiveModes(){
   var modes=[];
+  // If modes haven't loaded from API yet (null), show delivery as default
+  if(S.deliveryEnabled===null && S.localEnabled===null && S.pickupEnabled===null) return ["delivery"];
   if(S.deliveryEnabled) modes.push("delivery");
   if(S.localEnabled) modes.push("local");
   if(S.pickupEnabled) modes.push("pickup");
