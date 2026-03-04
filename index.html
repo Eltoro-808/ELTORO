@@ -413,20 +413,25 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
   </div>
   <div class="page" id="page-board">
     <div id="order-confirm-msg" style="display:none;"></div>
-    <div class="page-title" id="board-title">📋 Order Board</div>
-    <div class="arrival-banner"><div class="ab-label">🐂 El Toro Delivery</div><div class="ab-text" id="arrival-text">Date & location coming soon!</div></div>
-    <div class="progress-card">
-      <div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;" id="orders-month-label">Orders This Month</div>
-      <div class="pc-count"><span id="order-count">0</span><span style="font-size:20px;color:var(--text-gray);"> / <span id="min-count">50</span></span></div>
-      <div class="pc-bar-wrap"><div class="pc-bar-fill" id="pc-fill" style="width:0%"></div></div>
-      <div class="pc-status" id="pc-status">Need 50 orders to make the trip!</div>
-    </div>
-    <div class="sec-title" id="customer-slots-label">Customer Slots</div>
-    <div id="board-slots"></div>
-    <div style="margin-top:20px;padding:0 12px;">
-      <div class="sec-title" id="my-orders-title">📦 My Orders</div>
+    <div class="page-title" id="board-title">📦 Track Your Order</div>
+    <div style="padding:0 12px;">
+      <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:20px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:40px;margin-bottom:8px;">📱</div>
+        <div style="font-size:16px;font-weight:800;color:#fff;margin-bottom:6px;">Check Your Order Status</div>
+        <div style="font-size:13px;color:var(--text-gray);font-weight:600;">Enter your phone number below to see real-time updates on your order</div>
+      </div>
       <div style="margin-bottom:8px;"><input class="form-input" id="track-phone" type="tel" placeholder="Enter your phone to track orders" oninput="renderMyOrders()" style="font-size:14px;"/></div>
       <div id="my-orders-list"></div>
+      <div id="track-status-legend" style="margin-top:20px;background:var(--card-bg);border:1px solid var(--card-border);border-radius:12px;padding:14px;">
+        <div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Order Status Guide</div>
+        <div style="font-size:13px;color:#ccc;line-height:2;">
+          🟡 <span style="font-weight:700;">Received</span> — We got your order<br>
+          📦 <span style="font-weight:700;">Packing</span> — Being prepared<br>
+          ✅ <span style="font-weight:700;">Ready</span> — Ready for pickup<br>
+          🚗 <span style="font-weight:700;">On the Way</span> — Out for delivery<br>
+          ✅ <span style="font-weight:700;">Complete</span> — Delivered or picked up
+        </div>
+      </div>
     </div>
   </div>
   <div class="page" id="page-qr">
@@ -2605,19 +2610,6 @@ function renderBoard(){
     var savedPhone=localStorage.getItem("eltoro_customer_phone");
     if(savedPhone){trackPhoneEl.value=savedPhone;renderMyOrders();}
   }
-  var deliveryOrders=S.orders.filter(function(o){return o.orderType==="delivery"||!o.orderType;});
-  var total=deliveryOrders.length;var min=S.minOrders;var pct=Math.min((total/min)*100,100);
-  document.getElementById("order-count").textContent=total;
-  document.getElementById("min-count").textContent=min;
-  document.getElementById("pc-fill").style.width=pct+"%";
-  var status=document.getElementById("pc-status");
-  if(total>=min){status.textContent=t("weAreGoing",{n:total});status.className="pc-status ready";}
-  else{status.textContent=t((min-total)===1?"needMoreTrip":"needMoreTripPlural",{n:min-total});status.className="pc-status";}
-  document.getElementById("arrival-text").textContent=S.arrivalText||t("comingSoon");
-  var oml=document.getElementById("orders-month-label");if(oml)oml.textContent=t("ordersThisMonthLabel");var csl=document.getElementById("customer-slots-label");if(csl)csl.textContent=t("customerSlotsLabel");
-  var slots=document.getElementById("board-slots");
-  if(!deliveryOrders.length){slots.innerHTML='<div class="empty-state"><div class="ei">📋</div><p>'+t('noOrdersBoard')+'</p></div>';return;}
-  slots.innerHTML=deliveryOrders.map(function(o){return '<div class="slot-item"><div class="slot-num">#'+o.slot+'</div><div style="font-size:15px;font-weight:800;">'+o.name+'</div></div>';}).join("");
 }
 
 // ============================================================
