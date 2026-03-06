@@ -1808,7 +1808,7 @@ function syncFromAPI() {
   });
 
   // Load products
-  api("GET", "/products?visible=1").then(function(data) {
+  api("GET", "/products").then(function(data) {
     if (!data || data.error || !data.length) return;
     S.products = data.map(function(p) {
       return {
@@ -1858,10 +1858,12 @@ function syncFromAPI() {
 
   // Load loyalty discounts
   api("GET", "/loyalty").then(function(data) {
-    if (!data || data.error) return;
+    if (!data || data.error || !Array.isArray(data)) return;
     S.loyaltyDiscounts = {};
     data.forEach(function(d) {
-      if (!d.used) S.loyaltyDiscounts[d.phone] = { percent: d.percent, assignedAt: d.assigned_at, used: false, dbId: d.id };
+      // Handle both 'active' (loyalty table) and 'used' (loyalty_discounts table) columns
+      var isActive = d.active === 1 || d.active === "1" || d.used === 0 || d.used === "0" || (!d.used && d.active !== 0);
+      if (isActive) S.loyaltyDiscounts[d.phone] = { percent: d.percent || 5, assignedAt: d.assigned_at || d.created_at, used: false, dbId: d.id };
     });
     save();
   });
@@ -1870,12 +1872,30 @@ function syncFromAPI() {
   api("GET", "/expenses").then(function(data) {
     if (!data || data.error) return;
     S.expenses = data.map(function(e) {
-      return { id: e.id, desc: e.description, amount: e.amount, cat: e.category, date: e.date, by: e.added_by };
+      return { id: e.id, desc: e.description, amount: e.amount, cat: e.category, date: e.date || e.created_at, by: e.added_by || "" };
     });
     save();
   });
 
   // Load workers
+  api("GET", "/workers").then(function(data) {
+    if (!data || data.error || !Array.isArray(data) || !data.length) return;
+    S.workers = data.map(function(w) {
+      var roles = [];
+      try { roles = JSON.parse(w.roles || "[]"); } catch(e) { roles = []; }
+      return {
+        id: w.id, name: w.name, type: w.type || "worker",
+        role: Array.isArray(roles) ? roles.join(", ") : (w.roles || ""),
+        roles: roles,
+        hourlyRate: w.hourly_rate || 0, tripRate: w.trip_rate || 0,
+        payPerTrip: w.trip_rate || 0, active: true,
+        password: w.password || ""
+      };
+    });
+    save(); renderWorkerList();
+  });
+
+  // Load passwords from settings/full
   api("GET", "/settings/full").then(function(data) {
     if (!data || data.error) return;
     // Only if admin/boss token
@@ -1893,7 +1913,7 @@ function syncFromAPI() {
   api("GET", "/trips").then(function(data) {
     if (!data || data.error) return;
     S.trips = data.map(function(t) {
-      return { id: t.id, dest: t.destination, miles: t.miles, gasCost: t.gas_cost, wearTear: t.wear_tear, cost: t.cost, revenue: t.revenue, profit: t.profit, driver: t.driver, date: t.date, month: t.month };
+      return { id: t.id, dest: t.destination || t.notes || "", miles: t.miles || 0, gasCost: t.gas_cost || 0, wearTear: t.wear_tear || 0, cost: t.cost || 0, revenue: t.revenue || 0, profit: t.profit || 0, driver: t.driver || "", date: t.date || t.created_at || "", month: t.month || "" };
     });
     save();
   });
@@ -1908,7 +1928,7 @@ function syncFromAPI() {
   // Load purchases
   api("GET", "/purchases").then(function(data) {
     if (!data || data.error) return;
-    S.purchases = data.map(function(p) { return { id: p.id, item: p.item, qty: p.qty, cost: p.cost, supplier: p.supplier, date: p.date, by: p.added_by }; });
+    S.purchases = data.map(function(p) { return { id: p.id, item: p.item || p.description || "", qty: p.qty || 0, cost: p.cost || p.amount || 0, supplier: p.supplier || "", date: p.date || p.created_at || "", by: p.added_by || "" }; });
     save();
   });
 
@@ -1916,7 +1936,7 @@ function syncFromAPI() {
   api("GET", "/timesheets").then(function(data) {
     if (!data || data.error) return;
     S.timesheets = data.map(function(t) {
-      return { id: t.id, workerId: t.worker_id, name: t.worker_name, role: t.role, clockIn: t.clock_in, clockOut: t.clock_out, hours: t.hours, hourlyRate: t.hourly_rate, earned: t.earned, date: t.date };
+      return { id: t.id, workerId: t.worker_id || 0, name: t.worker_name || "", role: t.role || "", clockIn: t.clock_in || "", clockOut: t.clock_out || "", hours: t.hours || 0, hourlyRate: t.hourly_rate || 0, earned: t.earned || 0, date: t.date || t.created_at || "" };
     });
     save();
   });
@@ -1924,7 +1944,7 @@ function syncFromAPI() {
   // Load payments
   api("GET", "/payments").then(function(data) {
     if (!data || data.error) return;
-    S.payments = data.map(function(p) { return { id: p.id, workerId: p.worker_id, name: p.worker_name, amount: p.amount, note: p.note, date: p.date }; });
+    S.payments = data.map(function(p) { return { id: p.id, workerId: p.worker_id || 0, name: p.worker_name || "", amount: p.amount || 0, note: p.note || "", date: p.date || p.created_at || "" }; });
     save();
   });
 }
@@ -3036,12 +3056,14 @@ function saveHero(btn){
   S.heroTitle=document.getElementById("set-hero-title").value.trim()||"SHOP NOW!";
   S.heroSub=document.getElementById("set-hero-sub").value.trim();
   save();renderShop();if(btn)buttonFlash(btn,"✅ Saved!");
+  api("PUT","/settings",{hero_title:S.heroTitle,hero_sub:S.heroSub});
 }
 function saveTripSettings(btn){
   S.minOrders=parseInt(document.getElementById("set-min-orders").value)||50;
   S.minItems=parseInt(document.getElementById("set-min-items").value)||8;
   S.cycleMode=document.getElementById("set-cycle-mode").value||"monthly";
   save();renderShop();if(btn)buttonFlash(btn,"✅ Saved!");
+  api("PUT","/settings",{min_orders:S.minOrders,min_items:S.minItems});
 }
 
 // ============================================================
@@ -3233,6 +3255,52 @@ function saveDriverETA(btn){
   api("PUT","/settings",{driver_eta:S.driverETA||""});
   if(btn)buttonFlash(btn,"✅ Arrival Time Set!");
 }
+function setDeliveryStatus(status){
+  var statusLabels={on_the_way:"🚗 On The Way",arrived:"📍 Arrived at Location",done:"✅ All Deliveries Complete"};
+  var el=document.getElementById("del-status-display");
+  if(el) el.textContent=statusLabels[status]||status;
+  // Update all delivery orders
+  S.orders.forEach(function(o){
+    if((o.orderType==="delivery"||!o.orderType)&&o.status==="done"){
+      if(status==="done"){o.status="delivered";api("PUT","/orders/"+o.id,{status:"delivered"});}
+    }
+  });
+  save();
+  showToast(statusLabels[status]||"Status updated!");
+}
+function saveDeliveryNotes(btn){
+  var notes=document.getElementById("del-notes");
+  if(notes) S.deliveryNotes=notes.value.trim();
+  save();
+  if(btn)buttonFlash(btn,"✅ Saved!");
+}
+function logDeliveryTrip(btn){
+  var dest=document.getElementById("dt-dest");
+  var miles=document.getElementById("dt-miles");
+  var gas=document.getElementById("dt-gas");
+  var mpg=document.getElementById("dt-mpg");
+  if(!dest||!miles||!gas||!mpg){showToast("Fill in all fields!");return;}
+  var destVal=dest.value.trim();
+  var milesVal=parseFloat(miles.value)||0;
+  var gasVal=parseFloat(gas.value)||0;
+  var mpgVal=parseFloat(mpg.value)||0;
+  if(!destVal||!milesVal||!gasVal||!mpgVal){showToast("Fill in destination, miles, gas and MPG!");return;}
+  var gasCost=(milesVal/mpgVal)*gasVal;
+  var wearTear=milesVal*0.67;
+  var cost=gasCost+wearTear;
+  var revenue=S.orders.filter(function(o){return o.orderType==="delivery"||!o.orderType;}).reduce(function(s,o){return s+o.total;},0);
+  var profit=revenue-cost;
+  if(!S.trips)S.trips=[];
+  S.trips.push({dest:destVal,miles:milesVal,gasCost:gasCost,wearTear:wearTear,cost:cost,revenue:revenue,profit:profit,driver:currentWorkerName,date:new Date().toLocaleDateString()});
+  save();
+  api("POST","/trips",{destination:destVal,miles:milesVal,gas_cost:gasCost,wear_tear:wearTear,cost:cost,revenue:revenue,profit:profit,driver:currentWorkerName});
+  if(btn)buttonFlash(btn,"✅ Trip Logged!");
+  showToast("Trip logged! Gas: $"+gasCost.toFixed(2)+" | Wear: $"+wearTear.toFixed(2)+" | Profit: $"+profit.toFixed(2));
+}
+function syncSummaryToSheets(){
+  // Placeholder - Google Sheets integration not configured
+  showToast("Sheets sync not configured yet. Use Export Data instead.");
+}
 
 function renderPickupsOrders(){
   var orders=S.orders.filter(function(o){return o.orderType==="pickup"&&o.status!=="picked_up";});
@@ -3358,10 +3426,20 @@ function savePasswords(btn){
   if(g)S.gatePass=g;if(o)S.ordersPass=o;if(a)S.adminPass=a;if(i)S.invPass=i;if(ops)S.opsPass=ops;if(del)S.deliveryPass=del;if(pu)S.pickupsPass=pu;if(loc)S.localDeliveryPass=loc;
   ["new-gate-pass","new-o-pass","new-a-pass","new-i-pass","new-ops-pass","new-del-pass","new-pu-pass","new-loc-pass"].forEach(function(id){document.getElementById(id).value="";});
   save();if(btn)buttonFlash(btn,"✅ Saved!");
+  var passUpdate={};
+  if(a)passUpdate.admin_pass=a;
+  if(o)passUpdate.orders_pass=o;
+  if(i)passUpdate.inventory_pass=i;
+  if(ops)passUpdate.operations_pass=ops;
+  if(del)passUpdate.delivery_pass=del;
+  if(pu)passUpdate.pickups_pass=pu;
+  if(loc)passUpdate.local_delivery_pass=loc;
+  if(Object.keys(passUpdate).length)api("PUT","/settings/full",passUpdate);
 }
 function saveBannerEmoji(btn){
   S.bannerEmoji=document.getElementById("set-banner-emoji").value.trim();
   save();renderShop();buttonFlash(btn,"✅ Saved!");
+  api("PUT","/settings",{banner_emoji:S.bannerEmoji});
 }
 function saveBizName(btn){
   var name=document.getElementById("set-biz-name").value.trim();
@@ -3464,7 +3542,7 @@ function toggleDepositSent(orderId){
 }
 function confirmDepositSent(id){
   var o=S.orders.find(function(x){return x.id===id;});
-  if(o){o.depositSent=true;o.depositSentAt=new Date().toISOString();save();}
+  if(o){o.depositSent=true;o.depositSentAt=new Date().toISOString();save();api("PUT","/orders/"+id,{deposit_sent:1});}
   var confirmEl=document.getElementById("order-confirm-msg");
   if(confirmEl){
     var itemsReceipt=o.items.map(function(i){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#ccc;padding:2px 0;"><span>'+i.qty+'x '+i.name+'</span><span>$'+(i.price*i.qty).toFixed(2)+'</span></div>';}).join("");
@@ -3567,7 +3645,9 @@ function loadDepositInputs(){
 }
 function confirmDeposit(id){
   var o=S.orders.find(function(x){return x.id===id;});
-  if(o){o.status="new";o.depositConfirmed=true;o.depositConfirmedAt=new Date().toISOString();save();renderOrdersTab();showToast("✅ Deposit confirmed for "+o.name+"!");}
+  if(o){o.status="new";o.depositConfirmed=true;o.depositConfirmedAt=new Date().toISOString();save();renderOrdersTab();showToast("✅ Deposit confirmed for "+o.name+"!");
+    api("PUT","/orders/"+id,{status:"new",deposit_sent:1});
+  }
 }
 function sendAdminBlast(){var count=S.orders.length;if(!count){showToast("No orders!");return;}showToast("Blast sent to "+count+" customers!");}
 function resetMonth(){
@@ -3867,8 +3947,8 @@ function deleteProduct(id){
     S.products=S.products.filter(function(p){return p.id!==id;});save();renderInvProducts();renderShop();showToast("Product deleted!");
   });
 }
-function toggleVisible(id){var p=S.products.find(function(x){return x.id===id;});if(p){p.visible=!p.visible;save();renderInvProducts();renderShop();}}
-function toggleSoldOut(id){var p=S.products.find(function(x){return x.id===id;});if(p){p.soldOut=!p.soldOut;save();renderInvProducts();renderShop();}}
+function toggleVisible(id){var p=S.products.find(function(x){return x.id===id;});if(p){p.visible=!p.visible;save();renderInvProducts();renderShop();api("PUT","/products/"+id,{visible:p.visible?1:0});}}
+function toggleSoldOut(id){var p=S.products.find(function(x){return x.id===id;});if(p){p.soldOut=!p.soldOut;save();renderInvProducts();renderShop();api("PUT","/products/"+id,{sold_out:p.soldOut?1:0});}}
 
 function openEditModal(id){
   var p=S.products.find(function(x){return x.id===id;});if(!p)return;
@@ -3986,8 +4066,8 @@ function restockItem(id){
   var amt=parseInt(prompt("How many units to add?"));if(isNaN(amt)||amt<=0)return;
   var p=S.products.find(function(x){return x.id===id;});
   if(p){p.stock=(p.stock||0)+amt;p.lastRestockedBy=currentWorkerName;p.lastRestockedAt=new Date().toISOString();save();renderStock();
-    syncStockToSheets(p, amt, currentWorkerName);
-    showToast("Restocked +"+amt+" by "+currentWorkerName+" ✓ Sheets synced");}
+    api("PUT","/products/"+id,{stock:p.stock});
+    showToast("Restocked +"+amt+" by "+currentWorkerName);}
 }
 
 function addSupplier(btn){
@@ -3997,6 +4077,7 @@ function addSupplier(btn){
   S.suppliers.push({id:Date.now(),name:name,contact:document.getElementById("sup-contact").value.trim(),notes:document.getElementById("sup-notes").value.trim()});
   ["sup-name","sup-contact","sup-notes"].forEach(function(id){document.getElementById(id).value="";});
   save();renderSuppliers();if(btn)buttonFlash(btn,"✅ Added!");
+  api("POST","/suppliers",{name:name,contact:document.getElementById("sup-contact")?document.getElementById("sup-contact").value.trim():"",notes:document.getElementById("sup-notes")?document.getElementById("sup-notes").value.trim():""});
 }
 function renderSuppliers(){
   if(!S.suppliers)S.suppliers=[];
