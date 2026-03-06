@@ -1703,7 +1703,26 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 function initPushNotifications() {
-  if (!("serviceWorker" in navigator) || !("PushManager" in window)) return;
+  var bell = document.getElementById("notif-bell");
+  if (!bell) return;
+  // Check if push is supported
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    // Check if iOS Safari (could support via home screen)
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    var isStandalone = window.navigator.standalone === true;
+    if (isIOS && !isStandalone) {
+      // iOS Safari but not added to home screen
+      bell.textContent = "🔔";
+      bell.style.opacity = "0.5";
+      bell.onclick = function() {
+        showToast("📱 Add El Toro to your Home Screen for notifications! Tap Share → Add to Home Screen");
+      };
+    } else {
+      // Not supported at all - hide bell
+      bell.style.display = "none";
+    }
+    return;
+  }
   navigator.serviceWorker.register("/sw-push.js").then(function(reg) {
     return reg.pushManager.getSubscription().then(function(sub) {
       if (sub) {
@@ -1718,7 +1737,14 @@ function initPushNotifications() {
 
 function subscribePush() {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    showToast("Push notifications not supported on this browser", "error");
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    if (isIOS) {
+      showToast("📱 Add El Toro to your Home Screen first! Tap Share → Add to Home Screen");
+    } else {
+      // Not supported - hide bell silently
+      var bell = document.getElementById("notif-bell");
+      if (bell) bell.style.display = "none";
+    }
     return;
   }
   Notification.requestPermission().then(function(permission) {
