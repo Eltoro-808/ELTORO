@@ -382,9 +382,11 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div id="dates-section" style="display:flex;gap:10px;padding:0 12px;justify-content:center;flex-wrap:wrap;margin-bottom:12px;">
       <div class="dates-card" id="dates-card-delivery" style="display:none;">
         <div class="dates-title" id="dt-delivery-title">🚚 Delivery</div>
-        <div class="dates-row">
-          <div><div class="date-item-label" id="shop-deadline-label">Order Deadline</div><div class="date-item-val" id="deadline-val">Not set</div></div>
-          <div><div class="date-item-label" id="shop-delivery-label">Delivery Date</div><div class="date-item-val" id="delivery-val">Not set</div></div>
+        <div id="shop-cities-list">
+          <div class="dates-row">
+            <div><div class="date-item-label" id="shop-deadline-label">Order Deadline</div><div class="date-item-val" id="deadline-val">Not set</div></div>
+            <div><div class="date-item-label" id="shop-delivery-label">Delivery Date</div><div class="date-item-val" id="delivery-val">Not set</div></div>
+          </div>
         </div>
       </div>
       <div class="dates-card" id="dates-card-local" style="display:none;">
@@ -620,13 +622,29 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
 
     <div id="delivery-settings-wrap">
     <div class="card">
-      <h3>📅 Set Dates</h3>
+      <h3>🏙️ Delivery Cities</h3>
+      <p style="font-size:12px;color:var(--text-gray);margin-bottom:12px;">Add cities with their own deadlines and delivery dates. Customers pick which city when ordering.</p>
+      <div id="cities-list"></div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--card-border);">
+        <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Add New City</label>
+        <input class="a-input" id="new-city-name" type="text" placeholder="City name (e.g. Riverside)" style="margin-top:4px;"/>
+        <input class="a-input" id="new-city-deadline" type="datetime-local" style="margin-top:4px;"/>
+        <label style="font-size:10px;color:var(--text-gray);">^ Order Deadline</label>
+        <input class="a-input" id="new-city-delivery" type="datetime-local" style="margin-top:4px;"/>
+        <label style="font-size:10px;color:var(--text-gray);">^ Delivery Date</label>
+        <input class="a-input" id="new-city-address" type="text" placeholder="Drop-off address (optional)" style="margin-top:4px;"/>
+        <input class="a-input" id="new-city-notes" type="text" placeholder="Notes (optional)" style="margin-top:4px;"/>
+        <button class="a-btn" onclick="addCity(this)">+ Add City</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📅 Global Dates (Fallback)</h3>
       <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Order Deadline</label>
       <input class="a-input" id="set-deadline" type="datetime-local" style="margin-top:4px;"/>
       <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Delivery Date & Time</label>
       <input class="a-input" id="set-delivery-dt" type="datetime-local" style="margin-top:4px;"/>
-      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">City Name (e.g. Houston, Dallas)</label>
-      <input class="a-input" id="set-delivery-city" type="text" placeholder="e.g. Houston, Dallas, San Antonio" style="margin-top:4px;"/>
+      <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">City Name</label>
+      <input class="a-input" id="set-delivery-city" type="text" placeholder="e.g. Houston" style="margin-top:4px;"/>
       <label style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;display:block;margin-top:4px;">Drop-off Location / Address</label>
       <input class="a-input" id="set-address" type="text" placeholder="Full address or location name"/>
       <input class="a-input" id="set-notes" type="text" placeholder="Notes (optional)"/>
@@ -1062,6 +1080,9 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     </div>
     <button class="logout-btn dt-logout" onclick="logout()">Logout</button>
   </div>
+
+  <!-- CITY TABS FOR DRIVERS -->
+  <div id="del-city-tabs" style="display:flex;overflow-x:auto;gap:6px;padding:8px 12px;background:var(--surface);border-bottom:1px solid var(--card-border);-webkit-overflow-scrolling:touch;"></div>
 
   <!-- DROP OFF LIST -->
   <div class="d-page active" id="del-page-pickup">
@@ -1680,7 +1701,10 @@ var S = {
   // Admin phone on receipt
   adminPhone: "", showAdminPhone: false,
   // Passwords for new roles
-  pickupsPass: "1996", localDeliveryPass: "1997"
+  pickupsPass: "1996", localDeliveryPass: "1997",
+  // Delivery cities
+  cities: [],
+  cartCityId: null
 };
 
 // ============================================================
@@ -1971,7 +1995,7 @@ function syncFromAPI() {
 
   // Load orders
   api("GET", "/orders").then(function(data) {
-    if (!data || data.error) return;
+    if (!data || data.error || !Array.isArray(data) || !data.length) return;
     S.orders = data.map(function(o) {
       return {
         id: o.id, slot: o.slot, name: o.customer_name, phone: o.customer_phone,
@@ -1981,7 +2005,8 @@ function syncFromAPI() {
         total: o.total, discount: o.discount, loyaltyMsg: o.loyalty_msg,
         status: o.status, claimedBy: o.claimed_by, completedBy: o.completed_by,
         timestamp: o.created_at, orderType: o.order_type, address: o.address, deliveryFee: o.delivery_fee,
-        depositRequired: !!o.deposit_required, depositAmount: o.deposit_amount, depositSent: !!o.deposit_sent
+        depositRequired: !!o.deposit_required, depositAmount: o.deposit_amount, depositSent: !!o.deposit_sent,
+        cityId: o.city_id || null, cityName: o.city_name || ""
       };
     });
     save();
@@ -2086,6 +2111,14 @@ function syncFromAPI() {
     if (!data || data.error) return;
     S.payments = data.map(function(p) { return { id: p.id, workerId: p.worker_id || 0, name: p.worker_name || "", amount: p.amount || 0, note: p.note || "", date: p.date || p.created_at || "" }; });
     save();
+  });
+
+  // Load delivery cities
+  api("GET", "/cities").then(function(data) {
+    if (!data || data.error || !Array.isArray(data)) return;
+    S.cities = data;
+    save();
+    renderDatesCard();
   });
 }
 
@@ -2307,7 +2340,7 @@ function launchApp(which) {
     document.getElementById("orders-worker-name").textContent = currentWorkerName;
     renderOrdersTab();
   }
-  if(which==="admin") { document.getElementById("admin-app").classList.add("active"); loadDeliveryInputs(); loadDepositInputs(); loadPickupInputs(); renderWorkerList(); updateStoreModeUI(); }
+  if(which==="admin") { document.getElementById("admin-app").classList.add("active"); loadDeliveryInputs(); loadDepositInputs(); loadPickupInputs(); renderWorkerList(); updateStoreModeUI(); renderCitiesList(); }
   if(which==="inv") {
     document.getElementById("inv-app").classList.add("active");
     document.getElementById("inv-worker-name").textContent = currentWorkerName;
@@ -2351,7 +2384,8 @@ function launchApp(which) {
               total:o.total,discount:o.discount,loyaltyMsg:o.loyalty_msg,
               status:o.status,claimedBy:o.claimed_by,completedBy:o.completed_by,
               timestamp:o.created_at,orderType:o.order_type,address:o.address,deliveryFee:o.delivery_fee,
-              depositRequired:!!o.deposit_required,depositAmount:o.deposit_amount,depositSent:!!o.deposit_sent
+              depositRequired:!!o.deposit_required,depositAmount:o.deposit_amount,depositSent:!!o.deposit_sent,
+              cityId:o.city_id||null,cityName:o.city_name||""
             };
           });
           save();
@@ -2655,6 +2689,25 @@ function renderCart(){
     addressHtml='<input class="form-input" id="c-address" type="text" placeholder="'+t("addressPlaceholder")+'" value="'+addrVal+'" oninput="S.cartAddress=this.value" style="margin-top:6px;"/>';
   }
 
+  // City selector for bulk delivery
+  var citySelectorHtml="";
+  if(selectedType==="delivery"&&S.cities&&S.cities.length>0){
+    var openCities=S.cities.filter(function(c){return c.active&&(!c.deadline||new Date()<=new Date(c.deadline));});
+    if(openCities.length){
+      citySelectorHtml='<div style="margin:12px 0;"><div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🏙️ Select Your City</div>';
+      citySelectorHtml+=openCities.map(function(c){
+        var isSelected=S.cartCityId===c.id;
+        var bg=isSelected?"var(--primary)":"var(--surface)";
+        var color=isSelected?"#000":"#ccc";
+        return '<button style="display:block;width:100%;padding:12px 14px;border:1px solid '+(isSelected?"var(--primary)":"#333")+';background:'+bg+';color:'+color+';font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;text-align:left;border-radius:10px;margin-bottom:6px;" onclick="setCartCity('+c.id+')">'+
+          '<div>🏙️ '+c.name+(isSelected?' ✓':'')+'</div>'+
+          '<div style="font-size:11px;font-weight:600;opacity:0.7;margin-top:2px;">Delivery: '+(c.delivery_date?fmtDT(c.delivery_date):'TBD')+'</div>'+
+        '</button>';
+      }).join("");
+      citySelectorHtml+='</div>';
+    }
+  }
+
   // Pickup location info
   var pickupInfoHtml="";
   if(selectedType==="pickup"&&S.pickupLocation){
@@ -2667,13 +2720,18 @@ function renderCart(){
   var feeRow=deliveryFee>0?'<div class="ot-row"><span class="ot-label">🚚 Delivery Fee</span><span class="ot-val" style="color:#FF9800;">$'+deliveryFee.toFixed(2)+'</span></div>':'';
   var totalLabel=deliveryFee>0?'$'+grandTotal.toFixed(2):'$'+totalPrice.toFixed(2);
 
-  body.innerHTML=typeSelectorHtml+pickupInfoHtml+itemsHtml+minWarn+
+  body.innerHTML=typeSelectorHtml+citySelectorHtml+pickupInfoHtml+itemsHtml+minWarn+
     '<div class="order-total-card"><div class="ot-row"><span class="ot-label">Items</span><span class="ot-val">'+totalQty+'</span></div>'+feeRow+'<div class="ot-row"><span class="ot-label">Total</span><span class="ot-total">'+totalLabel+'</span></div><div id="loyalty-discount-msg"></div></div>'+
     '<div class="customer-form"><h3>'+t("yourInfo")+'</h3><input class="form-input" id="c-name" type="text" placeholder="'+t("namePlaceholder")+'"/><input class="form-input" id="c-phone" type="tel" placeholder="'+t("phonePlaceholder")+'" oninput="checkLoyaltyDiscount()"/>'+addressHtml+'</div>'+
     '<button class="submit-btn '+(meetsMin?"ready":"locked")+'" '+(meetsMin?"":"disabled")+' id="place-order-btn" onclick="submitOrder()">'+(meetsMin?t("placeOrder"):t("addMore",{n:effectiveMin-totalQty,min:effectiveMin}))+'</button><div style="height:20px;"></div>';
 }
 function setCartOrderType(type){
   S.cartOrderType=type;
+  S.cartCityId=null; // reset city when switching mode
+  renderCart();
+}
+function setCartCity(id){
+  S.cartCityId=id;
   renderCart();
 }
 function cartQty(key,delta){
@@ -2737,7 +2795,8 @@ function submitOrder(){
     deposit_amount: S.depositAmount || 0,
     order_type: orderType,
     address: address,
-    delivery_fee: deliveryFee
+    delivery_fee: deliveryFee,
+    city_id: orderType==="delivery" ? S.cartCityId : null
   }, true).then(function(result) {
     if(!result || result.error) {
       showToast(result ? result.error : "Failed to place order. Please try again.");
@@ -3322,6 +3381,7 @@ function renderDatesCard(){
   el=document.getElementById("dt-location-label");if(el)el.textContent=t("pickupLocation");
   el=document.getElementById("deadline-val");if(el)el.textContent=S.deadline?fmtDT(S.deadline):t("notSet");
   el=document.getElementById("delivery-val");if(el)el.textContent=S.deliveryDt?fmtDT(S.deliveryDt):t("notSet");
+  renderShopCities();
   // Update pickup values
   if(S.pickupEnabled){
     var hv=document.getElementById("pickup-hours-val");if(hv)hv.textContent=S.storeHours||t("notSet");
@@ -3358,14 +3418,81 @@ function loadPickupInputs(){
 // DELIVERY WORKER DASHBOARD
 // ============================================================
 function renderPickupList(){
-  // Shows orders ready for delivery pickup
+  // Render city tabs first
+  renderDeliveryCityTabs();
+  // Shows orders ready for delivery pickup, filtered by driver's claimed city
   var list=document.getElementById("del-orders-list");if(!list)return;
   var orders=S.orders.filter(function(o){return (o.orderType==="delivery"||!o.orderType)&&o.status==="done";});
-  if(!orders.length){list.innerHTML='<div class="empty-state"><div class="ei">🚚</div><p>No orders ready for delivery</p></div>';return;}
+  // If driver has claimed a city, filter to that city's orders
+  var driverCity=S.cities.find(function(c){return c.claimed_by===currentWorkerName;});
+  if(driverCity){
+    orders=orders.filter(function(o){return o.cityId===driverCity.id||(!o.cityId&&!S.cities.length);});
+  }
+  // Update counter
+  var countEl=document.getElementById("del-countdown");if(countEl)countEl.textContent=orders.length;
+  var totalOrders=S.orders.filter(function(o){return (o.orderType==="delivery"||!o.orderType);});
+  var doneCount=totalOrders.length-orders.length;
+  var pctDone=totalOrders.length?(doneCount/totalOrders.length*100):0;
+  var progBar=document.getElementById("del-progress-bar");if(progBar)progBar.style.width=pctDone+"%";
+  var progLabel=document.getElementById("del-progress-label");if(progLabel)progLabel.textContent=doneCount+" of "+totalOrders.length+" delivered";
+  
+  if(!orders.length){list.innerHTML='<div class="empty-state"><div class="ei">🚚</div><p>No orders ready for delivery'+(driverCity?' in '+driverCity.name:'')+'</p></div>';return;}
   list.innerHTML=orders.map(function(o){
     var itemsHtml=o.items.map(function(i){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#ccc;padding:2px 0;"><span>'+i.qty+'x '+i.name+'</span><span>$'+(i.price*i.qty).toFixed(2)+'</span></div>';}).join("");
-    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">✅ Packed</span></div></div><div class="oc-items">'+itemsHtml+'</div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div></div>';
+    var cityBadge=o.cityName?'<div style="font-size:11px;font-weight:800;color:var(--primary);margin-top:2px;">🏙️ '+o.cityName+'</div>':'';
+    return '<div class="order-card"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div>'+cityBadge+'</div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">✅ Packed</span></div></div><div class="oc-items">'+itemsHtml+'</div><div class="oc-total">Total: $'+o.total.toFixed(2)+'</div></div>';
   }).join("");
+}
+function renderDeliveryCityTabs(){
+  var el=document.getElementById("del-city-tabs");if(!el)return;
+  if(!S.cities||!S.cities.length){el.style.display="none";return;}
+  el.style.display="flex";
+  var driverCity=S.cities.find(function(c){return c.claimed_by===currentWorkerName;});
+  el.innerHTML=S.cities.filter(function(c){return c.active;}).map(function(c){
+    var isClaimed=!!c.claimed_by;
+    var isMyCity=c.claimed_by===currentWorkerName;
+    var orderCount=S.orders.filter(function(o){return o.cityId===c.id&&o.status==="done";}).length;
+    var bg=isMyCity?"var(--primary)":isClaimed?"#333":"var(--surface)";
+    var color=isMyCity?"#000":isClaimed?"#666":"#ccc";
+    var border=isMyCity?"var(--primary)":isClaimed?"#555":"#444";
+    var claimLabel=isMyCity?"✓ YOU":isClaimed?"🔒 "+c.claimed_by:"Claim";
+    return '<button style="flex-shrink:0;padding:10px 14px;border:2px solid '+border+';background:'+bg+';color:'+color+';font-family:Nunito,sans-serif;font-weight:800;font-size:12px;cursor:pointer;border-radius:10px;text-align:center;min-width:100px;position:relative;" onclick="claimCity('+c.id+')">'+
+      '<div>🏙️ '+c.name+'</div>'+
+      '<div style="font-size:10px;opacity:0.8;">'+orderCount+' orders</div>'+
+      '<div style="font-size:10px;margin-top:2px;">'+claimLabel+'</div>'+
+    '</button>';
+  }).join("");
+}
+function claimCity(cityId){
+  var city=S.cities.find(function(c){return c.id===cityId;});
+  if(!city)return;
+  // If already claimed by someone else
+  if(city.claimed_by&&city.claimed_by!==currentWorkerName){
+    showToast("🔒 Already claimed by "+city.claimed_by,"error");
+    return;
+  }
+  // If this driver already claimed this city, unclaim
+  if(city.claimed_by===currentWorkerName){
+    api("PUT","/cities/"+cityId+"/unclaim",{});
+    city.claimed_by="";
+    save();renderDeliveryCityTabs();renderPickupList();
+    showToast("Released "+city.name);
+    return;
+  }
+  // Unclaim any other city first
+  S.cities.forEach(function(c){
+    if(c.claimed_by===currentWorkerName){
+      api("PUT","/cities/"+c.id+"/unclaim",{});
+      c.claimed_by="";
+    }
+  });
+  // Claim this city
+  api("PUT","/cities/"+cityId+"/claim",{driver_name:currentWorkerName}).then(function(data){
+    if(!data||data.error){showToast(data?data.error:"Failed to claim","error");return;}
+    city.claimed_by=currentWorkerName;
+    save();renderDeliveryCityTabs();renderPickupList();
+    showToast("🚗 Claimed "+city.name+"!");
+  });
 }
 function renderDeliveryLocation(){
   var addrEl=document.getElementById("del-address");
@@ -3398,6 +3525,74 @@ function saveDriverETA(btn){
   }
   api("PUT","/settings",{driver_eta:S.driverETA||""});
   if(btn)buttonFlash(btn,"✅ Arrival Time Set!");
+}
+
+// ============================================================
+// DELIVERY CITIES
+// ============================================================
+function addCity(btn){
+  var name=document.getElementById("new-city-name").value.trim();
+  if(!name){showToast("Enter a city name","error");return;}
+  var deadline=document.getElementById("new-city-deadline").value||null;
+  var delivery=document.getElementById("new-city-delivery").value||null;
+  var address=document.getElementById("new-city-address").value.trim();
+  var notes=document.getElementById("new-city-notes").value.trim();
+  api("POST","/cities",{name:name,deadline:deadline,delivery_date:delivery,address:address,notes:notes}).then(function(data){
+    if(!data||data.error){showToast("Failed to add city","error");return;}
+    S.cities.push({id:data.id,name:name,deadline:deadline,delivery_date:delivery,address:address,notes:notes,claimed_by:"",active:1});
+    save();renderCitiesList();renderDatesCard();
+    document.getElementById("new-city-name").value="";
+    document.getElementById("new-city-deadline").value="";
+    document.getElementById("new-city-delivery").value="";
+    document.getElementById("new-city-address").value="";
+    document.getElementById("new-city-notes").value="";
+    if(btn)buttonFlash(btn,"✅ City Added!");
+  });
+}
+function renderCitiesList(){
+  var el=document.getElementById("cities-list");if(!el)return;
+  if(!S.cities.length){el.innerHTML='<div style="text-align:center;color:var(--text-gray);padding:12px;">No cities yet. Add one below.</div>';return;}
+  el.innerHTML=S.cities.map(function(c){
+    var locked=c.deadline&&new Date()>new Date(c.deadline);
+    var claimedHtml=c.claimed_by?'<div style="font-size:11px;color:#FF9800;margin-top:2px;">🚗 Driver: '+c.claimed_by+'</div>':'';
+    var lockBadge=locked?'<span style="background:#3a1a1a;color:#ef5350;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:800;">🔒 LOCKED</span>':'<span style="background:#1a3a1a;color:#4caf50;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:800;">🟢 OPEN</span>';
+    return '<div style="background:var(--surface);border:1px solid var(--card-border);border-radius:10px;padding:12px;margin-bottom:8px;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+        '<div style="font-weight:800;color:#fff;font-size:15px;">🏙️ '+c.name+'</div>'+
+        '<div>'+lockBadge+' <button style="background:#ef5350;color:#fff;border:none;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:800;cursor:pointer;margin-left:4px;" onclick="deleteCity('+c.id+')">✕</button></div>'+
+      '</div>'+
+      '<div style="font-size:12px;color:var(--text-gray);margin-top:4px;">Deadline: '+(c.deadline?fmtDT(c.deadline):'Not set')+'</div>'+
+      '<div style="font-size:12px;color:var(--text-gray);">Delivery: '+(c.delivery_date?fmtDT(c.delivery_date):'Not set')+'</div>'+
+      (c.address?'<div style="font-size:12px;color:var(--text-gray);">📍 '+c.address+'</div>':'')+
+      claimedHtml+
+    '</div>';
+  }).join("");
+}
+function deleteCity(id){
+  if(!confirm("Delete this city?"))return;
+  api("DELETE","/cities/"+id);
+  S.cities=S.cities.filter(function(c){return c.id!==id;});
+  save();renderCitiesList();renderDatesCard();
+  showToast("City deleted");
+}
+function renderShopCities(){
+  var el=document.getElementById("shop-cities-list");if(!el)return;
+  var activeCities=S.cities.filter(function(c){return c.active;});
+  if(!activeCities.length){
+    el.innerHTML='<div class="dates-row"><div><div class="date-item-label">Order Deadline</div><div class="date-item-val" id="deadline-val">'+(S.deadline?fmtDT(S.deadline):"Not set")+'</div></div><div><div class="date-item-label">Delivery Date</div><div class="date-item-val" id="delivery-val">'+(S.deliveryDt?fmtDT(S.deliveryDt):"Not set")+'</div></div></div>';
+    return;
+  }
+  el.innerHTML=activeCities.map(function(c){
+    var locked=c.deadline&&new Date()>new Date(c.deadline);
+    var lockIcon=locked?"🔒 ":"";
+    return '<div style="background:var(--surface);border-radius:8px;padding:8px 10px;margin-bottom:6px;">'+
+      '<div style="font-weight:800;font-size:13px;color:'+(locked?"var(--text-gray)":"#fff")+';">'+lockIcon+'🏙️ '+c.name+'</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-gray);margin-top:2px;">'+
+        '<span>Deadline: '+(c.deadline?fmtDT(c.deadline):'TBD')+'</span>'+
+        '<span>Delivery: '+(c.delivery_date?fmtDT(c.delivery_date):'TBD')+'</span>'+
+      '</div>'+
+    '</div>';
+  }).join("");
 }
 function setDeliveryStatus(status){
   var statusLabels={on_the_way:"🚗 On The Way",arrived:"📍 Arrived at Location",done:"✅ All Deliveries Complete"};
