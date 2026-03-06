@@ -20,7 +20,7 @@
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 html,body{height:100%;margin:0;padding:0;}
 #customer-app{height:100%;position:relative;}
-body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;height:100%;}
+body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overflow:hidden;height:100%;position:fixed;width:100%;}
 
 /* TOPBAR */
 .topbar{position:fixed;top:0;left:0;right:0;height:var(--top-h);background:linear-gradient(180deg,#0e191d 0%,#0b0f11 100%);display:flex;align-items:center;justify-content:space-between;padding:0 14px;z-index:1000;border-bottom:2px solid var(--primary-dim);box-shadow:0 2px 20px rgba(0,0,0,0.5);}
@@ -39,14 +39,15 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 /* CUSTOMER PAGES */
 .page{
   display:none;
-  position:fixed;
+  position:absolute;
   top:var(--top-h);
   bottom:var(--nav-h);
   left:0;right:0;
-  overflow-y:auto;
+  overflow-y:scroll;
   -webkit-overflow-scrolling:touch;
   padding:14px 0 20px;
   box-sizing:border-box;
+  overscroll-behavior:contain;
 }
 .page.active{display:block;animation:fadeIn 0.15s ease;}
 
@@ -208,14 +209,15 @@ body{font-family:"Nunito",sans-serif;background:var(--dark-bg);color:#fff;overfl
 .ops-nav .d-nav-item.active{color:var(--primary);}
 .d-page{
   display:none;
-  position:fixed;
+  position:absolute;
   top:var(--top-h);
   bottom:var(--nav-h);
   left:0;right:0;
-  overflow-y:auto;
+  overflow-y:scroll;
   -webkit-overflow-scrolling:touch;
   padding:14px 0 30px;
   box-sizing:border-box;
+  overscroll-behavior:contain;
 }
 .d-page.active{display:block;}
 
