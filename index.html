@@ -634,6 +634,8 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
         <label style="font-size:10px;color:var(--text-gray);">^ Delivery Date</label>
         <input class="a-input" id="new-city-address" type="text" placeholder="Drop-off address (optional)" style="margin-top:4px;"/>
         <input class="a-input" id="new-city-notes" type="text" placeholder="Notes (optional)" style="margin-top:4px;"/>
+        <input class="a-input" id="new-city-fee" type="number" step="0.01" placeholder="Local delivery fee (e.g. 5.00)" style="margin-top:4px;"/>
+        <label style="font-size:10px;color:var(--text-gray);">^ Fee for local delivery to this city (leave blank for bulk)</label>
         <button class="a-btn" onclick="addCity(this)">+ Add City</button>
       </div>
     </div>
@@ -2656,9 +2658,17 @@ function renderCart(){
   else if(selectedType==="local"){effectiveMin=S.localMinItems||4;}
   var meetsMin=showMinCheck?(totalQty>=effectiveMin):true;
 
-  // Delivery fee for local
+  // Delivery fee for local — use city-specific fee if city selected
   var deliveryFee=0;
-  if(selectedType==="local"){deliveryFee=S.localDeliveryFee||0;}
+  if(selectedType==="local"){
+    if(S.cartCityId&&S.cities){
+      var selCity=S.cities.find(function(c){return c.id===S.cartCityId;});
+      if(selCity&&selCity.delivery_fee) deliveryFee=Number(selCity.delivery_fee);
+      else deliveryFee=S.localDeliveryFee||0;
+    } else {
+      deliveryFee=S.localDeliveryFee||0;
+    }
+  }
   var grandTotal=totalPrice+deliveryFee;
 
   var itemsHtml=S.cart.map(function(item){
@@ -2689,19 +2699,31 @@ function renderCart(){
     addressHtml='<input class="form-input" id="c-address" type="text" placeholder="'+t("addressPlaceholder")+'" value="'+addrVal+'" oninput="S.cartAddress=this.value" style="margin-top:6px;"/>';
   }
 
-  // City selector for bulk delivery
+  // City selector for bulk delivery AND local delivery
   var citySelectorHtml="";
-  if(selectedType==="delivery"&&S.cities&&S.cities.length>0){
-    var openCities=S.cities.filter(function(c){return c.active&&(!c.deadline||new Date()<=new Date(c.deadline));});
+  if((selectedType==="delivery"||selectedType==="local")&&S.cities&&S.cities.length>0){
+    var openCities;
+    if(selectedType==="delivery"){
+      // Bulk: filter by deadline (locked cities can't order)
+      openCities=S.cities.filter(function(c){return c.active&&(!c.deadline||new Date()<=new Date(c.deadline));});
+    } else {
+      // Local: all active cities, no deadline lockout
+      openCities=S.cities.filter(function(c){return c.active;});
+    }
     if(openCities.length){
-      citySelectorHtml='<div style="margin:12px 0;"><div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🏙️ Select Your City</div>';
+      var cityLabel=selectedType==="delivery"?"🏙️ Select Your City":"🏙️ Select Delivery Area";
+      citySelectorHtml='<div style="margin:12px 0;"><div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">'+cityLabel+'</div>';
       citySelectorHtml+=openCities.map(function(c){
         var isSelected=S.cartCityId===c.id;
-        var bg=isSelected?"var(--primary)":"var(--surface)";
+        var bg=isSelected?(selectedType==="local"?"#FF9800":"var(--primary)"):"var(--surface)";
         var color=isSelected?"#000":"#ccc";
-        return '<button style="display:block;width:100%;padding:12px 14px;border:1px solid '+(isSelected?"var(--primary)":"#333")+';background:'+bg+';color:'+color+';font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;text-align:left;border-radius:10px;margin-bottom:6px;" onclick="setCartCity('+c.id+')">'+
+        var borderColor=isSelected?(selectedType==="local"?"#FF9800":"var(--primary)"):"#333";
+        var feeText=selectedType==="local"&&c.delivery_fee?"Delivery fee: $"+Number(c.delivery_fee).toFixed(2):"";
+        var dateText=selectedType==="delivery"?"Delivery: "+(c.delivery_date?fmtDT(c.delivery_date):"TBD"):"";
+        var subText=feeText||dateText;
+        return '<button style="display:block;width:100%;padding:12px 14px;border:1px solid '+borderColor+';background:'+bg+';color:'+color+';font-family:Nunito,sans-serif;font-weight:800;font-size:13px;cursor:pointer;text-align:left;border-radius:10px;margin-bottom:6px;" onclick="setCartCity('+c.id+')">'+
           '<div>🏙️ '+c.name+(isSelected?' ✓':'')+'</div>'+
-          '<div style="font-size:11px;font-weight:600;opacity:0.7;margin-top:2px;">Delivery: '+(c.delivery_date?fmtDT(c.delivery_date):'TBD')+'</div>'+
+          (subText?'<div style="font-size:11px;font-weight:600;opacity:0.7;margin-top:2px;">'+subText+'</div>':'')+
         '</button>';
       }).join("");
       citySelectorHtml+='</div>';
@@ -2771,9 +2793,17 @@ function submitOrder(){
     }
   }
 
-  // Delivery fee for local
+  // Delivery fee for local — use city-specific fee if city selected
   var deliveryFee=0;
-  if(orderType==="local") deliveryFee=S.localDeliveryFee||0;
+  if(orderType==="local"){
+    if(S.cartCityId&&S.cities){
+      var selectedCity=S.cities.find(function(c){return c.id===S.cartCityId;});
+      if(selectedCity&&selectedCity.delivery_fee) deliveryFee=Number(selectedCity.delivery_fee);
+      else deliveryFee=S.localDeliveryFee||0;
+    } else {
+      deliveryFee=S.localDeliveryFee||0;
+    }
+  }
 
   var items=S.cart.map(function(i){
     var n=i.name;
@@ -2796,7 +2826,7 @@ function submitOrder(){
     order_type: orderType,
     address: address,
     delivery_fee: deliveryFee,
-    city_id: orderType==="delivery" ? S.cartCityId : null
+    city_id: (orderType==="delivery"||orderType==="local") ? S.cartCityId : null
   }, true).then(function(result) {
     if(!result || result.error) {
       showToast(result ? result.error : "Failed to place order. Please try again.");
@@ -3092,6 +3122,7 @@ function renderOrdersTab(){
     else if(o.orderType==="local"){typeLabel="🏘️ "+(S.localName||"Local");typeColor="#FF9800";}
     else if(o.orderType==="pickup"){typeLabel="📍 "+(S.pickupName||"Pickup");typeColor="#4caf50";}
     var typeBadge=typeLabel?'<div style="display:inline-block;background:rgba(0,0,0,0.3);border:1px solid '+typeColor+';border-radius:6px;padding:2px 8px;margin-top:3px;font-size:11px;font-weight:800;color:'+typeColor+';">'+typeLabel+'</div>':"";
+    var cityBadge=o.cityName?'<div style="display:inline-block;background:rgba(0,0,0,0.3);border:1px solid #29b6f6;border-radius:6px;padding:2px 8px;margin-top:3px;font-size:11px;font-weight:800;color:#29b6f6;">🏙️ '+o.cityName+'</div>':"";
     var itemsHtml=o.items.map(function(item,idx){
       var done=o.checked&&o.checked[idx];
       var strike=done?"text-decoration:line-through;color:#555;":"";
@@ -3117,6 +3148,7 @@ function renderOrdersTab(){
           '<div class="oc-time">📅 '+fmtTime(o.timestamp)+'</div>'+
           '<div style="font-size:12px;font-weight:800;color:'+tColor+';margin-top:2px;">'+tText+'</div>'+
           typeBadge+
+          cityBadge+
           workerHtml+
         '</div>'+
         '<div style="text-align:right;">'+
@@ -3537,15 +3569,18 @@ function addCity(btn){
   var delivery=document.getElementById("new-city-delivery").value||null;
   var address=document.getElementById("new-city-address").value.trim();
   var notes=document.getElementById("new-city-notes").value.trim();
-  api("POST","/cities",{name:name,deadline:deadline,delivery_date:delivery,address:address,notes:notes}).then(function(data){
+  var feeEl=document.getElementById("new-city-fee");
+  var fee=feeEl&&feeEl.value?parseFloat(feeEl.value):0;
+  api("POST","/cities",{name:name,deadline:deadline,delivery_date:delivery,address:address,notes:notes,delivery_fee:fee}).then(function(data){
     if(!data||data.error){showToast("Failed to add city","error");return;}
-    S.cities.push({id:data.id,name:name,deadline:deadline,delivery_date:delivery,address:address,notes:notes,claimed_by:"",active:1});
+    S.cities.push({id:data.id,name:name,deadline:deadline,delivery_date:delivery,address:address,notes:notes,claimed_by:"",active:1,delivery_fee:fee});
     save();renderCitiesList();renderDatesCard();
     document.getElementById("new-city-name").value="";
     document.getElementById("new-city-deadline").value="";
     document.getElementById("new-city-delivery").value="";
     document.getElementById("new-city-address").value="";
     document.getElementById("new-city-notes").value="";
+    if(feeEl)feeEl.value="";
     if(btn)buttonFlash(btn,"✅ City Added!");
   });
 }
@@ -3563,6 +3598,7 @@ function renderCitiesList(){
       '</div>'+
       '<div style="font-size:12px;color:var(--text-gray);margin-top:4px;">Deadline: '+(c.deadline?fmtDT(c.deadline):'Not set')+'</div>'+
       '<div style="font-size:12px;color:var(--text-gray);">Delivery: '+(c.delivery_date?fmtDT(c.delivery_date):'Not set')+'</div>'+
+      (c.delivery_fee?'<div style="font-size:12px;color:#FF9800;font-weight:800;">💰 Local delivery fee: $'+Number(c.delivery_fee).toFixed(2)+'</div>':'')+
       (c.address?'<div style="font-size:12px;color:var(--text-gray);">📍 '+c.address+'</div>':'')+
       claimedHtml+
     '</div>';
