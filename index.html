@@ -6,6 +6,7 @@
 <title>El Toro</title>
 <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <style>
 :root {
   --primary:#26C6DA; --primary-dim:#0d3a40; --primary-glow:rgba(38,198,218,0.3); --primary-text:#26C6DA;
@@ -1825,6 +1826,40 @@ var authToken = localStorage.getItem("eltoro_token") || "";
 // PUSH NOTIFICATIONS
 // ============================================================
 var VAPID_PUBLIC_KEY = "BKSv2bPAHT3vS2vI_zqcZdFD8xfrQWVOkgMPT9zBjQQ9MgFUU73TzMySikTHNBtRzrAROPXF3dbmAh3syQfd5jI";
+
+// --- Turnstile (invisible bot protection) ---
+var TURNSTILE_SITE_KEY = "0x4AAAAAACnnm442RiPHwSn8";
+var turnstileReady = false;
+var turnstileWidgetId = null;
+
+function initTurnstile() {
+  if (typeof turnstile === "undefined") { setTimeout(initTurnstile, 500); return; }
+  try {
+    turnstileWidgetId = turnstile.render("#turnstile-container", {
+      sitekey: TURNSTILE_SITE_KEY,
+      callback: function(token) { window._turnstileToken = token; },
+      "expired-callback": function() { window._turnstileToken = null; turnstile.reset(turnstileWidgetId); },
+      size: "invisible"
+    });
+    turnstileReady = true;
+  } catch(e) { console.log("Turnstile init:", e.message); }
+}
+
+function getTurnstileToken() {
+  return new Promise(function(resolve) {
+    if (!turnstileReady || typeof turnstile === "undefined") { resolve(null); return; }
+    if (window._turnstileToken) { resolve(window._turnstileToken); return; }
+    turnstile.execute(turnstileWidgetId);
+    var attempts = 0;
+    var check = setInterval(function() {
+      attempts++;
+      if (window._turnstileToken) { clearInterval(check); resolve(window._turnstileToken); }
+      else if (attempts > 40) { clearInterval(check); resolve(null); }
+    }, 250);
+  });
+}
+
+setTimeout(initTurnstile, 1000);
 var pushSubscription = null;
 
 function urlBase64ToUint8Array(base64String) {
@@ -2929,6 +2964,9 @@ function submitOrder(){
   var btn=document.getElementById("place-order-btn");
   if(btn){btn.disabled=true;btn.textContent="Placing order...";}
 
+  // Get Turnstile token for bot protection
+  getTurnstileToken().then(function(cfToken) {
+
   // Send to API — API handles loyalty discount, customer tracking, stock updates
   api("POST", "/orders", {
     name: name,
@@ -2939,7 +2977,8 @@ function submitOrder(){
     order_type: orderType,
     address: address,
     delivery_fee: deliveryFee,
-    city_id: (orderType==="delivery"||orderType==="local") ? S.cartCityId : null
+    city_id: (orderType==="delivery"||orderType==="local") ? S.cartCityId : null,
+    cf_turnstile_token: cfToken
   }, true).then(function(result) {
     if(!result || result.error) {
       showToast(result ? result.error : "Failed to place order. Please try again.");
@@ -3071,6 +3110,7 @@ function submitOrder(){
     showPage("cart",document.querySelectorAll(".nav-item")[1]);
   }
   }); // end api().then()
+  }); // end getTurnstileToken().then()
 }
 
 // ============================================================
@@ -5081,5 +5121,6 @@ applyBizName();
 syncFromAPI();
 initPushNotifications();
 </script>
+<div id="turnstile-container" style="position:fixed;bottom:-100px;left:-100px;overflow:hidden;width:1px;height:1px;opacity:0;pointer-events:none;"></div>
 </body>
 </html>
