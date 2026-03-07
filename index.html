@@ -1092,7 +1092,7 @@ input[type="checkbox"]:checked+span+.deposit-knob{left:25px!important;}
     <div class="page-title" id="dt-del-dropoff">📋 Drop Off List</div>
     <div id="del-countdown-wrap" style="text-align:center;padding:10px 12px 0;">
       <div id="del-countdown" style="font-family:'Black Ops One',cursive;font-size:64px;color:var(--primary);line-height:1;">0</div>
-      <div style="font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;">Left to Drop Off</div>
+      <div style="font-size:13px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;" id="del-dropoff-label">Left to Drop Off</div>
       <div id="del-progress-wrap" style="background:#333;border-radius:99px;height:10px;margin:10px 24px;">
         <div id="del-progress-bar" style="height:100%;background:var(--primary);border-radius:99px;transition:width 0.4s;width:0%;"></div>
       </div>
@@ -1402,7 +1402,23 @@ var LANGS = {
     arrivalTimeSub:"Let customers know when you'll arrive at the drop-off location",
     setArrivalBtn:"🚚 Set Arrival Time",
     customersWillSee:"Customers will see:",
-    cityName:"City Name"
+    cityName:"City Name",
+    selectCity:"Select Your City",
+    selectArea:"Select Delivery Area",
+    leftToDropOff:"Left to Drop Off",
+    noOrdersDelivery:"No orders ready for delivery",
+    noOrdersDeliveryCity:"No orders ready for delivery in {city}",
+    noOrdersReady:"No orders ready",
+    noCitiesYet:"No cities yet. Add one below.",
+    enterCityName:"Enter a city name",
+    cityDeleted:"City deleted",
+    releasedCity:"Released {city}",
+    claimedCity:"Claimed {city}!",
+    alreadyClaimed:"Already claimed by {name}",
+    localFeeLabel:"Local delivery fee",
+    packingOrder:"Packing order #{n}",
+    noOrdersToText:"No orders to text!",
+    blastSent:"Blast sent to {n} customers!"
   },
   es: {
     all:"Todo", dairy:"Lácteos", meat:"Carne", breadgrains:"Pan y Granos",
@@ -1518,7 +1534,23 @@ var LANGS = {
     arrivalTimeSub:"Deja que los clientes sepan cuándo llegarás al punto de entrega",
     setArrivalBtn:"🚚 Establecer Hora de Llegada",
     customersWillSee:"Los clientes verán:",
-    cityName:"Nombre de la Ciudad"
+    cityName:"Nombre de la Ciudad",
+    selectCity:"Selecciona Tu Ciudad",
+    selectArea:"Selecciona Zona de Entrega",
+    leftToDropOff:"Faltan por Entregar",
+    noOrdersDelivery:"No hay pedidos listos para entrega",
+    noOrdersDeliveryCity:"No hay pedidos listos para entrega en {city}",
+    noOrdersReady:"No hay pedidos listos",
+    noCitiesYet:"No hay ciudades aún. Agrega una abajo.",
+    enterCityName:"Ingresa un nombre de ciudad",
+    cityDeleted:"Ciudad eliminada",
+    releasedCity:"{city} liberada",
+    claimedCity:"¡{city} reclamada!",
+    alreadyClaimed:"Ya fue reclamada por {name}",
+    localFeeLabel:"Costo de entrega local",
+    packingOrder:"Empacando pedido #{n}",
+    noOrdersToText:"¡No hay pedidos para enviar!",
+    blastSent:"¡Mensaje enviado a {n} clientes!"
   }
 }
 var currentLang = "en";
@@ -2711,7 +2743,7 @@ function renderCart(){
       openCities=S.cities.filter(function(c){return c.active;});
     }
     if(openCities.length){
-      var cityLabel=selectedType==="delivery"?"🏙️ Select Your City":"🏙️ Select Delivery Area";
+      var cityLabel=selectedType==="delivery"?"🏙️ "+t("selectCity"):"🏙️ "+t("selectArea");
       citySelectorHtml='<div style="margin:12px 0;"><div style="font-size:11px;font-weight:800;color:var(--text-gray);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">'+cityLabel+'</div>';
       citySelectorHtml+=openCities.map(function(c){
         var isSelected=S.cartCityId===c.id;
@@ -3249,7 +3281,7 @@ function deleteDoneOrder(id){
   });
 }
 function renderOrdersLocation(){
-  document.getElementById("o-address").textContent=S.deliveryAddress||"Not set yet";
+  document.getElementById("o-address").textContent=S.deliveryAddress||t("notSet");
   document.getElementById("o-datetime").textContent=S.deliveryDt?fmtDT(S.deliveryDt):"Not set yet";
 }
 function sendBlast(){
@@ -3454,6 +3486,7 @@ function renderPickupList(){
   renderDeliveryCityTabs();
   // Shows orders ready for delivery pickup, filtered by driver's claimed city
   var list=document.getElementById("del-orders-list");if(!list)return;
+  var dropLabel=document.getElementById("del-dropoff-label");if(dropLabel)dropLabel.textContent=t("leftToDropOff");
   var orders=S.orders.filter(function(o){return (o.orderType==="delivery"||!o.orderType)&&o.status==="done";});
   // If driver has claimed a city, filter to that city's orders
   var driverCity=S.cities.find(function(c){return c.claimed_by===currentWorkerName;});
@@ -3468,7 +3501,7 @@ function renderPickupList(){
   var progBar=document.getElementById("del-progress-bar");if(progBar)progBar.style.width=pctDone+"%";
   var progLabel=document.getElementById("del-progress-label");if(progLabel)progLabel.textContent=doneCount+" of "+totalOrders.length+" delivered";
   
-  if(!orders.length){list.innerHTML='<div class="empty-state"><div class="ei">🚚</div><p>No orders ready for delivery'+(driverCity?' in '+driverCity.name:'')+'</p></div>';return;}
+  if(!orders.length){list.innerHTML='<div class="empty-state"><div class="ei">🚚</div><p>'+(driverCity?t("noOrdersDeliveryCity",{city:driverCity.name}):t("noOrdersDelivery"))+'</p></div>';return;}
   list.innerHTML=orders.map(function(o){
     var itemsHtml=o.items.map(function(i){return '<div style="display:flex;justify-content:space-between;font-size:12px;color:#ccc;padding:2px 0;"><span>'+i.qty+'x '+i.name+'</span><span>$'+(i.price*i.qty).toFixed(2)+'</span></div>';}).join("");
     var cityBadge=o.cityName?'<div style="font-size:11px;font-weight:800;color:var(--primary);margin-top:2px;">🏙️ '+o.cityName+'</div>':'';
@@ -3500,7 +3533,7 @@ function claimCity(cityId){
   if(!city)return;
   // If already claimed by someone else
   if(city.claimed_by&&city.claimed_by!==currentWorkerName){
-    showToast("🔒 Already claimed by "+city.claimed_by,"error");
+    showToast("🔒 "+t("alreadyClaimed",{name:city.claimed_by}),"error");
     return;
   }
   // If this driver already claimed this city, unclaim
@@ -3508,7 +3541,7 @@ function claimCity(cityId){
     api("PUT","/cities/"+cityId+"/unclaim",{});
     city.claimed_by="";
     save();renderDeliveryCityTabs();renderPickupList();
-    showToast("Released "+city.name);
+    showToast(t("releasedCity",{city:city.name}));
     return;
   }
   // Unclaim any other city first
@@ -3523,12 +3556,12 @@ function claimCity(cityId){
     if(!data||data.error){showToast(data?data.error:"Failed to claim","error");return;}
     city.claimed_by=currentWorkerName;
     save();renderDeliveryCityTabs();renderPickupList();
-    showToast("🚗 Claimed "+city.name+"!");
+    showToast("🚗 "+t("claimedCity",{city:city.name}));
   });
 }
 function renderDeliveryLocation(){
   var addrEl=document.getElementById("del-address");
-  if(addrEl) addrEl.textContent=S.deliveryAddress||"Not set yet";
+  if(addrEl) addrEl.textContent=S.deliveryAddress||t("notSet");
   var cityEl=document.getElementById("del-city-display");
   if(cityEl) cityEl.textContent=S.deliveryCity?"🏙️ "+S.deliveryCity:"";
   var dtEl=document.getElementById("del-datetime");
@@ -3564,7 +3597,7 @@ function saveDriverETA(btn){
 // ============================================================
 function addCity(btn){
   var name=document.getElementById("new-city-name").value.trim();
-  if(!name){showToast("Enter a city name","error");return;}
+  if(!name){showToast(t("enterCityName"),"error");return;}
   var deadline=document.getElementById("new-city-deadline").value||null;
   var delivery=document.getElementById("new-city-delivery").value||null;
   var address=document.getElementById("new-city-address").value.trim();
@@ -3586,7 +3619,7 @@ function addCity(btn){
 }
 function renderCitiesList(){
   var el=document.getElementById("cities-list");if(!el)return;
-  if(!S.cities.length){el.innerHTML='<div style="text-align:center;color:var(--text-gray);padding:12px;">No cities yet. Add one below.</div>';return;}
+  if(!S.cities.length){el.innerHTML='<div style="text-align:center;color:var(--text-gray);padding:12px;">'+t("noCitiesYet")+'</div>';return;}
   el.innerHTML=S.cities.map(function(c){
     var locked=c.deadline&&new Date()>new Date(c.deadline);
     var claimedHtml=c.claimed_by?'<div style="font-size:11px;color:#FF9800;margin-top:2px;">🚗 Driver: '+c.claimed_by+'</div>':'';
@@ -3609,7 +3642,7 @@ function deleteCity(id){
   api("DELETE","/cities/"+id);
   S.cities=S.cities.filter(function(c){return c.id!==id;});
   save();renderCitiesList();renderDatesCard();
-  showToast("City deleted");
+  showToast(t("cityDeleted"));
 }
 function renderShopCities(){
   var el=document.getElementById("shop-cities-list");if(!el)return;
@@ -3704,7 +3737,7 @@ function renderPickupsOrders(){
 function renderPickupsReady(){
   var ready=S.orders.filter(function(o){return o.orderType==="pickup"&&o.status==="ready";});
   var list=document.getElementById("pu-ready-list");
-  if(!ready.length){list.innerHTML='<div class="empty-state"><div class="ei">✅</div><p>No orders ready</p></div>';return;}
+  if(!ready.length){list.innerHTML='<div class="empty-state"><div class="ei">✅</div><p>'+t("noOrdersReady")+'</p></div>';return;}
   list.innerHTML=ready.map(function(o){
     return '<div class="order-card" style="border:1px solid #4caf50;"><div class="oc-header"><div><div class="oc-num">#'+o.slot+'</div><div class="oc-name">'+o.name+'</div><div class="oc-phone">📞 '+o.phone+'</div></div><div><span class="status-badge" style="background:#1a3a1a;color:#4caf50;">✅ '+t("dReady")+'</span></div></div><div class="oc-total">'+t("dTotal")+': $'+o.total.toFixed(2)+'</div><button class="a-btn green" onclick="completePickup(\''+o.id+'\')">📍 '+t("dMarkPickedUp")+'</button></div>';
   }).join("");
